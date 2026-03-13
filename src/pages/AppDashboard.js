@@ -118,7 +118,8 @@ function smartParseCSV(text) {
     let date = rawDate.replace(/['"]/g,'').trim();
     if (!date) date = new Date().toISOString().split('T')[0];
     // Try DD/MM/YYYY or MM/DD/YYYY
-    const dateParts = date.match(/(\d{1,4})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+   // AFTER (fixed)
+    const dateParts = date.match(/(\d{1,4})[-/.](\d{1,2})[-/.](\d{2,4})/);
     if (dateParts) {
       const [,a,b,c] = dateParts;
       if (a.length === 4) date = `${a}-${b.padStart(2,'0')}-${c.padStart(2,'0')}`;
