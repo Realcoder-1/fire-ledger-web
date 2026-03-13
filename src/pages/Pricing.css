@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #08080f;
+  --bg2: #0e0e1a;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0f0f8;
+  --text2: #8888aa;
+  --purple: #a78bfa;
+  --pink: #f472b6;
+}
+
+.pricing-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-bg { position: absolute; inset: 0; pointer-events: none; }
+.p-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.12; }
+.p-orb1 { width: 600px; height: 600px; background: var(--purple); top: -200px; left: -200px; }
+.p-orb2 { width: 500px; height: 500px; background: var(--pink); bottom: -100px; right: -100px; }
+
+.p-nav {
+  width: 100%; display: flex; justify-content: space-between; align-items: center;
+  padding: 24px 48px; position: relative; z-index: 1;
+}
+.p-nav-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+.p-nav-logo span { color: var(--purple); }
+.p-signout { background: none; border: 1px solid var(--border); color: var(--text2); padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; }
+.p-signout:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+.pricing-hero {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 40px 24px 80px;
+  position: relative; z-index: 1; width: 100%; max-width: 560px;
+}
+
+.p-badge {
+  display: inline-block;
+  background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3);
+  color: var(--purple); padding: 6px 16px; border-radius: 100px;
+  font-size: 12px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.pricing-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5vw, 56px); font-weight: 900;
+  letter-spacing: -2px; line-height: 1.1; margin-bottom: 16px;
+}
+.pricing-hero h1 span {
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.pricing-hero > p { color: var(--text2); font-size: 16px; margin-bottom: 32px; }
+
+.billing-toggle {
+  display: flex; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 4px; margin-bottom: 32px; gap: 4px;
+}
+.billing-toggle button {
+  background: none; border: none; color: var(--text2);
+  padding: 8px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+  font-size: 14px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px;
+}
+.billing-toggle button.active { background: rgba(167,139,250,0.15); color: var(--purple); }
+.save-badge {
+  background: rgba(52,211,153,0.15); color: #34d399;
+  font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 600;
+}
+
+.p-card {
+  width: 100%; background: var(--bg2);
+  border: 1px solid rgba(167,139,250,0.3);
+  border-radius: 24px; padding: 36px;
+  box-shadow: 0 0 60px rgba(167,139,250,0.1), 0 40px 80px rgba(0,0,0,0.4);
+}
+
+.p-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.p-tier { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.p-price { display: flex; align-items: baseline; gap: 4px; }
+.p-amount { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 700; letter-spacing: -2px; }
+.p-period { font-size: 16px; color: var(--text2); }
+.p-equiv { font-size: 13px; color: #34d399; margin-top: 4px; }
+.p-flame { font-size: 40px; }
+
+.p-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+.p-feature { display: flex; align-items: center; gap: 12px; font-size: 15px; text-align: left; }
+.p-check { color: #34d399; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+
+.p-cta {
+  width: 100%; background: linear-gradient(135deg, var(--purple), var(--pink));
+  color: white; border: none; padding: 16px;
+  border-radius: 12px; font-family: 'DM Sans', sans-serif;
+  font-size: 17px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 0 30px rgba(167,139,250,0.4); margin-bottom: 16px;
+}
+.p-cta:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(167,139,250,0.5); }
+.p-cta-arrow { font-size: 20px; }
+.p-guarantee { font-size: 13px; color: var(--text2); text-align: center; }
