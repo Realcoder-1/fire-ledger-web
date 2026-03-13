@@ -15,9 +15,7 @@ export default function Landing() {
     <div className="landing">
       <nav className="nav">
         <div className="nav-logo">FIRE<span>Ledger</span></div>
-        <button className="nav-cta" onClick={handleStart}>
-          {user ? 'Open App' : 'Get Started Free'}
-        </button>
+        <button className="nav-cta" onClick={handleStart}>Get Started →</button>
       </nav>
 
       <section className="hero">
@@ -39,22 +37,22 @@ export default function Landing() {
           </p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={handleStart}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M9 1.5C4.86 1.5 1.5 4.86 1.5 9C1.5 13.14 4.86 16.5 9 16.5C13.14 16.5 16.5 13.14 16.5 9C16.5 4.86 13.14 1.5 9 1.5Z" fill="white" fillOpacity="0.2"/>
-                <path d="M7.125 6L11.625 9L7.125 12V6Z" fill="white"/>
-              </svg>
-              Start Tracking Free
+              Start My FIRE Journey →
             </button>
-            <button className="btn-ghost" onClick={() => document.getElementById('pricing').scrollIntoView({behavior:'smooth'})}>
-              See Pricing
-            </button>
+          </div>
+          <div className="hero-trust">
+            <span>🔒 Secure checkout</span>
+            <span>·</span>
+            <span>7-day money back guarantee</span>
+            <span>·</span>
+            <span>Cancel anytime</span>
           </div>
           <div className="hero-stats">
             <div className="stat"><span className="stat-num">4%</span><span className="stat-label">Safe withdrawal rule</span></div>
             <div className="stat-div" />
             <div className="stat"><span className="stat-num">25×</span><span className="stat-label">Your FIRE number</span></div>
             <div className="stat-div" />
-            <div className="stat"><span className="stat-num">∞</span><span className="stat-label">Years reclaimed</span></div>
+            <div className="stat"><span className="stat-num">$4.99</span><span className="stat-label">Per month</span></div>
           </div>
         </div>
         <div className="hero-mockup">
@@ -119,48 +117,37 @@ export default function Landing() {
       </section>
 
       <section className="pricing" id="pricing">
-        <h2 className="section-title">Simple pricing.<br/>Serious results.</h2>
-        <div className="pricing-grid">
-          <div className="pricing-card">
-            <div className="pricing-tier">Free</div>
-            <div className="pricing-price">$0<span>/mo</span></div>
-            <ul className="pricing-features">
-              <li>✓ Transaction logging</li>
-              <li>✓ Basic FIRE calculation</li>
-              <li>✓ 3 months history</li>
-              <li>✓ Needs vs Wants split</li>
-              <li className="disabled">✗ Full history</li>
-              <li className="disabled">✗ Advanced insights</li>
-              <li className="disabled">✗ CSV export</li>
-            </ul>
-            <button className="btn-outline" onClick={handleStart}>Start Free</button>
-          </div>
+        <h2 className="section-title">One plan.<br/>Everything included.</h2>
+        <div className="single-pricing">
           <div className="pricing-card featured">
-            <div className="pricing-badge">Most Popular</div>
-            <div className="pricing-tier">Pro</div>
-            <div className="pricing-price">$4.99<span>/mo</span></div>
+            <div className="pricing-tier">FIRE Ledger Pro</div>
+            <div className="pricing-options">
+              <div className="price-option">
+                <span className="price-amount">$4.99</span>
+                <span className="price-period">/month</span>
+              </div>
+              <div className="price-divider">or</div>
+              <div className="price-option">
+                <span className="price-amount">$39.99</span>
+                <span className="price-period">/year</span>
+                <span className="price-save">Save 33%</span>
+              </div>
+            </div>
             <ul className="pricing-features">
-              <li>✓ Everything in Free</li>
-              <li>✓ Unlimited history</li>
-              <li>✓ Advanced FIRE insights</li>
-              <li>✓ CSV export</li>
-              <li>✓ Recurring transactions</li>
+              <li>✓ Unlimited transaction history</li>
+              <li>✓ Real-time FIRE calculator</li>
+              <li>✓ Needs vs Wants breakdown</li>
+              <li>✓ Advanced insights & savings rate</li>
+              <li>✓ Recurring transaction tracking</li>
               <li>✓ Custom categories</li>
-              <li>✓ Priority support</li>
-            </ul>
-            <button className="btn-primary" onClick={handleStart}>Go Pro</button>
-          </div>
-          <div className="pricing-card">
-            <div className="pricing-tier">Annual</div>
-            <div className="pricing-price">$39.99<span>/yr</span></div>
-            <div className="pricing-save">Save 33%</div>
-            <ul className="pricing-features">
-              <li>✓ Everything in Pro</li>
-              <li>✓ Best value</li>
-              <li>✓ Early access features</li>
+              <li>✓ CSV data export</li>
               <li>✓ Android app included</li>
+              <li>✓ 7-day money back guarantee</li>
             </ul>
-            <button className="btn-outline" onClick={handleStart}>Go Annual</button>
+            <button className="btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={handleStart}>
+              Start My FIRE Journey →
+            </button>
+            <p style={{textAlign:'center',fontSize:13,color:'#8888aa',marginTop:12}}>Cancel anytime · No hidden fees</p>
           </div>
         </div>
       </section>
@@ -170,6 +157,8 @@ export default function Landing() {
         <p>Built for people who want to retire early, not just dream about it.</p>
         <div className="footer-links">
           <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Service</a>
+          <a href="/refund">Refund Policy</a>
           <a href="mailto:support@fireledger.app">Contact</a>
         </div>
       </footer>
