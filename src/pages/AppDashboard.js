@@ -92,13 +92,8 @@ function updateStageBar() {
 }
 
 // ── Modal: open / close ──
-function openModal() {
-  document.getElementById('modal').style.display = 'flex';
-}
 
-function closeModal() {
-  document.getElementById('modal').style.display = 'none';
-}
+ 
 
 document.addEventListener('DOMContentLoaded', () => {
   const modalBg = document.getElementById('modal');
@@ -110,27 +105,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Modal: transaction type toggle ──
-function setType(btn, type) {
-  document.querySelectorAll('.type-btn').forEach(b => b.className = 'type-btn');
-  btn.className = 'type-btn active-' + type;
-
-  const labels = { income: 'Income', need: 'Need', want: 'Want', saving: 'Saving' };
-  const submitBtn = document.querySelector('.submit-btn');
-  if (submitBtn) submitBtn.textContent = 'Log ' + labels[type];
-}
 
 // ── Month navigation ──
 let selMonth = new Date().getMonth();
 let selYear  = new Date().getFullYear();
 const MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-function navMonth(dir) {
-  selMonth += dir;
-  if (selMonth < 0)  { selMonth = 11; selYear--; }
-  if (selMonth > 11) { selMonth = 0;  selYear++; }
-
-  const label = document.querySelector('.month-nav span');
-  if (label) label.textContent = MONTHS[selMonth] + ' ' + selYear;
 
   // Hook: re-filter your transactions here
   // filterTransactionsByMonth(selMonth, selYear);
