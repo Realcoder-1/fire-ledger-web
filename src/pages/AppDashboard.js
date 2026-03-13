@@ -114,19 +114,39 @@ const loadPdfJs = () => new Promise((resolve, reject) => {
   document.head.appendChild(script);
 });
 
-const extractPdfText = async (arrayBuffer) => {
+const extractPdfText = async (arrayBuffer) => const extractPdfText = async (arrayBuffer) => {
   const pdfjsLib = await loadPdfJs();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
   let fullText = '';
+
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
+
     const lines = {};
-    content.items.forEach(item => {
+
+    for (const item of content.items) {
       const y = Math.round(item.transform[5]);
-      if (!lines[y]) lines[y] = [];
+
+      if (!lines[y]) {
+        lines[y] = [];
+      }
+
       lines[y].push(item.str);
-    });
+    }
+
+    const sortedKeys = Object.keys(lines)
+      .map(Number)
+      .sort((a, b) => b - a);
+
+    for (const y of sortedKeys) {
+      fullText += lines[y].join('\t') + '\n';
+    }
+  }
+
+  return fullText;
+};);
     Object.keys(lines).map(Number).sort((a,b)=>b-a)
       .forEach(y => { fullText += lines[y].join('\t') + '\n'; });
   }
@@ -136,8 +156,8 @@ const extractPdfText = async (arrayBuffer) => {
 const parsePdfStatement = (text) => {
   const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
   const rows = [];
-  const dateRe = /(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}[\/-]\d{2}[\/-]\d{2}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{2,4})/i;
-  const amtRe  = /(?:[-+]?\s*[$₹€£]?\s*[\d,]+\.?\d{0,2})/g;
+const dateRe = /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{2}[/-]\d{2}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{2,4})/i;
+const amtRe = /[-+]?\s*[$₹€£]?\s*[\d,]+\.?\d{0,2}/g;
   const monthMap={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
 
   lines.forEach(line => {
@@ -156,7 +176,7 @@ const parsePdfStatement = (text) => {
       const yr = mParts[3].length===2?'20'+mParts[3]:mParts[3];
       date = `${yr}-${monthMap[mParts[2].toLowerCase().slice(0,3)]||'01'}-${mParts[1].padStart(2,'0')}`;
     } else {
-      const dp = date.match(/(\d{1,4})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+      const dp = date.match(/(\d{1,4})[/-](\d{1,2})[/-](\d{2,4})/);
       if (dp){const[,a,b,c]=dp; if(a.length===4)date=`${a}-${b.padStart(2,'0')}-${c.padStart(2,'0')}`; else date=`${c.length===2?'20'+c:c}-${a.padStart(2,'0')}-${b.padStart(2,'0')}`;}
     }
     if (isNaN(new Date(date).getTime())) date=new Date().toISOString().split('T')[0];
@@ -198,7 +218,7 @@ export default function AppDashboard() {
   const [milestone, setMilestone]         = useState(null);
   const [rawAmountInput, setRawAmountInput] = useState('');
   const [form, setForm] = useState({ amount:'', description:'', type:'need', category:'', date:new Date().toISOString().split('T')[0], recurring:false });
-  const addAmtRef    = useRef(null);
+
   const fileInputRef = useRef(null);
   const userId = user?.id;
 
