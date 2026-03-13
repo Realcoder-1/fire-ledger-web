@@ -13,8 +13,8 @@ export function AuthProvider({ children }) {
       .from('subscriptions')
       .select('status')
       .eq('user_id', userId)
-      .eq('status', 'active')
-      .single();
+      .in('status', ['active', 'trialing'])
+      .maybeSingle();
     setHasSubscription(!!data);
   };
 
@@ -49,4 +49,3 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
