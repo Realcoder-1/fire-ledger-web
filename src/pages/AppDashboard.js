@@ -19,6 +19,7 @@ function calcFIRE(annualExp, annualSav, currentSav) {
 
 const fmt = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}).format(n);
 const fmtD = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+// eslint-disable-next-line no-unused-vars
 const TCOLOR = { income:'var(--income)', need:'var(--need)', want:'var(--want)', saving:'var(--saving)' };
 const TLABEL = { income:'Income', need:'Need', want:'Want', saving:'Saving' };
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -190,15 +191,6 @@ export default function AppDashboard() {
     setShowAdd(false);
   };
 
-  // Handle Enter key in the log modal
-  const handleModalKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      addTx();
-    }
-    if (e.key === 'Escape') setShowAdd(false);
-  };
-
   const deleteTx = async (id) => {
     await supabase.from('transactions').delete().eq('id',id);
     setTxs(p=>p.filter(t=>t.id!==id));
@@ -287,16 +279,9 @@ export default function AppDashboard() {
   const filtered= filterType==='all' ? txs : txs.filter(t=>t.type===filterType);
   const gr      = parseFloat(savRate);
   const grade   = gr>=60?'A+':gr>=50?'A':gr>=40?'B':gr>=30?'C':'D';
-  const gradeCl = gr>=50?'var(--income)':gr>=35?'var(--saving)':'var(--need)';
+  const gradeCl = gr>=50?'var(--income)':gr>=35?'var(--amber)':'var(--red)';
   const isCurMo = selMonth===now.getMonth()&&selYear===now.getFullYear();
   const navMo   = dir=>{ let m=selMonth+dir,y=selYear; if(m<0){m=11;y--;}else if(m>11){m=0;y++;} setSelMonth(m);setSelYear(y); };
-
-  // Color logic: income=green, savings=gold, deductions=red
-  const txColor = (type) => {
-    if (type === 'income') return 'var(--income)';
-    if (type === 'saving') return 'var(--saving)';
-    return 'var(--need)'; // need + want both red
-  };
 
   if (loading) return (
     <div className="fl-loading">
@@ -333,9 +318,9 @@ export default function AppDashboard() {
               </p>
               {importPreview.map((t,i)=>(
                 <div key={i} className="fl-tx-card">
-                  <div className="fl-tx-card-badge" style={{background:txColor(t.type)+'22',color:txColor(t.type)}}>{TLABEL[t.type]}</div>
+                  <div className="fl-tx-card-badge" style={{background:TCOLOR[t.type]+'22',color:TCOLOR[t.type]}}>{TLABEL[t.type]}</div>
                   <div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.date} {t.category && `· ${t.category}`}</span></div>
-                  <span className="fl-tx-card-amount" style={{color:txColor(t.type)}}>{fmtD(t.amount)}</span>
+                  <span className="fl-tx-card-amount" style={{color:TCOLOR[t.type]}}>{fmtD(t.amount)}</span>
                 </div>
               ))}
               {importPreview.length===0 && <p style={{color:'var(--t2)',fontSize:12.5}}>No valid rows found.</p>}
@@ -391,7 +376,7 @@ export default function AppDashboard() {
                 <svg viewBox="0 0 140 140" className="fl-fire-ring">
                   <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="11"/>
                   <circle cx="70" cy="70" r="56" fill="none" stroke="url(#hg)" strokeWidth="11" strokeDasharray="352" strokeDashoffset={352-(352*fc.progress/100)} strokeLinecap="round" transform="rotate(-90 70 70)"/>
-                  <defs><linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--saving)"/><stop offset="100%" stopColor="var(--gold2)"/></linearGradient></defs>
+                  <defs><linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--amber)"/><stop offset="100%" stopColor="var(--orange)"/></linearGradient></defs>
                 </svg>
                 <div className="fl-ring-center"><span className="fl-ring-pct">{fc.progress.toFixed(0)}%</span><span className="fl-ring-sub">to FIRE</span></div>
               </div>
@@ -416,9 +401,9 @@ export default function AppDashboard() {
             <div className="fl-tx-list">
               {txs.slice(0,8).map(t=>(
                 <div key={t.id} className="fl-tx-row">
-                  <div className="fl-tx-type-dot" style={{background:txColor(t.type)}}/>
+                  <div className="fl-tx-type-dot" style={{background:TCOLOR[t.type]}}/>
                   <div className="fl-tx-body"><span className="fl-tx-desc">{t.description}</span><span className="fl-tx-meta">{t.category||TLABEL[t.type]} · {t.date}</span></div>
-                  <span className="fl-tx-amount" style={{color:txColor(t.type)}}>{t.type==='income'?'+':t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span>
+                  <span className="fl-tx-amount" style={{color:TCOLOR[t.type]}}>{t.type==='income'||t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span>
                 </div>
               ))}
               {txs.length===0&&<div className="fl-empty"><div className="fl-empty-icon">📝</div><p>No transactions yet</p><button className="fl-btn-primary" onClick={()=>setShowAdd(true)}>Log your first</button></div>}
@@ -439,15 +424,15 @@ export default function AppDashboard() {
             </div>
             <div className="fl-filter-row">
               {['all','income','need','want','saving'].map(f=>(
-                <button key={f} className={`fl-chip ${filterType===f?'active':''}`} style={filterType===f&&f!=='all'?{borderColor:txColor(f),color:txColor(f),background:txColor(f)+'18'}:{}} onClick={()=>setFilterType(f)}>{f==='all'?'All':TLABEL[f]}</button>
+                <button key={f} className={`fl-chip ${filterType===f?'active':''}`} style={filterType===f&&f!=='all'?{borderColor:TCOLOR[f],color:TCOLOR[f],background:TCOLOR[f]+'18'}:{}} onClick={()=>setFilterType(f)}>{f==='all'?'All':TLABEL[f]}</button>
               ))}
             </div>
             <div className="fl-tx-cards">
               {filtered.map(t=>(
                 <div key={t.id} className="fl-tx-card">
-                  <div className="fl-tx-card-badge" style={{background:txColor(t.type)+'1a',color:txColor(t.type)}}>{TLABEL[t.type]}</div>
+                  <div className="fl-tx-card-badge" style={{background:TCOLOR[t.type]+'1a',color:TCOLOR[t.type]}}>{TLABEL[t.type]}</div>
                   <div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.category&&`${t.category} · `}{t.date}{t.recurring?' · 🔄':''}</span></div>
-                  <span className="fl-tx-card-amount" style={{color:txColor(t.type)}}>{t.type==='income'||t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span>
+                  <span className="fl-tx-card-amount" style={{color:TCOLOR[t.type]}}>{t.type==='income'||t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span>
                   <button className="fl-tx-del" onClick={()=>deleteTx(t.id)}>×</button>
                 </div>
               ))}
@@ -491,7 +476,7 @@ export default function AppDashboard() {
                     <div key={r.label} className="fl-rule-row">
                       <span>{r.label}</span>
                       <div className="fl-rule-bar-track"><div className="fl-rule-bar-fill" style={{width:`${Math.min(r.actual,100)}%`,background:r.color}}/><div className="fl-rule-target" style={{left:`${r.target}%`}}/></div>
-                      <span style={{color:r.actual<=r.target+5?'var(--income)':'var(--need)',fontWeight:700,minWidth:34,textAlign:'right'}}>{r.actual.toFixed(0)}%</span>
+                      <span style={{color:r.actual<=r.target+5?'var(--income)':'var(--red)',fontWeight:700,minWidth:34,textAlign:'right'}}>{r.actual.toFixed(0)}%</span>
                     </div>
                   ))}
                 </div>
@@ -524,16 +509,16 @@ export default function AppDashboard() {
                 <div className="fl-whatif">
                   <h4>What if I saved more?</h4>
                   <div className="fl-whatif-row"><span style={{whiteSpace:'nowrap',minWidth:90}}>+{fmt(whatIf)}/mo</span><input type="range" min="0" max="2000" step="50" value={whatIf} onChange={e=>setWhatIf(parseInt(e.target.value))} className="fl-slider"/></div>
-                  {whatIf>0&&<div className="fl-whatif-result">Saves <strong style={{color:'var(--income)'}}>{Math.max(0,fc.years-fcWI.years)} years</strong> — retire in <strong style={{color:'var(--saving)'}}>{fcWI.years} yrs</strong></div>}
+                  {whatIf>0&&<div className="fl-whatif-result">Saves <strong style={{color:'var(--income)'}}>{Math.max(0,fc.years-fcWI.years)} years</strong> — retire in <strong style={{color:'var(--amber)'}}>{fcWI.years} yrs</strong></div>}
                 </div>
               </div>
               <div className="fl-fire-results">
                 <div className="fl-fire-big-ring">
-                  <svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="93" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16"/><circle cx="110" cy="110" r="93" fill="none" stroke="url(#fg2)" strokeWidth="16" strokeDasharray="585" strokeDashoffset={585-(585*fc.progress/100)} strokeLinecap="round" transform="rotate(-90 110 110)"/><defs><linearGradient id="fg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--saving)"/><stop offset="100%" stopColor="var(--gold2)"/></linearGradient></defs></svg>
+                  <svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="93" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16"/><circle cx="110" cy="110" r="93" fill="none" stroke="url(#fg2)" strokeWidth="16" strokeDasharray="585" strokeDashoffset={585-(585*fc.progress/100)} strokeLinecap="round" transform="rotate(-90 110 110)"/><defs><linearGradient id="fg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--amber)"/><stop offset="100%" stopColor="var(--orange)"/></linearGradient></defs></svg>
                   <div className="fl-fire-big-center"><span className="fl-fire-big-pct">{fc.progress.toFixed(1)}%</span><span className="fl-fire-big-sub">to FIRE</span></div>
                 </div>
                 <div className="fl-fire-stat-grid">
-                  {[{label:'FIRE Number',value:fmt(fc.fireNum),hint:'25× expenses',color:'var(--saving)'},{label:'Years Away',value:fc.years===Infinity?'∞':fc.years,hint:'At 7% return',color:fc.years<=10?'var(--income)':fc.years<=20?'var(--saving)':'var(--need)'},{label:'Freedom Date',value:fireDate,hint:'Projected',color:'var(--purple)'},{label:'Gap',value:fmt(Math.max(0,fc.fireNum-fire.currentSavings)),hint:'Still needed',color:'var(--blue)'}].map((s,i)=>(
+                  {[{label:'FIRE Number',value:fmt(fc.fireNum),hint:'25× expenses',color:'var(--amber)'},{label:'Years Away',value:fc.years===Infinity?'∞':fc.years,hint:'At 7% return',color:fc.years<=10?'var(--income)':fc.years<=20?'var(--amber)':'var(--red)'},{label:'Freedom Date',value:fireDate,hint:'Projected',color:'var(--purple)'},{label:'Gap',value:fmt(Math.max(0,fc.fireNum-fire.currentSavings)),hint:'Still needed',color:'var(--blue)'}].map((s,i)=>(
                     <div key={i} className="fl-fire-stat"><span className="fl-fire-stat-label">{s.label}</span><span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label==='Freedom Date'?16:20}}>{s.value}</span><span className="fl-fire-stat-hint">{s.hint}</span></div>
                   ))}
                 </div>
@@ -617,27 +602,27 @@ export default function AppDashboard() {
 
       {showAdd && (
         <div className="fl-overlay" onClick={()=>setShowAdd(false)}>
-          <div className="fl-modal" onClick={e=>e.stopPropagation()} onKeyDown={handleModalKeyDown}>
+          <div className="fl-modal" onClick={e=>e.stopPropagation()}>
             <div className="fl-modal-header"><h2>Log Transaction</h2><button className="fl-modal-close" onClick={()=>setShowAdd(false)}>×</button></div>
             <div className="fl-modal-body">
               <div className="fl-type-row">
                 {['income','need','want','saving'].map(t=>(
-                  <button key={t} className={`fl-type-btn ${form.type===t?'active':''}`} style={form.type===t?{background:txColor(t)+'1a',borderColor:txColor(t),color:txColor(t)}:{}} onClick={()=>setForm(p=>({...p,type:t}))}>{TLABEL[t]}</button>
+                  <button key={t} className={`fl-type-btn ${form.type===t?'active':''}`} style={form.type===t?{background:TCOLOR[t]+'1a',borderColor:TCOLOR[t],color:TCOLOR[t]}:{}} onClick={()=>setForm(p=>({...p,type:t}))}>{TLABEL[t]}</button>
                 ))}
               </div>
               <div className="fl-quick-amounts">{QAMTS.map(a=><button key={a} className="fl-quick-amt" onClick={()=>setForm(p=>({...p,amount:a.toString()}))}>${a}</button>)}</div>
               <div className="fl-amount-input-wrap">
                 <span className="fl-amount-prefix">$</span>
-                <input ref={addAmtRef} className="fl-amount-input" type="number" placeholder="0.00" value={form.amount} onChange={e=>setForm(p=>({...p,amount:e.target.value}))} onKeyDown={handleModalKeyDown}/>
+                <input ref={addAmtRef} className="fl-amount-input" type="number" placeholder="0.00" value={form.amount} onChange={e=>setForm(p=>({...p,amount:e.target.value}))}/>
               </div>
-              <input className="fl-field-input" placeholder="Description" value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} onKeyDown={handleModalKeyDown}/>
+              <input className="fl-field-input" placeholder="Description" value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))}/>
               <select className="fl-field-input" value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))}>
                 <option value="">Category (optional)</option>
                 {(cats[form.type==='need'?'needs':form.type==='want'?'wants':form.type==='saving'?'savings':null]||[]).map(c=><option key={c} value={c}>{c}</option>)}
               </select>
               <input className="fl-field-input" type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))}/>
               <label className="fl-recurring-label"><input type="checkbox" checked={form.recurring} onChange={e=>setForm(p=>({...p,recurring:e.target.checked}))}/> Mark as recurring</label>
-              <button className="fl-btn-primary" style={{width:'100%',marginTop:2}} onClick={addTx}>Log {TLABEL[form.type]} <span style={{opacity:0.6,fontSize:11,fontWeight:400}}>or press Enter</span></button>
+              <button className="fl-btn-primary" style={{width:'100%',marginTop:2}} onClick={addTx}>Log {TLABEL[form.type]}</button>
             </div>
           </div>
         </div>
@@ -645,3 +630,4 @@ export default function AppDashboard() {
     </div>
   );
 }
+
