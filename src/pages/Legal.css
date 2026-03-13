@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+.legal-page {
+  background: #08080f;
+  color: #f0f0f8;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  padding: 60px 24px;
+}
+
+.legal-container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.legal-back {
+  display: inline-block;
+  color: #8888aa;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 40px;
+  transition: color 0.15s;
+}
+.legal-back:hover { color: #a78bfa; }
+
+.legal-page h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  margin-bottom: 8px;
+}
+
+.legal-date {
+  color: #8888aa;
+  font-size: 14px;
+  margin-bottom: 48px;
+}
+
+.legal-page h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 32px 0 12px;
+  color: #f0f0f8;
+}
+
+.legal-page p {
+  font-size: 15px;
+  color: #aaaacc;
+  line-height: 1.8;
+}

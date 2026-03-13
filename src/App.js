@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Landing from './pages/Landing';
 import AppDashboard from './pages/AppDashboard';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Refund from './pages/Refund';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -15,6 +18,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={user ? <Navigate to="/app" /> : <Landing />} />
       <Route path="/app" element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/refund" element={<Refund />} />
     </Routes>
   );
 }
