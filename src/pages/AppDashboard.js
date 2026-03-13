@@ -1,457 +1,583 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import './App.css';
+import './AppDashboard.css';
 
-const DEFAULT_CATEGORIES = {
-  needs: ['Rent/Mortgage','Groceries','Utilities','Transport','Insurance','Healthcare'],
-  wants: ['Dining Out','Entertainment','Shopping','Subscriptions','Travel','Hobbies'],
-  savings: ['Investment','Emergency Fund','Retirement','Savings Account']
+const DEFAULT_CATS = {
+  needs: ['Rent','Groceries','Utilities','Transport','Insurance','Healthcare'],
+  wants: ['Dining','Entertainment','Shopping','Subscriptions','Travel','Hobbies'],
+  savings: ['Investments','Emergency Fund','Retirement','Savings']
 };
 
-const TABS = ['Home','Transactions','Insights','FIRE','Settings'];
-
-function calcFIRE(annualExpenses, annualSavings, currentSavings) {
-  const fireNumber = annualExpenses * 25;
-  if (annualSavings <= 0) return { fireNumber, years: Infinity, progress: 0 };
+function calcFIRE(annualExp, annualSav, currentSav) {
+  const fireNum = annualExp * 25;
+  if (annualSav <= 0) return { fireNum, years: Infinity, progress: 0, monthlyNeeded: 0 };
   const r = 0.07;
-  let years = 0, balance = currentSavings;
-  while (balance < fireNumber && years < 100) {
-    balance = balance * (1 + r) + annualSavings;
-    years++;
-  }
-  const progress = Math.min((currentSavings / fireNumber) * 100, 100);
-  return { fireNumber, years, progress };
+  let years = 0, bal = currentSav;
+  while (bal < fireNum && years < 100) { bal = bal * (1 + r) + annualSav; years++; }
+  const progress = Math.min((currentSav / fireNum) * 100, 100);
+  const monthlyNeeded = (fireNum - currentSav) / (years * 12);
+  return { fireNum, years, progress, monthlyNeeded };
 }
+
+function fmt(n) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
+function fmtD(n) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n); }
+
+const TYPE_COLOR = { income: '#4ade80', need: '#f87171', want: '#fb923c', saving: '#60a5fa' };
+const TYPE_LABEL = { income: 'Income', need: 'Need', want: 'Want', saving: 'Saving' };
 
 export default function AppDashboard() {
   const { user, signOut } = useAuth();
-  const [tab, setTab] = useState('Home');
-  const [transactions, setTransactions] = useState([]);
+  const [tab, setTab] = useState('home');
+  const [txs, setTxs] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [fireSettings, setFireSettings] = useState({ annualExpenses: 40000, annualSavings: 20000, currentSavings: 50000 });
-  const [customCategories, setCustomCategories] = useState(DEFAULT_CATEGORIES);
-  const [newCat, setNewCat] = useState({ type: 'needs', name: '' });
-  const [form, setForm] = useState({ amount: '', description: '', type: 'need', category: '', date: new Date().toISOString().split('T')[0], recurring: false });
-  const [filterType, setFilterType] = useState('all');
+  const [showOnboard, setShowOnboard] = useState(false);
+  const [onboardStep, setOnboardStep] = useState(0);
+  const [fire, setFireSettings] = useState({ annualExpenses: 40000, annualSavings: 20000, currentSavings: 50000 });
+  const [cats, setCats] = useState(DEFAULT_CATS);
   const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState('all');
+  const [toast, setToast] = useState(null);
+  const [form, setForm] = useState({ amount: '', description: '', type: 'need', category: '', date: new Date().toISOString().split('T')[0], recurring: false });
+  const [whatIf, setWhatIf] = useState(0);
+  const addAmtRef = useRef(null);
 
   const userId = user?.id;
 
-  const loadData = useCallback(async () => {
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const load = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
-    const [txRes, settingsRes] = await Promise.all([
+    const [txRes, setRes] = await Promise.all([
       supabase.from('transactions').select('*').eq('user_id', userId).order('date', { ascending: false }),
       supabase.from('user_settings').select('*').eq('user_id', userId).single()
     ]);
-    if (txRes.data) setTransactions(txRes.data);
-    if (settingsRes.data) {
-      if (settingsRes.data.fire_settings) setFireSettings(settingsRes.data.fire_settings);
-      if (settingsRes.data.custom_categories) setCustomCategories(settingsRes.data.custom_categories);
+    if (txRes.data) setTxs(txRes.data);
+    if (setRes.data) {
+      if (setRes.data.fire_settings) setFireSettings(setRes.data.fire_settings);
+      if (setRes.data.custom_categories) setCats(setRes.data.custom_categories);
+    } else {
+      setShowOnboard(true);
     }
     setLoading(false);
   }, [userId]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { load(); }, [load]);
 
   const saveSettings = async (fs, cc) => {
     await supabase.from('user_settings').upsert({
       user_id: userId,
-      fire_settings: fs || fireSettings,
-      custom_categories: cc || customCategories,
+      fire_settings: fs || fire,
+      custom_categories: cc || cats,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
   };
 
-  const addTransaction = async () => {
+  const addTx = async () => {
     if (!form.amount || !form.description) return;
     const tx = { user_id: userId, amount: parseFloat(form.amount), description: form.description, type: form.type, category: form.category, date: form.date, recurring: form.recurring };
     const { data } = await supabase.from('transactions').insert(tx).select().single();
-    if (data) setTransactions(prev => [data, ...prev]);
+    if (data) {
+      setTxs(p => [data, ...p]);
+      showToast(`${TYPE_LABEL[form.type]} logged ✓`);
+    }
     setForm({ amount: '', description: '', type: 'need', category: '', date: new Date().toISOString().split('T')[0], recurring: false });
     setShowAdd(false);
   };
 
-  const deleteTransaction = async (id) => {
+  const deleteTx = async (id) => {
     await supabase.from('transactions').delete().eq('id', id);
-    setTransactions(prev => prev.filter(t => t.id !== id));
+    setTxs(p => p.filter(t => t.id !== id));
+    showToast('Deleted', 'error');
   };
 
   const exportCSV = () => {
-    const rows = [['Date','Description','Type','Category','Amount','Recurring'],...transactions.map(t=>[t.date,t.description,t.type,t.category,t.amount,t.recurring])];
-    const csv = rows.map(r=>r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'fire-ledger.csv'; a.click();
+    const rows = [['Date','Description','Type','Category','Amount','Recurring'], ...txs.map(t => [t.date, t.description, t.type, t.category, t.amount, t.recurring])];
+    const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'fire-ledger.csv'; a.click();
+    showToast('CSV exported ✓');
   };
 
-  // Computed
+  // Computed values
   const now = new Date();
-  const thisMonth = transactions.filter(t => new Date(t.date).getMonth() === now.getMonth() && new Date(t.date).getFullYear() === now.getFullYear());
-  const totalIncome = thisMonth.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const totalNeeds = thisMonth.filter(t => t.type === 'need').reduce((s, t) => s + t.amount, 0);
-  const totalWants = thisMonth.filter(t => t.type === 'want').reduce((s, t) => s + t.amount, 0);
-  const totalSavings = thisMonth.filter(t => t.type === 'saving').reduce((s, t) => s + t.amount, 0);
-  const savingsRate = totalIncome > 0 ? ((totalSavings / totalIncome) * 100).toFixed(1) : 0;
-  const fire = calcFIRE(fireSettings.annualExpenses, fireSettings.annualSavings, fireSettings.currentSavings);
-  const filtered = filterType === 'all' ? transactions : transactions.filter(t => t.type === filterType);
+  const thisMonth = txs.filter(t => { const d = new Date(t.date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+  const income = thisMonth.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const needs = thisMonth.filter(t => t.type === 'need').reduce((s, t) => s + t.amount, 0);
+  const wants = thisMonth.filter(t => t.type === 'want').reduce((s, t) => s + t.amount, 0);
+  const savings = thisMonth.filter(t => t.type === 'saving').reduce((s, t) => s + t.amount, 0);
+  const spent = needs + wants;
+  const savRate = income > 0 ? ((savings / income) * 100).toFixed(1) : 0;
+  const fireCalc = calcFIRE(fire.annualExpenses, fire.annualSavings, fire.currentSavings);
+  const fireWhatIf = calcFIRE(fire.annualExpenses, fire.annualSavings + (whatIf * 12), fire.currentSavings);
+  const today = txs.filter(t => t.date === now.toISOString().split('T')[0]);
+  const todaySpend = today.filter(t => t.type === 'need' || t.type === 'want').reduce((s, t) => s + t.amount, 0);
+  const streak = (() => { let s = 0; const d = new Date(); while(true) { const ds = d.toISOString().split('T')[0]; if (!txs.some(t => t.date === ds)) break; s++; d.setDate(d.getDate()-1); } return s; })();
+  const fireDate = fireCalc.years < 100 ? new Date(now.getFullYear() + fireCalc.years, now.getMonth()).toLocaleString('default', { month: 'long', year: 'numeric' }) : 'Keep going';
+  const filtered = filterType === 'all' ? txs : txs.filter(t => t.type === filterType);
+  const gradeRaw = parseFloat(savRate);
+  const grade = gradeRaw >= 60 ? 'A+' : gradeRaw >= 50 ? 'A' : gradeRaw >= 40 ? 'B' : gradeRaw >= 30 ? 'C' : 'D';
+  const gradeColor = gradeRaw >= 50 ? '#4ade80' : gradeRaw >= 35 ? '#fbbf24' : '#f87171';
 
-  const typeColor = { income: '#34d399', need: '#f87171', want: '#f472b6', saving: '#60a5fa' };
-  const typeLabel = { income: 'Income', need: 'Need', want: 'Want', saving: 'Saving' };
+  const QUICK_AMOUNTS = [10, 20, 50, 100];
 
-  if (loading) return <div className="app-loading"><div className="app-spinner" /><p>Loading your ledger...</p></div>;
+  if (loading) return (
+    <div className="fl-loading">
+      <div className="fl-logo-load">FL</div>
+      <div className="fl-spinner" />
+    </div>
+  );
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="sidebar-logo">FIRE<span>Ledger</span></div>
-        <nav className="sidebar-nav">
-          {TABS.map(t => (
-            <button key={t} className={`sidebar-tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
-              <span className="tab-icon">{{'Home':'⚡','Transactions':'📋','Insights':'📊','FIRE':'🔥','Settings':'⚙️'}[t]}</span>
-              {t}
+    <div className="fl-shell">
+      {/* TOAST */}
+      {toast && <div className={`fl-toast ${toast.type}`}>{toast.msg}</div>}
+
+      {/* ONBOARDING MODAL */}
+      {showOnboard && (
+        <div className="fl-overlay">
+          <div className="fl-onboard">
+            <div className="ob-progress">
+              {[0,1,2].map(i => <div key={i} className={`ob-dot ${onboardStep >= i ? 'active' : ''}`} />)}
+            </div>
+            {onboardStep === 0 && (
+              <div className="ob-step">
+                <div className="ob-icon">🔥</div>
+                <h2>Welcome to FIRE Ledger</h2>
+                <p>Let's set up your financial independence profile in 3 quick steps.</p>
+                <button className="fl-btn-primary" onClick={() => setOnboardStep(1)}>Let's go →</button>
+              </div>
+            )}
+            {onboardStep === 1 && (
+              <div className="ob-step">
+                <div className="ob-icon">💰</div>
+                <h2>Your Annual Expenses</h2>
+                <p>How much do you spend per year? This determines your FIRE number.</p>
+                <input className="fl-input-lg" type="number" placeholder="e.g. 40000"
+                  value={fire.annualExpenses || ''}
+                  onChange={e => setFireSettings(p => ({...p, annualExpenses: parseFloat(e.target.value)||0}))} />
+                <div className="ob-hint">Your FIRE number = {fmt(fire.annualExpenses * 25)}</div>
+                <button className="fl-btn-primary" onClick={() => setOnboardStep(2)}>Next →</button>
+              </div>
+            )}
+            {onboardStep === 2 && (
+              <div className="ob-step">
+                <div className="ob-icon">📈</div>
+                <h2>Your Savings</h2>
+                <p>How much do you save per year, and what have you saved so far?</p>
+                <input className="fl-input-lg" type="number" placeholder="Annual savings (e.g. 20000)"
+                  value={fire.annualSavings || ''}
+                  onChange={e => setFireSettings(p => ({...p, annualSavings: parseFloat(e.target.value)||0}))} />
+                <input className="fl-input-lg" type="number" placeholder="Current savings (e.g. 50000)"
+                  value={fire.currentSavings || ''}
+                  style={{marginTop:12}}
+                  onChange={e => setFireSettings(p => ({...p, currentSavings: parseFloat(e.target.value)||0}))} />
+                <button className="fl-btn-primary" style={{marginTop:16}} onClick={async () => {
+                  await saveSettings(fire, cats);
+                  setShowOnboard(false);
+                  showToast('Profile set up ✓');
+                }}>Start tracking →</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* SIDEBAR */}
+      <aside className="fl-sidebar">
+        <div className="fl-brand">
+          <span className="fl-brand-icon">🔥</span>
+          <span className="fl-brand-name">FIRELedger</span>
+        </div>
+        <nav className="fl-nav">
+          {[
+            { id: 'home', icon: '⚡', label: 'Dashboard' },
+            { id: 'transactions', icon: '📋', label: 'Transactions' },
+            { id: 'insights', icon: '📊', label: 'Insights' },
+            { id: 'fire', icon: '🔥', label: 'FIRE Calc' },
+            { id: 'settings', icon: '⚙️', label: 'Settings' },
+          ].map(t => (
+            <button key={t.id} className={`fl-nav-item ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
+              <span className="fl-nav-icon">{t.icon}</span>
+              <span>{t.label}</span>
+              {tab === t.id && <div className="fl-nav-indicator" />}
             </button>
           ))}
         </nav>
-        <div className="sidebar-user">
-          <div className="sidebar-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-          <div className="sidebar-email">{user?.email}</div>
-          <button className="sidebar-signout" onClick={signOut}>Sign out</button>
+        <div className="fl-sidebar-footer">
+          <div className="fl-user-chip">
+            <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
+            <div className="fl-user-info">
+              <span className="fl-user-email">{user?.email?.split('@')[0]}</span>
+              <span className="fl-user-plan">Pro</span>
+            </div>
+          </div>
+          <button className="fl-signout" onClick={signOut} title="Sign out">↗</button>
         </div>
       </aside>
 
-      <main className="app-main">
-        {/* HOME TAB */}
-        {tab === 'Home' && (
-          <div className="tab-content">
-            <div className="page-header">
+      {/* MAIN */}
+      <main className="fl-main">
+
+        {/* DASHBOARD */}
+        {tab === 'home' && (
+          <div className="fl-page">
+            <div className="fl-page-top">
               <div>
-                <h1 className="page-title">Good {now.getHours() < 12 ? 'morning' : now.getHours() < 17 ? 'afternoon' : 'evening'} 👋</h1>
-                <p className="page-sub">Here's your financial snapshot for {now.toLocaleString('default',{month:'long'})}</p>
+                <h1 className="fl-title">
+                  {now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening'}
+                </h1>
+                <p className="fl-subtitle">
+                  {todaySpend > 0 ? `You've spent ${fmtD(todaySpend)} today` : "No spending logged today"}
+                  {streak > 1 && <span className="fl-streak"> · 🔥 {streak}-day streak</span>}
+                </p>
               </div>
-              <button className="add-btn" onClick={() => setShowAdd(true)}>+ Add Transaction</button>
+              <button className="fl-add-fab" onClick={() => { setShowAdd(true); setTimeout(() => addAmtRef.current?.focus(), 100); }}>
+                <span>+</span> Log Transaction
+              </button>
             </div>
-            <div className="cards-grid">
-              <div className="metric-card income">
-                <div className="metric-label">Income</div>
-                <div className="metric-value">${totalIncome.toLocaleString()}</div>
-                <div className="metric-sub">This month</div>
+
+            {/* FIRE HERO CARD */}
+            <div className="fl-fire-hero">
+              <div className="fl-fire-hero-left">
+                <div className="fl-fire-label">Financial Independence</div>
+                <div className="fl-fire-years">
+                  {fireCalc.years === Infinity ? '∞' : fireCalc.years}
+                  <span className="fl-fire-years-unit">years away</span>
+                </div>
+                <div className="fl-fire-date">Projected freedom: <strong>{fireDate}</strong></div>
+                <div className="fl-fire-progress-bar">
+                  <div className="fl-fire-progress-fill" style={{width: `${fireCalc.progress}%`}} />
+                </div>
+                <div className="fl-fire-progress-label">{fireCalc.progress.toFixed(1)}% of {fmt(fireCalc.fireNum)} FIRE number</div>
               </div>
-              <div className="metric-card needs">
-                <div className="metric-label">Needs</div>
-                <div className="metric-value">${totalNeeds.toLocaleString()}</div>
-                <div className="metric-sub">{totalIncome > 0 ? ((totalNeeds/totalIncome)*100).toFixed(0) : 0}% of income</div>
-              </div>
-              <div className="metric-card wants">
-                <div className="metric-label">Wants</div>
-                <div className="metric-value">${totalWants.toLocaleString()}</div>
-                <div className="metric-sub">{totalIncome > 0 ? ((totalWants/totalIncome)*100).toFixed(0) : 0}% of income</div>
-              </div>
-              <div className="metric-card savings">
-                <div className="metric-label">Savings Rate</div>
-                <div className="metric-value">{savingsRate}%</div>
-                <div className="metric-sub">Target: 50%+</div>
+              <div className="fl-fire-hero-right">
+                <svg viewBox="0 0 140 140" className="fl-fire-ring">
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12"/>
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="url(#heroGrad)" strokeWidth="12"
+                    strokeDasharray="364" strokeDashoffset={364 - (364 * fireCalc.progress / 100)}
+                    strokeLinecap="round" transform="rotate(-90 70 70)"/>
+                  <defs>
+                    <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f59e0b"/>
+                      <stop offset="100%" stopColor="#ef4444"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="fl-ring-center">
+                  <span className="fl-ring-pct">{fireCalc.progress.toFixed(0)}%</span>
+                  <span className="fl-ring-sub">to FIRE</span>
+                </div>
               </div>
             </div>
-            <div className="home-bottom">
-              <div className="fire-preview-card">
-                <div className="fire-preview-header">
-                  <span>🔥 FIRE Progress</span>
-                  <button className="link-btn" onClick={() => setTab('FIRE')}>View details →</button>
-                </div>
-                <div className="fire-ring-wrap">
-                  <svg viewBox="0 0 120 120" className="fire-ring">
-                    <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10"/>
-                    <circle cx="60" cy="60" r="50" fill="none" stroke="url(#fg)" strokeWidth="10"
-                      strokeDasharray="314" strokeDashoffset={314 - (314 * fire.progress / 100)}
-                      strokeLinecap="round" transform="rotate(-90 60 60)"/>
-                    <defs><linearGradient id="fg" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/>
-                    </linearGradient></defs>
-                  </svg>
-                  <div className="fire-ring-inner">
-                    <span className="fire-pct">{fire.progress.toFixed(0)}%</span>
-                    <span className="fire-pct-sub">to FIRE</span>
+
+            {/* METRICS ROW */}
+            <div className="fl-metrics">
+              {[
+                { label: 'Income', value: fmt(income), sub: 'This month', color: '#4ade80', icon: '↑' },
+                { label: 'Spent', value: fmt(spent), sub: `${income > 0 ? ((spent/income)*100).toFixed(0) : 0}% of income`, color: '#f87171', icon: '↓' },
+                { label: 'Saved', value: fmt(savings), sub: `${savRate}% rate`, color: '#60a5fa', icon: '→' },
+                { label: 'Savings Grade', value: grade, sub: 'This month', color: gradeColor, icon: '★' },
+              ].map((m, i) => (
+                <div key={i} className="fl-metric-card" style={{'--accent': m.color}}>
+                  <div className="fl-metric-top">
+                    <span className="fl-metric-label">{m.label}</span>
+                    <span className="fl-metric-icon" style={{color: m.color}}>{m.icon}</span>
                   </div>
+                  <div className="fl-metric-value" style={{color: m.color}}>{m.value}</div>
+                  <div className="fl-metric-sub">{m.sub}</div>
                 </div>
-                <div className="fire-preview-stats">
-                  <div><span className="fps-label">Years away</span><span className="fps-val">{fire.years === Infinity ? '∞' : fire.years}</span></div>
-                  <div><span className="fps-label">FIRE number</span><span className="fps-val">${(fire.fireNumber/1000).toFixed(0)}k</span></div>
-                  <div><span className="fps-label">Saved</span><span className="fps-val">${(fireSettings.currentSavings/1000).toFixed(0)}k</span></div>
-                </div>
-              </div>
-              <div className="recent-card">
-                <div className="recent-header">
-                  <span>Recent Transactions</span>
-                  <button className="link-btn" onClick={() => setTab('Transactions')}>See all →</button>
-                </div>
-                {transactions.slice(0,6).map(t => (
-                  <div key={t.id} className="tx-row">
-                    <div className="tx-dot" style={{background: typeColor[t.type]}} />
-                    <div className="tx-info">
-                      <span className="tx-desc">{t.description}</span>
-                      <span className="tx-cat">{t.category || typeLabel[t.type]}</span>
-                    </div>
-                    <div className="tx-right">
-                      <span className="tx-amt" style={{color: t.type === 'income' || t.type === 'saving' ? typeColor[t.type] : typeColor[t.type]}}>
-                        {t.type === 'income' || t.type === 'saving' ? '+' : '-'}${t.amount.toLocaleString()}
-                      </span>
-                      <span className="tx-date">{t.date}</span>
-                    </div>
+              ))}
+            </div>
+
+            {/* RECENT TRANSACTIONS */}
+            <div className="fl-section-header">
+              <h2 className="fl-section-title">Recent</h2>
+              <button className="fl-link-btn" onClick={() => setTab('transactions')}>View all →</button>
+            </div>
+            <div className="fl-tx-list">
+              {txs.slice(0, 8).map(t => (
+                <div key={t.id} className="fl-tx-row">
+                  <div className="fl-tx-type-dot" style={{background: TYPE_COLOR[t.type]}} />
+                  <div className="fl-tx-body">
+                    <span className="fl-tx-desc">{t.description}</span>
+                    <span className="fl-tx-meta">{t.category || TYPE_LABEL[t.type]} · {t.date}</span>
                   </div>
-                ))}
-                {transactions.length === 0 && <p className="empty-state">No transactions yet. Add your first one!</p>}
-              </div>
+                  <span className="fl-tx-amount" style={{color: TYPE_COLOR[t.type]}}>
+                    {t.type === 'income' || t.type === 'saving' ? '+' : '-'}{fmtD(t.amount)}
+                  </span>
+                </div>
+              ))}
+              {txs.length === 0 && (
+                <div className="fl-empty">
+                  <div className="fl-empty-icon">📝</div>
+                  <p>No transactions yet</p>
+                  <button className="fl-btn-primary" onClick={() => setShowAdd(true)}>Log your first transaction</button>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* TRANSACTIONS TAB */}
-        {tab === 'Transactions' && (
-          <div className="tab-content">
-            <div className="page-header">
+        {/* TRANSACTIONS */}
+        {tab === 'transactions' && (
+          <div className="fl-page">
+            <div className="fl-page-top">
               <div>
-                <h1 className="page-title">Transactions</h1>
-                <p className="page-sub">{transactions.length} total entries</p>
+                <h1 className="fl-title">Transactions</h1>
+                <p className="fl-subtitle">{txs.length} entries total</p>
               </div>
-              <div className="header-actions">
-                <button className="ghost-btn" onClick={exportCSV}>↓ Export CSV</button>
-                <button className="add-btn" onClick={() => setShowAdd(true)}>+ Add</button>
+              <div style={{display:'flex',gap:12}}>
+                <button className="fl-btn-ghost" onClick={exportCSV}>↓ Export</button>
+                <button className="fl-add-fab" onClick={() => setShowAdd(true)}>+ Add</button>
               </div>
             </div>
-            <div className="filter-row">
+            <div className="fl-filter-row">
               {['all','income','need','want','saving'].map(f => (
-                <button key={f} className={`filter-chip ${filterType === f ? 'active' : ''}`} onClick={() => setFilterType(f)}>
-                  {f === 'all' ? 'All' : typeLabel[f]}
+                <button key={f} className={`fl-chip ${filterType === f ? 'active' : ''}`}
+                  style={filterType === f && f !== 'all' ? {borderColor: TYPE_COLOR[f], color: TYPE_COLOR[f], background: TYPE_COLOR[f]+'18'} : {}}
+                  onClick={() => setFilterType(f)}>
+                  {f === 'all' ? 'All' : TYPE_LABEL[f]}
                 </button>
               ))}
             </div>
-            <div className="tx-list">
+            <div className="fl-tx-cards">
               {filtered.map(t => (
-                <div key={t.id} className="tx-card">
-                  <div className="tx-type-badge" style={{background: typeColor[t.type] + '22', color: typeColor[t.type]}}>{typeLabel[t.type]}</div>
-                  <div className="tx-card-info">
-                    <span className="tx-card-desc">{t.description}</span>
-                    <span className="tx-card-meta">{t.category} · {t.date} {t.recurring && '· 🔄 Recurring'}</span>
+                <div key={t.id} className="fl-tx-card">
+                  <div className="fl-tx-card-badge" style={{background: TYPE_COLOR[t.type]+'22', color: TYPE_COLOR[t.type]}}>{TYPE_LABEL[t.type]}</div>
+                  <div className="fl-tx-card-body">
+                    <span className="fl-tx-card-desc">{t.description}</span>
+                    <span className="fl-tx-card-meta">{t.category} · {t.date}{t.recurring ? ' · 🔄' : ''}</span>
                   </div>
-                  <span className="tx-card-amt" style={{color: typeColor[t.type]}}>
-                    {t.type === 'income' || t.type === 'saving' ? '+' : '-'}${t.amount.toLocaleString()}
+                  <span className="fl-tx-card-amount" style={{color: TYPE_COLOR[t.type]}}>
+                    {t.type === 'income' || t.type === 'saving' ? '+' : '-'}{fmtD(t.amount)}
                   </span>
-                  <button className="tx-delete" onClick={() => deleteTransaction(t.id)}>×</button>
+                  <button className="fl-tx-del" onClick={() => deleteTx(t.id)}>×</button>
                 </div>
               ))}
-              {filtered.length === 0 && <p className="empty-state">No transactions found.</p>}
+              {filtered.length === 0 && <div className="fl-empty"><div className="fl-empty-icon">🔍</div><p>No transactions found</p></div>}
             </div>
           </div>
         )}
 
-        {/* INSIGHTS TAB */}
-        {tab === 'Insights' && (
-          <div className="tab-content">
-            <div className="page-header">
+        {/* INSIGHTS */}
+        {tab === 'insights' && (
+          <div className="fl-page">
+            <div className="fl-page-top">
               <div>
-                <h1 className="page-title">Insights</h1>
-                <p className="page-sub">Your money patterns, simplified</p>
+                <h1 className="fl-title">Insights</h1>
+                <p className="fl-subtitle">Your money patterns this month</p>
               </div>
             </div>
-            <div className="insights-grid">
-              <div className="insight-card">
-                <h3>Monthly Breakdown</h3>
-                <div className="breakdown-bars">
+            <div className="fl-insights-grid">
+              <div className="fl-insight-card fl-insight-wide">
+                <h3>Monthly Overview</h3>
+                <div className="fl-overview-bars">
                   {[
-                    { label: 'Income', val: totalIncome, color: '#34d399' },
-                    { label: 'Needs', val: totalNeeds, color: '#f87171' },
-                    { label: 'Wants', val: totalWants, color: '#f472b6' },
-                    { label: 'Savings', val: totalSavings, color: '#60a5fa' },
+                    { label: 'Income', val: income, color: '#4ade80' },
+                    { label: 'Needs', val: needs, color: '#f87171' },
+                    { label: 'Wants', val: wants, color: '#fb923c' },
+                    { label: 'Savings', val: savings, color: '#60a5fa' },
                   ].map(b => (
-                    <div key={b.label} className="bar-row">
-                      <span className="bar-label">{b.label}</span>
-                      <div className="bar-track">
-                        <div className="bar-fill" style={{width: `${totalIncome > 0 ? Math.min((b.val/totalIncome)*100,100) : 0}%`, background: b.color}} />
+                    <div key={b.label} className="fl-bar-row">
+                      <span className="fl-bar-label">{b.label}</span>
+                      <div className="fl-bar-track">
+                        <div className="fl-bar-fill" style={{width: `${income > 0 ? Math.min((b.val/income)*100,100) : 0}%`, background: b.color}} />
                       </div>
-                      <span className="bar-val">${b.val.toLocaleString()}</span>
+                      <span className="fl-bar-val">{fmt(b.val)}</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="insight-card">
-                <h3>Savings Rate</h3>
-                <div className="big-metric">
-                  <span className="big-num" style={{color: parseFloat(savingsRate) >= 50 ? '#34d399' : parseFloat(savingsRate) >= 30 ? '#fbbf24' : '#f87171'}}>{savingsRate}%</span>
-                  <span className="big-label">{parseFloat(savingsRate) >= 50 ? '🔥 Excellent!' : parseFloat(savingsRate) >= 30 ? '👍 Good' : '📈 Keep pushing'}</span>
+
+              <div className="fl-insight-card">
+                <h3>Savings Grade</h3>
+                <div className="fl-grade-display">
+                  <span className="fl-grade-letter" style={{color: gradeColor}}>{grade}</span>
+                  <span className="fl-grade-rate">{savRate}% savings rate</span>
                 </div>
-                <div className="savings-tiers">
-                  <div className={`tier ${parseFloat(savingsRate) >= 20 ? 'reached' : ''}`}>20% — Basic FIRE path</div>
-                  <div className={`tier ${parseFloat(savingsRate) >= 40 ? 'reached' : ''}`}>40% — Accelerated FIRE</div>
-                  <div className={`tier ${parseFloat(savingsRate) >= 60 ? 'reached' : ''}`}>60% — Extreme FIRE</div>
+                <div className="fl-grade-tiers">
+                  {[{g:'A+',min:60},{g:'A',min:50},{g:'B',min:40},{g:'C',min:30},{g:'D',min:0}].map(t => (
+                    <div key={t.g} className={`fl-grade-tier ${parseFloat(savRate) >= t.min ? 'active' : ''}`}>
+                      <span>{t.g}</span><span>{t.min}%+</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="insight-card">
-                <h3>50/30/20 Rule</h3>
-                <div className="rule-check">
+
+              <div className="fl-insight-card">
+                <h3>50/30/20 Check</h3>
+                <div className="fl-rule-list">
                   {[
-                    { label: 'Needs (50%)', actual: totalIncome > 0 ? (totalNeeds/totalIncome)*100 : 0, target: 50, color: '#f87171' },
-                    { label: 'Wants (30%)', actual: totalIncome > 0 ? (totalWants/totalIncome)*100 : 0, target: 30, color: '#f472b6' },
-                    { label: 'Savings (20%)', actual: totalIncome > 0 ? (totalSavings/totalIncome)*100 : 0, target: 20, color: '#60a5fa' },
+                    { label: 'Needs', actual: income > 0 ? (needs/income)*100 : 0, target: 50, color: '#f87171' },
+                    { label: 'Wants', actual: income > 0 ? (wants/income)*100 : 0, target: 30, color: '#fb923c' },
+                    { label: 'Savings', actual: income > 0 ? (savings/income)*100 : 0, target: 20, color: '#60a5fa' },
                   ].map(r => (
-                    <div key={r.label} className="rule-row">
-                      <span className="rule-label">{r.label}</span>
-                      <span className="rule-actual" style={{color: r.actual <= r.target ? '#34d399' : '#f87171'}}>{r.actual.toFixed(0)}%</span>
-                      <span className={`rule-status`}>{r.actual <= r.target ? '✓' : '↑'}</span>
+                    <div key={r.label} className="fl-rule-row">
+                      <span>{r.label}</span>
+                      <div className="fl-rule-bar-track">
+                        <div className="fl-rule-bar-fill" style={{width:`${Math.min(r.actual,100)}%`, background: r.color}} />
+                        <div className="fl-rule-target" style={{left:`${r.target}%`}} />
+                      </div>
+                      <span style={{color: r.actual <= r.target + 5 ? '#4ade80' : '#f87171', fontWeight:600, minWidth:40}}>{r.actual.toFixed(0)}%</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="insight-card">
+
+              <div className="fl-insight-card">
                 <h3>Top Expenses</h3>
                 {Object.entries(
                   thisMonth.filter(t => t.type === 'need' || t.type === 'want')
-                    .reduce((acc, t) => { acc[t.category || t.type] = (acc[t.category || t.type] || 0) + t.amount; return acc; }, {})
+                    .reduce((a, t) => { a[t.category||t.type] = (a[t.category||t.type]||0)+t.amount; return a; }, {})
                 ).sort((a,b) => b[1]-a[1]).slice(0,5).map(([cat,amt]) => (
-                  <div key={cat} className="top-exp-row">
+                  <div key={cat} className="fl-top-exp">
                     <span>{cat}</span>
-                    <span style={{color:'#f87171'}}>${amt.toLocaleString()}</span>
+                    <div className="fl-top-exp-bar" style={{width:`${income>0?(amt/income)*100:0}%`}} />
+                    <span style={{color:'#f87171',fontWeight:600}}>{fmt(amt)}</span>
                   </div>
                 ))}
-                {thisMonth.filter(t => t.type === 'need' || t.type === 'want').length === 0 && <p className="empty-state">No expenses this month.</p>}
+                {thisMonth.filter(t=>t.type==='need'||t.type==='want').length===0 && <p className="fl-empty-sm">No expenses this month</p>}
               </div>
             </div>
           </div>
         )}
 
-        {/* FIRE TAB */}
-        {tab === 'FIRE' && (
-          <div className="tab-content">
-            <div className="page-header">
+        {/* FIRE */}
+        {tab === 'fire' && (
+          <div className="fl-page">
+            <div className="fl-page-top">
               <div>
-                <h1 className="page-title">🔥 FIRE Calculator</h1>
-                <p className="page-sub">Financial Independence, Retire Early</p>
+                <h1 className="fl-title">FIRE Calculator</h1>
+                <p className="fl-subtitle">Financial Independence, Retire Early</p>
               </div>
             </div>
-            <div className="fire-layout">
-              <div className="fire-settings-card">
-                <h3>Your FIRE Numbers</h3>
+            <div className="fl-fire-layout">
+              <div className="fl-fire-inputs">
+                <h3>Your Numbers</h3>
                 {[
-                  { key: 'annualExpenses', label: 'Annual Expenses ($)', hint: 'What you spend per year in retirement' },
-                  { key: 'annualSavings', label: 'Annual Savings ($)', hint: 'How much you save/invest per year' },
-                  { key: 'currentSavings', label: 'Current Savings ($)', hint: 'Your total invested/saved amount today' },
+                  { key: 'annualExpenses', label: 'Annual Expenses', hint: 'What you spend per year in retirement' },
+                  { key: 'annualSavings', label: 'Annual Savings', hint: 'How much you invest/save per year' },
+                  { key: 'currentSavings', label: 'Current Savings', hint: 'Total invested/saved today' },
                 ].map(f => (
-                  <div key={f.key} className="fire-field">
+                  <div key={f.key} className="fl-fire-field">
                     <label>{f.label}</label>
-                    <input
-                      type="number"
-                      value={fireSettings[f.key]}
-                      onChange={e => setFireSettings(prev => ({ ...prev, [f.key]: parseFloat(e.target.value) || 0 }))}
-                      className="fire-input"
-                    />
-                    <span className="fire-hint">{f.hint}</span>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">$</span>
+                      <input className="fl-fire-input" type="number"
+                        value={fire[f.key]}
+                        onChange={e => setFireSettings(p => ({...p, [f.key]: parseFloat(e.target.value)||0}))} />
+                    </div>
+                    <span className="fl-fire-hint">{f.hint}</span>
                   </div>
                 ))}
-                <button className="add-btn" style={{width:'100%',marginTop:8}} onClick={() => saveSettings(fireSettings, null)}>Save Settings</button>
-              </div>
-              <div className="fire-result-card">
-                <div className="fire-big-ring">
-                  <svg viewBox="0 0 200 200" style={{width:200,height:200}}>
-                    <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="16"/>
-                    <circle cx="100" cy="100" r="85" fill="none" stroke="url(#fg2)" strokeWidth="16"
-                      strokeDasharray="534" strokeDashoffset={534 - (534 * fire.progress / 100)}
-                      strokeLinecap="round" transform="rotate(-90 100 100)"/>
-                    <defs><linearGradient id="fg2" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/>
-                    </linearGradient></defs>
-                  </svg>
-                  <div className="fire-big-inner">
-                    <span className="fire-big-pct">{fire.progress.toFixed(1)}%</span>
-                    <span className="fire-big-sub">to FIRE</span>
-                  </div>
-                </div>
-                <div className="fire-result-stats">
-                  <div className="fire-stat-box">
-                    <span className="fsb-label">FIRE Number</span>
-                    <span className="fsb-val">${fire.fireNumber.toLocaleString()}</span>
-                    <span className="fsb-hint">25× annual expenses</span>
-                  </div>
-                  <div className="fire-stat-box">
-                    <span className="fsb-label">Years to FIRE</span>
-                    <span className="fsb-val" style={{color: fire.years <= 10 ? '#34d399' : fire.years <= 20 ? '#fbbf24' : '#f87171'}}>
-                      {fire.years === Infinity ? '∞' : fire.years}
-                    </span>
-                    <span className="fsb-hint">At 7% annual return</span>
-                  </div>
-                  <div className="fire-stat-box">
-                    <span className="fsb-label">FIRE Date</span>
-                    <span className="fsb-val" style={{fontSize:22}}>
-                      {fire.years === Infinity ? 'N/A' : new Date(now.getFullYear() + fire.years, now.getMonth()).toLocaleString('default',{month:'short',year:'numeric'})}
-                    </span>
-                    <span className="fsb-hint">Projected freedom date</span>
-                  </div>
-                  <div className="fire-stat-box">
-                    <span className="fsb-label">Gap Remaining</span>
-                    <span className="fsb-val">${Math.max(0, fire.fireNumber - fireSettings.currentSavings).toLocaleString()}</span>
-                    <span className="fsb-hint">Still needed</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                <button className="fl-btn-primary" style={{width:'100%'}} onClick={() => { saveSettings(fire, null); showToast('Settings saved ✓'); }}>
+                  Save Settings
+                </button>
 
-        {/* SETTINGS TAB */}
-        {tab === 'Settings' && (
-          <div className="tab-content">
-            <div className="page-header">
-              <h1 className="page-title">Settings</h1>
-            </div>
-            <div className="settings-grid">
-              <div className="settings-card">
-                <h3>Custom Categories</h3>
-                <div className="cat-section">
-                  {['needs','wants','savings'].map(type => (
-                    <div key={type} className="cat-group">
-                      <h4 style={{color: type==='needs'?'#f87171':type==='wants'?'#f472b6':'#60a5fa', textTransform:'capitalize', marginBottom:8}}>{type}</h4>
-                      <div className="cat-tags">
-                        {customCategories[type].map(cat => (
-                          <span key={cat} className="cat-tag">
-                            {cat}
-                            <button onClick={() => {
-                              const updated = { ...customCategories, [type]: customCategories[type].filter(c => c !== cat) };
-                              setCustomCategories(updated);
-                              saveSettings(null, updated);
-                            }}>×</button>
-                          </span>
-                        ))}
-                      </div>
+                <div className="fl-whatif">
+                  <h4>What if I saved more?</h4>
+                  <div className="fl-whatif-row">
+                    <span>+{fmt(whatIf)}/mo extra</span>
+                    <input type="range" min="0" max="2000" step="50" value={whatIf}
+                      onChange={e => setWhatIf(parseInt(e.target.value))} className="fl-slider" />
+                  </div>
+                  {whatIf > 0 && (
+                    <div className="fl-whatif-result">
+                      Saves you <strong style={{color:'#4ade80'}}>{fireCalc.years - fireWhatIf.years} years</strong> — retire in <strong style={{color:'#f59e0b'}}>{fireWhatIf.years} years</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="fl-fire-results">
+                <div className="fl-fire-big-ring">
+                  <svg viewBox="0 0 220 220">
+                    <circle cx="110" cy="110" r="95" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="18"/>
+                    <circle cx="110" cy="110" r="95" fill="none" stroke="url(#fireGrad2)" strokeWidth="18"
+                      strokeDasharray="597" strokeDashoffset={597-(597*fireCalc.progress/100)}
+                      strokeLinecap="round" transform="rotate(-90 110 110)"/>
+                    <defs>
+                      <linearGradient id="fireGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f59e0b"/>
+                        <stop offset="100%" stopColor="#ef4444"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="fl-fire-big-center">
+                    <span className="fl-fire-big-pct">{fireCalc.progress.toFixed(1)}%</span>
+                    <span className="fl-fire-big-sub">to FIRE</span>
+                  </div>
+                </div>
+                <div className="fl-fire-stat-grid">
+                  {[
+                    { label: 'FIRE Number', value: fmt(fireCalc.fireNum), hint: '25× annual expenses', color: '#f59e0b' },
+                    { label: 'Years to FIRE', value: fireCalc.years === Infinity ? '∞' : fireCalc.years, hint: 'At 7% annual return', color: fireCalc.years <= 10 ? '#4ade80' : fireCalc.years <= 20 ? '#fbbf24' : '#f87171' },
+                    { label: 'Freedom Date', value: fireDate, hint: 'Projected date', color: '#a78bfa' },
+                    { label: 'Gap Remaining', value: fmt(Math.max(0, fireCalc.fireNum - fire.currentSavings)), hint: 'Still needed', color: '#60a5fa' },
+                  ].map((s,i) => (
+                    <div key={i} className="fl-fire-stat">
+                      <span className="fl-fire-stat-label">{s.label}</span>
+                      <span className="fl-fire-stat-value" style={{color:s.color}}>{s.value}</span>
+                      <span className="fl-fire-stat-hint">{s.hint}</span>
                     </div>
                   ))}
                 </div>
-                <div className="add-cat-row">
-                  <select className="fire-input" value={newCat.type} onChange={e => setNewCat(p => ({...p, type: e.target.value}))}>
-                    <option value="needs">Needs</option>
-                    <option value="wants">Wants</option>
-                    <option value="savings">Savings</option>
-                  </select>
-                  <input className="fire-input" placeholder="Category name" value={newCat.name} onChange={e => setNewCat(p => ({...p, name: e.target.value}))} />
-                  <button className="add-btn" onClick={() => {
-                    if (!newCat.name.trim()) return;
-                    const updated = { ...customCategories, [newCat.type]: [...customCategories[newCat.type], newCat.name.trim()] };
-                    setCustomCategories(updated);
-                    saveSettings(null, updated);
-                    setNewCat(p => ({...p, name: ''}));
-                  }}>Add</button>
-                </div>
               </div>
-              <div className="settings-card">
+            </div>
+          </div>
+        )}
+
+        {/* SETTINGS */}
+        {tab === 'settings' && (
+          <div className="fl-page">
+            <div className="fl-page-top">
+              <h1 className="fl-title">Settings</h1>
+            </div>
+            <div className="fl-settings-grid">
+              <div className="fl-settings-card">
+                <h3>Custom Categories</h3>
+                {['needs','wants','savings'].map(type => (
+                  <div key={type} className="fl-cat-group">
+                    <h4 style={{color: type==='needs'?'#f87171':type==='wants'?'#fb923c':'#60a5fa'}}>
+                      {type.charAt(0).toUpperCase()+type.slice(1)}
+                    </h4>
+                    <div className="fl-cat-tags">
+                      {cats[type].map(cat => (
+                        <span key={cat} className="fl-cat-tag">
+                          {cat}
+                          <button onClick={() => {
+                            const u = {...cats, [type]: cats[type].filter(c=>c!==cat)};
+                            setCats(u); saveSettings(null,u);
+                          }}>×</button>
+                        </span>
+                      ))}
+                      <input className="fl-cat-add-input" placeholder="+ Add"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && e.target.value.trim()) {
+                            const u = {...cats, [type]: [...cats[type], e.target.value.trim()]};
+                            setCats(u); saveSettings(null,u); e.target.value='';
+                            showToast('Category added ✓');
+                          }
+                        }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="fl-settings-card">
                 <h3>Account</h3>
-                <div className="account-info">
-                  <div className="account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
+                <div className="fl-account-row">
+                  <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
                   <div>
-                    <div style={{fontWeight:600}}>{user?.email}</div>
-                    <div style={{fontSize:12,color:'var(--text2)',marginTop:4}}>Free Plan</div>
+                    <div style={{fontWeight:600,fontSize:15}}>{user?.email}</div>
+                    <div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>Pro Plan · Active</div>
                   </div>
                 </div>
-                <button className="ghost-btn" style={{marginTop:20,width:'100%'}} onClick={exportCSV}>Export All Data (CSV)</button>
-                <button className="danger-btn" style={{marginTop:12,width:'100%'}} onClick={signOut}>Sign Out</button>
+                <button className="fl-btn-ghost" style={{width:'100%',marginTop:20}} onClick={exportCSV}>↓ Export All Data (CSV)</button>
+                <button className="fl-btn-danger" style={{width:'100%',marginTop:12}} onClick={signOut}>Sign Out</button>
               </div>
             </div>
           </div>
@@ -460,51 +586,51 @@ export default function AppDashboard() {
 
       {/* ADD TRANSACTION MODAL */}
       {showAdd && (
-        <div className="modal-overlay" onClick={() => setShowAdd(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Add Transaction</h2>
-              <button className="modal-close" onClick={() => setShowAdd(false)}>×</button>
+        <div className="fl-overlay" onClick={() => setShowAdd(false)}>
+          <div className="fl-modal" onClick={e => e.stopPropagation()}>
+            <div className="fl-modal-header">
+              <h2>Log Transaction</h2>
+              <button className="fl-modal-close" onClick={() => setShowAdd(false)}>×</button>
             </div>
-            <div className="modal-body">
-              <div className="form-row">
-                <label>Type</label>
-                <div className="type-tabs">
-                  {['income','need','want','saving'].map(t => (
-                    <button key={t} className={`type-tab ${form.type === t ? 'active' : ''}`}
-                      style={form.type === t ? {background: typeColor[t] + '33', borderColor: typeColor[t], color: typeColor[t]} : {}}
-                      onClick={() => setForm(p => ({...p, type: t}))}>
-                      {typeLabel[t]}
-                    </button>
-                  ))}
-                </div>
+            <div className="fl-modal-body">
+              <div className="fl-type-row">
+                {['income','need','want','saving'].map(t => (
+                  <button key={t} className={`fl-type-btn ${form.type===t?'active':''}`}
+                    style={form.type===t ? {background:TYPE_COLOR[t]+'22',borderColor:TYPE_COLOR[t],color:TYPE_COLOR[t]} : {}}
+                    onClick={() => setForm(p=>({...p,type:t}))}>
+                    {TYPE_LABEL[t]}
+                  </button>
+                ))}
               </div>
-              <div className="form-row">
-                <label>Amount ($)</label>
-                <input className="fire-input" type="number" placeholder="0.00" value={form.amount} onChange={e => setForm(p => ({...p, amount: e.target.value}))} />
+              <div className="fl-quick-amounts">
+                {QUICK_AMOUNTS.map(a => (
+                  <button key={a} className="fl-quick-amt" onClick={() => setForm(p=>({...p,amount:a.toString()}))}>${a}</button>
+                ))}
               </div>
-              <div className="form-row">
-                <label>Description</label>
-                <input className="fire-input" placeholder="What was this for?" value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))} />
+              <div className="fl-amount-input-wrap">
+                <span className="fl-amount-prefix">$</span>
+                <input ref={addAmtRef} className="fl-amount-input" type="number" placeholder="0.00"
+                  value={form.amount} onChange={e => setForm(p=>({...p,amount:e.target.value}))} />
               </div>
-              <div className="form-row">
-                <label>Category</label>
-                <select className="fire-input" value={form.category} onChange={e => setForm(p => ({...p, category: e.target.value}))}>
-                  <option value="">Select category</option>
-                  {(customCategories[form.type === 'need' ? 'needs' : form.type === 'want' ? 'wants' : form.type === 'saving' ? 'savings' : null] || []).map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-row">
-                <label>Date</label>
-                <input className="fire-input" type="date" value={form.date} onChange={e => setForm(p => ({...p, date: e.target.value}))} />
-              </div>
-              <div className="form-row form-row-inline">
-                <label>Recurring?</label>
-                <input type="checkbox" checked={form.recurring} onChange={e => setForm(p => ({...p, recurring: e.target.checked}))} />
-              </div>
-              <button className="add-btn" style={{width:'100%',marginTop:8}} onClick={addTransaction}>Add Transaction</button>
+              <input className="fl-field-input" placeholder="Description" value={form.description}
+                onChange={e => setForm(p=>({...p,description:e.target.value}))} />
+              <select className="fl-field-input" value={form.category}
+                onChange={e => setForm(p=>({...p,category:e.target.value}))}>
+                <option value="">Select category</option>
+                {(cats[form.type==='need'?'needs':form.type==='want'?'wants':form.type==='saving'?'savings':null]||[]).map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <input className="fl-field-input" type="date" value={form.date}
+                onChange={e => setForm(p=>({...p,date:e.target.value}))} />
+              <label className="fl-recurring-label">
+                <input type="checkbox" checked={form.recurring}
+                  onChange={e => setForm(p=>({...p,recurring:e.target.checked}))} />
+                Recurring transaction
+              </label>
+              <button className="fl-btn-primary" style={{width:'100%',marginTop:8}} onClick={addTx}>
+                Log {TYPE_LABEL[form.type]}
+              </button>
             </div>
           </div>
         </div>
