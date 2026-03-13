@@ -114,7 +114,7 @@ const loadPdfJs = () => new Promise((resolve, reject) => {
   document.head.appendChild(script);
 });
 
-const extractPdfText = async (arrayBuffer) => const extractPdfText = async (arrayBuffer) => {
+const extractPdfText = async (arrayBuffer) => {
   const pdfjsLib = await loadPdfJs();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
@@ -145,11 +145,6 @@ const extractPdfText = async (arrayBuffer) => const extractPdfText = async (arra
     }
   }
 
-  return fullText;
-};);
-    Object.keys(lines).map(Number).sort((a,b)=>b-a)
-      .forEach(y => { fullText += lines[y].join('\t') + '\n'; });
-  }
   return fullText;
 };
 
