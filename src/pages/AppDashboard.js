@@ -109,7 +109,7 @@ function parseDateStr(raw) {
     return native.toISOString().split('T')[0];
   }
   // DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY etc
-  const m = s.match(/(\d{1,4})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+  const m = s.match(/(\d{1,4})[/.-]([\d]{1,2})[/.-](\d{2,4})/);
   if (m) {
     let [,a,b,cc] = m;
     const year = cc.length===2 ? '20'+cc : cc;
@@ -129,7 +129,7 @@ function parseDateStr(raw) {
 function parseAmount(raw) {
   if (!raw) return 0;
   // Remove currency symbols, spaces, commas — keep digits, dot, minus
-  const clean = raw.toString().replace(/[^0-9.\-]/g,'');
+  const clean = raw.toString().replace(/[^0-9.-]/g,'');
   return Math.abs(parseFloat(clean)) || 0;
 }
 
@@ -202,7 +202,7 @@ function smartParseCSV(text) {
     if (amtIdx !== -1) {
       const raw = get(amtIdx);
       // Negative amounts = expense, positive = income
-      const signed = parseFloat(raw.replace(/[^0-9.\-]/g,''));
+      const signed = parseFloat(raw.replace(/[^0-9.-]/g,''));
       amount = Math.abs(signed);
       if (!isNaN(signed) && signed > 0) type = 'income';
     } else if (debitIdx !== -1 || creditIdx !== -1) {
@@ -581,14 +581,14 @@ export default function AppDashboard() {
         const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
         // Extract lines that look like bank transactions: have a date + amount
         const txLines = lines.filter(l =>
-          /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/.test(l) && /\d+\.\d{2}/.test(l)
+          /\d{1,2}[/-]\d{1,2}[/-]\d{2,4}/.test(l) && /\d+\.\d{2}/.test(l)
         );
         if (txLines.length === 0) {
           showToast('PDF could not be read — please export as CSV from your bank instead', 'error');
           return;
         }
         const pseudoCSV = 'Date,Description,Amount\n' + txLines.map(l => {
-          const dateM = l.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/);
+          const dateM = l.match(/\d{1,2}[/-]\d{1,2}[/-]\d{2,4}/);
           const amtM  = l.match(/(\d[\d,]*\.\d{2})/g);
           const date  = dateM ? dateM[0] : '';
           const amount = amtM ? amtM[amtM.length-1].replace(/,/g,'') : '0';
