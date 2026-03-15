@@ -525,10 +525,10 @@ export default function AppDashboard() {
     {id:'insights',    icon:<Icon.Insights/>,     label:'Insights'},
     {id:'fire',        icon:<Icon.Fire/>,          label:'FIRE Calc'},
     {id:'projections', icon:<Icon.Projections/>,  label:'Projections'},
+    {id:'networth',    icon:<Icon.Wallet/>,        label:'Net Worth'},
+    {id:'compound',    icon:<Icon.Lightning/>,     label:'Compound Growth'},
     {id:'export',      icon:<Icon.Export/>,        label:'Export & Import'},
     {id:'guide',       icon:<Icon.Guide/>,         label:'Guide'},
-          {id:'networth',    icon:<Icon.Wallet/>,        label:'Net Worth'},
-          {id:'compound',    icon:<Icon.Lightning/>,     label:'Compound Growth'},
     {id:'settings',    icon:<Icon.Settings/>,      label:'Settings'},
   ];
 
@@ -771,164 +771,168 @@ export default function AppDashboard() {
           const displayNum = fireMode==='lean' ? leanNum : fireMode==='fat' ? fatNum : fireMode==='coast' ? coastAmt : fireCalc.fireNum;
           const displayProgress = displayNum > 0 ? Math.min((fire.currentSavings / displayNum)*100, 100) : 0;
           const annualIncome = fireCalc.fireNum * (swr/100);
-          const leanIncome  = leanNum * (swr/100);
-          const fatIncome   = fatNum  * (swr/100);
+          const leanIncome   = leanNum * (swr/100);
+          const fatIncome    = fatNum  * (swr/100);
           return (
           <div key="fire" className="fl-page">
-            <div className="fl-page-top" style={{marginBottom:16}}>
+            <div className="fl-page-top">
               <div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div>
               <div className="fl-fire-mode-tabs">
-                {[{id:'standard',label:'FIRE'},{id:'lean',label:'Lean'},{id:'fat',label:'Fat'},{id:'coast',label:'Coast'}].map(m=>(
-                  <button key={m.id} className={`fl-fire-mode-btn ${fireMode===m.id?'active':''}`} onClick={()=>setFireMode(m.id)}>{m.label} FIRE</button>
+                {[{id:'standard',label:'FIRE'},{id:'lean',label:'Lean FIRE'},{id:'fat',label:'Fat FIRE'},{id:'coast',label:'Coast FIRE'}].map(m=>(
+                  <button key={m.id} className={`fl-fire-mode-btn ${fireMode===m.id?'active':''}`} onClick={()=>setFireMode(m.id)}>{m.label}</button>
                 ))}
               </div>
             </div>
 
-            <div className="fl-fire-compact">
-              {/* LEFT — Inputs */}
+            <div className="fl-fire-mode-desc">
+              {fireMode==='standard'&&<p><strong>FIRE</strong> — Standard financial independence. 25× your current annual expenses invested. Withdraw {swr}% per year indefinitely.</p>}
+              {fireMode==='lean'&&<p><strong>Lean FIRE</strong> — Retire on 75% of your current expenses. Requires a frugal lifestyle. FIRE number = {fmt(leanNum)}.</p>}
+              {fireMode==='fat'&&<p><strong>Fat FIRE</strong> — Retire on 150% of your current expenses. Full lifestyle, no compromises. FIRE number = {fmt(fatNum)}.</p>}
+              {fireMode==='coast'&&<p><strong>Coast FIRE</strong> — Save enough now that compound growth alone reaches your FIRE number. Coast number = {fmt(coastAmt)}. {coastReached?'✓ You have reached Coast FIRE.':'You need '+fmt(Math.max(0,coastAmt-fire.currentSavings))+' more.'}</p>}
+            </div>
+
+            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Scroll down to see your FIRE projection and statistics</span></div>
+            <div className="fl-fire-layout">
               <div className="fl-fire-inputs">
-                <div className="fl-fire-inputs-grid">
-                  {[
-                    {key:'annualExpenses',label:'Annual Expenses',    hint:'Yearly spend in retirement'},
-                    {key:'annualSavings', label:'Annual Savings',     hint:'Amount you invest per year'},
-                    {key:'currentSavings',label:'Current Savings',    hint:'Total invested today'},
-                  ].map(f=>(
-                    <div key={f.key} className="fl-fire-field">
-                      <label>{f.label}</label>
-                      <div className="fl-fire-input-wrap">
-                        <span className="fl-input-prefix">{sym}</span>
-                        <input className="fl-fire-input" type="number" placeholder="0"
-                          value={fire[f.key]||''}
-                          onChange={e=>setFire(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/>
-                      </div>
-                      <span className="fl-fire-hint">{f.hint}</span>
-                    </div>
-                  ))}
-                  <div className="fl-fire-field">
-                    <label>Inflation Rate</label>
+                <h3>Your Numbers</h3>
+                {[
+                  {key:'annualExpenses',label:'Annual Expenses',hint:'Expected yearly spend in retirement'},
+                  {key:'annualSavings', label:'Annual Savings',  hint:'Amount you invest per year'},
+                  {key:'currentSavings',label:'Current Savings', hint:'Total already invested or saved'},
+                ].map(f=>(
+                  <div key={f.key} className="fl-fire-field">
+                    <label>{f.label}</label>
                     <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">%</span>
-                      <input className="fl-fire-input" type="number" placeholder="3" step="0.5"
-                        value={inflation||''} onChange={e=>setInflation(parseFloat(e.target.value)||0)}/>
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" placeholder="0"
+                        value={fire[f.key]||''}
+                        onChange={e=>setFire(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/>
                     </div>
-                    <span className="fl-fire-hint">Adjusts real return</span>
+                    <span className="fl-fire-hint">{f.hint}</span>
                   </div>
-                  <div className="fl-fire-field">
-                    <label>Safe Withdrawal Rate</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">%</span>
-                      <input className="fl-fire-input" type="number" placeholder="4" step="0.1"
-                        value={swr||''} onChange={e=>setSwr(parseFloat(e.target.value)||4)}/>
-                    </div>
-                    <span className="fl-fire-hint">% withdrawn per year (default 4%)</span>
+                ))}
+
+                <div className="fl-fire-field">
+                  <label>Inflation Rate</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">%</span>
+                    <input className="fl-fire-input" type="number" placeholder="3" step="0.5"
+                      value={inflation||''} onChange={e=>setInflation(parseFloat(e.target.value)||0)}/>
                   </div>
-                  {fireMode==='coast'&&<>
-                    <div className="fl-fire-field">
-                      <label>Current Age</label>
-                      <div className="fl-fire-input-wrap">
-                        <span className="fl-input-prefix">yr</span>
-                        <input className="fl-fire-input" type="number" placeholder="30"
-                          value={currentAge||''} onChange={e=>setCurrentAge(parseInt(e.target.value)||0)}/>
-                      </div>
-                    </div>
-                    <div className="fl-fire-field">
-                      <label>Retirement Age</label>
-                      <div className="fl-fire-input-wrap">
-                        <span className="fl-input-prefix">yr</span>
-                        <input className="fl-fire-input" type="number" placeholder="65"
-                          value={retireAge||''} onChange={e=>setRetireAge(parseInt(e.target.value)||0)}/>
-                      </div>
-                      <span className="fl-fire-hint">{Math.max(0,retireAge-currentAge)} years to grow</span>
-                    </div>
-                    <div className="fl-fire-field" style={{gridColumn:'1/-1'}}>
-                      <label>Contributions</label>
-                      <div className="fl-contrib-toggle" style={{marginBottom:6}}>
-                        <button className={contribMode==='annual'?'active':''} onClick={()=>setContribMode('annual')}>Annual</button>
-                        <button className={contribMode==='monthly'?'active':''} onClick={()=>setContribMode('monthly')}>Monthly</button>
-                      </div>
-                      <div className="fl-fire-input-wrap">
-                        <span className="fl-input-prefix">{sym}</span>
-                        <input className="fl-fire-input" type="number" placeholder="0"
-                          value={contribs||''} onChange={e=>setContribs(parseFloat(e.target.value)||0)}/>
-                      </div>
-                    </div>
-                  </>}
+                  <span className="fl-fire-hint">Real return adjusted for inflation (default 3%)</span>
                 </div>
-                <button className="fl-btn-primary" style={{width:'100%',marginTop:12}} onClick={()=>{saveSettings(fire,null,null);showToast('Settings saved');}}>Save settings</button>
-                <div className="fl-whatif" style={{marginTop:14}}>
+
+                <div className="fl-fire-field">
+                  <label>Safe Withdrawal Rate</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">%</span>
+                    <input className="fl-fire-input" type="number" placeholder="4" step="0.1"
+                      value={swr||''} onChange={e=>setSwr(parseFloat(e.target.value)||4)}/>
+                  </div>
+                  <span className="fl-fire-hint">Annual % drawn from portfolio (default 4%)</span>
+                </div>
+
+                {fireMode==='coast'&&<>
+                  <div className="fl-fire-field">
+                    <label>Current Age</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">yr</span>
+                      <input className="fl-fire-input" type="number" placeholder="30"
+                        value={currentAge||''} onChange={e=>setCurrentAge(parseInt(e.target.value)||0)}/>
+                    </div>
+                  </div>
+                  <div className="fl-fire-field">
+                    <label>Retirement Age</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">yr</span>
+                      <input className="fl-fire-input" type="number" placeholder="65"
+                        value={retireAge||''} onChange={e=>setRetireAge(parseInt(e.target.value)||0)}/>
+                    </div>
+                    <span className="fl-fire-hint">{Math.max(0,retireAge-currentAge)} years to grow</span>
+                  </div>
+                  <div className="fl-fire-field">
+                    <label>Contributions</label>
+                    <div className="fl-contrib-toggle">
+                      <button className={contribMode==='annual'?'active':''} onClick={()=>setContribMode('annual')}>Annual</button>
+                      <button className={contribMode==='monthly'?'active':''} onClick={()=>setContribMode('monthly')}>Monthly</button>
+                    </div>
+                    <div className="fl-fire-input-wrap" style={{marginTop:6}}>
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" placeholder="0"
+                        value={contribs||''} onChange={e=>setContribs(parseFloat(e.target.value)||0)}/>
+                    </div>
+                    <span className="fl-fire-hint">Optional — how much you still plan to contribute</span>
+                  </div>
+                </>}
+
+                <button className="fl-btn-primary" style={{width:'100%'}} onClick={()=>{saveSettings(fire,null,null);showToast('Settings saved');}}>Save settings</button>
+
+                <div className="fl-whatif">
                   <h4>What if I saved more?</h4>
                   <div className="fl-whatif-row">
-                    <span style={{whiteSpace:'nowrap',minWidth:80}}>{sym}{whatIf.toLocaleString()} /mo</span>
+                    <span style={{whiteSpace:'nowrap',minWidth:90}}>{sym}{whatIf.toLocaleString()} /mo</span>
                     <input type="range" min="0" max="5000" step="50" value={whatIf} onChange={e=>setWhatIf(parseInt(e.target.value))} className="fl-slider"/>
                   </div>
-                  {whatIf>0&&<div className="fl-whatif-result">Saves <strong style={{color:'var(--green)'}}>{Math.max(0,fireCalc.years-fireWI.years)} yrs</strong> — free in <strong style={{color:'var(--purple-light)'}}>{fireWI.years} years</strong></div>}
+                  {whatIf>0&&<div className="fl-whatif-result">Saves <strong style={{color:'var(--green)'}}>{Math.max(0,fireCalc.years-fireWI.years)} years</strong> — retire in <strong style={{color:'var(--purple-light)'}}>{fireWI.years} years</strong></div>}
                 </div>
               </div>
 
-              {/* RIGHT — Results */}
               <div className="fl-fire-results">
-                {/* Ring + mode description inline */}
-                <div className="fl-fire-ring-row">
-                  <div className="fl-fire-ring-wrap">
-                    <svg viewBox="0 0 160 160">
-                      <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="13"/>
-                      <circle cx="80" cy="80" r="68" fill="none" stroke="url(#fire-calc-grad)" strokeWidth="13"
-                        strokeDasharray="427" strokeDashoffset={427-(427*displayProgress/100)}
-                        strokeLinecap="round" transform="rotate(-90 80 80)"/>
-                      <defs><linearGradient id="fire-calc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--purple-light)"/>
-                        <stop offset="100%" stopColor="var(--purple-dark)"/>
-                      </linearGradient></defs>
-                    </svg>
-                    <div className="fl-fire-big-center">
-                      <span className="fl-fire-big-pct" style={{fontSize:28}}>{displayProgress.toFixed(0)}%</span>
-                      <span className="fl-fire-big-sub">to {fireMode==='lean'?'Lean':fireMode==='fat'?'Fat':fireMode==='coast'?'Coast':''}FIRE</span>
-                    </div>
-                  </div>
-                  <div className="fl-fire-mode-info">
-                    {fireMode==='standard'&&<><p className="fl-fire-mode-tag">Standard FIRE</p><p className="fl-fire-mode-blurb">25× expenses. Withdraw {swr}% per year indefinitely.</p></>}
-                    {fireMode==='lean'&&<><p className="fl-fire-mode-tag">Lean FIRE</p><p className="fl-fire-mode-blurb">Retire on 75% of current expenses. Frugal but free.</p></>}
-                    {fireMode==='fat'&&<><p className="fl-fire-mode-tag">Fat FIRE</p><p className="fl-fire-mode-blurb">Retire on 150% of current expenses. No compromises.</p></>}
-                    {fireMode==='coast'&&<><p className="fl-fire-mode-tag">Coast FIRE</p><p className="fl-fire-mode-blurb">Invest now, stop contributing, let it grow to your number.</p></>}
-                    {inflation>0&&adjFireCalc.years!==fireCalc.years&&(
-                      <div className="fl-inflation-note" style={{marginTop:8}}>
-                        <strong>+{adjFireCalc.years-fireCalc.years} yrs</strong><span> due to {inflation}% inflation</span>
-                      </div>
-                    )}
+                <div className="fl-fire-big-ring">
+                  <svg viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16"/>
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="url(#fire-calc-grad)" strokeWidth="16"
+                      strokeDasharray="534" strokeDashoffset={534-(534*displayProgress/100)}
+                      strokeLinecap="round" transform="rotate(-90 100 100)"/>
+                    <defs><linearGradient id="fire-calc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="var(--purple-light)"/>
+                      <stop offset="100%" stopColor="var(--purple-dark)"/>
+                    </linearGradient></defs>
+                  </svg>
+                  <div className="fl-fire-big-center">
+                    <span className="fl-fire-big-pct">{displayProgress.toFixed(1)}%</span>
+                    <span className="fl-fire-big-sub">to {fireMode==='lean'?'Lean ':fireMode==='fat'?'Fat ':fireMode==='coast'?'Coast ':''}FIRE</span>
                   </div>
                 </div>
 
-                {/* Stat grid — all modes get full metrics */}
-                <div className="fl-fire-stat-grid" style={{marginTop:14}}>
+                <div className="fl-fire-stat-grid">
                   {fireMode!=='coast'&&[
-                    {label:'FIRE Number',      value:fmt(displayNum),                                    hint:fireMode==='lean'?'75% × 25':fireMode==='fat'?'150% × 25':'25× expenses',          color:'var(--gold)'},
-                    {label:'Years Away',       value:adjFireCalc.years===Infinity?'—':adjFireCalc.years, hint:`${inflation}% inflation adjusted`,                                                color:adjFireCalc.years<=10?'var(--green)':adjFireCalc.years<=20?'var(--gold)':'var(--red)'},
-                    {label:'Freedom Date',     value:fireDate,                                           hint:'Projected retirement',                                                             color:'var(--purple-light)'},
-                    {label:'Gap Remaining',    value:fmt(Math.max(0,displayNum-fire.currentSavings)),    hint:'Still needed',                                                                     color:'var(--t1)'},
-                    {label:'Annual Income',    value:fmt(fireMode==='lean'?leanIncome:fireMode==='fat'?fatIncome:annualIncome), hint:`At ${swr}% withdrawal`,                                    color:'var(--green)'},
-                    {label:'Monthly Income',   value:fmt((fireMode==='lean'?leanIncome:fireMode==='fat'?fatIncome:annualIncome)/12), hint:'Per month in retirement',                              color:'var(--green)'},
+                    {label:'FIRE Number',    value:fmt(displayNum),                                    hint:fireMode==='lean'?'75% of expenses × 25':fireMode==='fat'?'150% of expenses × 25':'25× annual expenses', color:'var(--gold)'},
+                    {label:'Years Away',     value:adjFireCalc.years===Infinity?'—':adjFireCalc.years, hint:`At 7% return, ${inflation}% inflation`,                                                                  color:adjFireCalc.years<=10?'var(--green)':adjFireCalc.years<=20?'var(--gold)':'var(--red)'},
+                    {label:'Freedom Date',   value:fireDate,                                           hint:'Inflation-adjusted projection',                                                                          color:'var(--purple-light)'},
+                    {label:'Gap Remaining',  value:fmt(Math.max(0,displayNum-fire.currentSavings)),    hint:'Still needed',                                                                                          color:'var(--purple-light)'},
+                    {label:'Annual Income',  value:fmt(fireMode==='lean'?leanIncome:fireMode==='fat'?fatIncome:annualIncome), hint:`At ${swr}% withdrawal rate`,                                                    color:'var(--green)'},
+                    {label:'Monthly Income', value:fmt((fireMode==='lean'?leanIncome:fireMode==='fat'?fatIncome:annualIncome)/12), hint:'Per month in retirement',                                                   color:'var(--green)'},
                   ].map((s,i)=>(
                     <div key={i} className="fl-fire-stat">
                       <span className="fl-fire-stat-label">{s.label}</span>
-                      <span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label==='Freedom Date'?15:18}}>{s.value}</span>
+                      <span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label==='Freedom Date'?16:22}}>{s.value}</span>
                       <span className="fl-fire-stat-hint">{s.hint}</span>
                     </div>
                   ))}
                   {fireMode==='coast'&&[
-                    {label:'Coast FIRE Number', value:fmt(coastAmt),                                      hint:'Needed now to coast',                                                              color:'var(--gold)'},
-                    {label:'Current Savings',   value:fmt(fire.currentSavings),                           hint:'What you have today',                                                             color:coastReached?'var(--green)':'var(--t1)'},
-                    {label:'Gap to Coast',      value:coastReached?'Reached ✓':fmt(Math.max(0,coastAmt-fire.currentSavings)), hint:coastReached?'You can stop contributing':'Still needed',     color:coastReached?'var(--green)':'var(--red)'},
-                    {label:'Years to Grow',     value:yearsToGrow,                                        hint:`Age ${currentAge} → ${retireAge}`,                                                color:'var(--purple-light)'},
-                    {label:'Annual Income',     value:fmt(annualIncome),                                  hint:`At ${swr}% withdrawal`,                                                          color:'var(--green)'},
-                    {label:'Monthly Income',    value:fmt(annualIncome/12),                               hint:'Per month in retirement',                                                         color:'var(--green)'},
+                    {label:'Coast FIRE Number', value:fmt(coastAmt),                                    hint:'Needed now to coast',                                                                                   color:'var(--gold)'},
+                    {label:'Current Savings',   value:fmt(fire.currentSavings),                         hint:'What you have today',                                                                                  color:coastReached?'var(--green)':'var(--t1)'},
+                    {label:'Gap to Coast',      value:coastReached?'Reached ✓':fmt(Math.max(0,coastAmt-fire.currentSavings)), hint:coastReached?'You can stop contributing':'Still needed',                        color:coastReached?'var(--green)':'var(--red)'},
+                    {label:'Years to Grow',     value:yearsToGrow,                                      hint:`Age ${currentAge} → ${retireAge}`,                                                                    color:'var(--purple-light)'},
+                    {label:'Annual Income',     value:fmt(annualIncome),                                hint:`At ${swr}% withdrawal`,                                                                               color:'var(--green)'},
+                    {label:'Monthly Income',    value:fmt(annualIncome/12),                             hint:'Per month in retirement',                                                                              color:'var(--green)'},
                   ].map((s,i)=>(
                     <div key={i} className="fl-fire-stat">
                       <span className="fl-fire-stat-label">{s.label}</span>
-                      <span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label==='Gap to Coast'?15:18}}>{s.value}</span>
+                      <span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label==='Gap to Coast'||s.label==='Freedom Date'?16:22}}>{s.value}</span>
                       <span className="fl-fire-stat-hint">{s.hint}</span>
                     </div>
                   ))}
                 </div>
+
+                {inflation>0&&adjFireCalc.years!==fireCalc.years&&(
+                  <div className="fl-inflation-note">
+                    <span>⚠ Inflation-adjusted: adds </span>
+                    <strong>{adjFireCalc.years-fireCalc.years} years</strong>
+                    <span> vs nominal projection</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
