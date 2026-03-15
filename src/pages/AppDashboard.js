@@ -100,29 +100,138 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 const amtColor = t => t==='income'?'var(--green)':t==='saving'?'var(--gold)':'var(--red)';
 const fmtInput = v => { if(!v&&v!==0)return''; const n=v.toString().replace(/[^0-9.]/g,''); const p=n.split('.'); p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,','); return p.join('.'); };
 
+function parseDateStr(raw) {
+  if (!raw) return new Date().toISOString().split('T')[0];
+  const s = raw.replace(/['"]/g,'').trim();
+  // Try native parse first (handles ISO, long formats)
+  const native = new Date(s);
+  if (!isNaN(native.getTime()) && s.length > 5) {
+    return native.toISOString().split('T')[0];
+  }
+  // DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY etc
+  const m = s.match(/(\d{1,4})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+  if (m) {
+    let [,a,b,cc] = m;
+    const year = cc.length===2 ? '20'+cc : cc;
+    if (a.length===4) return `${a}-${b.padStart(2,'0')}-${cc.padStart(2,'0')}`;
+    if (parseInt(a) > 12) return `${year}-${b.padStart(2,'0')}-${a.padStart(2,'0')}`;
+    return `${year}-${a.padStart(2,'0')}-${b.padStart(2,'0')}`;
+  }
+  // Month name: Jan 15 2024 or 15 Jan 2024
+  const months = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const ml = s.toLowerCase().match(/(\d{1,2})\s*([a-z]{3})[a-z]*\s*(\d{2,4})/);
+  if (ml) { const y=ml[3].length===2?'20'+ml[3]:ml[3]; return `${y}-${String(months[ml[2]]||1).padStart(2,'0')}-${ml[1].padStart(2,'0')}`; }
+  const mr = s.toLowerCase().match(/([a-z]{3})[a-z]*\s*(\d{1,2})[,\s]+(\d{2,4})/);
+  if (mr) { const y=mr[3].length===2?'20'+mr[3]:mr[3]; return `${y}-${String(months[mr[1]]||1).padStart(2,'0')}-${mr[2].padStart(2,'0')}`; }
+  return new Date().toISOString().split('T')[0];
+}
+
+function parseAmount(raw) {
+  if (!raw) return 0;
+  // Remove currency symbols, spaces, commas — keep digits, dot, minus
+  const clean = raw.toString().replace(/[^0-9.\-]/g,'');
+  return Math.abs(parseFloat(clean)) || 0;
+}
+
+function detectType(desc, cat, rawType) {
+  const t = (desc+' '+cat+' '+rawType).toLowerCase();
+  const typeMap = {
+    income:  ['salary','income','credit','deposit','received','earning','revenue','refund','transfer in','payment received','payroll'],
+    saving:  ['investment','invest','saving','ira','401k','pension','retirement','fund','sip','mutual','etf','stocks','brokerage'],
+    want:    ['restaurant','dining','cafe','coffee','amazon','netflix','spotify','entertainment','shopping','uber','lyft','hotel','travel','holiday','leisure','clothing','apparel','gym','subscription'],
+    need:    ['rent','mortgage','grocery','groceries','supermarket','pharmacy','medical','health','insurance','utility','utilities','electric','water','gas','internet','phone','transport','fuel','petrol','commute'],
+  };
+  for (const [type, words] of Object.entries(typeMap)) {
+    if (words.some(w => t.includes(w))) return type;
+  }
+  // Fallback: positive amount in credit column = income, else need
+  return 'need';
+}
+
 function smartParseCSV(text) {
-  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean); if(lines.length<2)return{rows:[]};
-  const parseLine=line=>{const cols=[];let cur='',inQ=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){inQ=!inQ;continue;}if(c===','&&!inQ){cols.push(cur.trim());cur='';continue;}cur+=c;}cols.push(cur.trim());return cols;};
-  let headerIdx=0; for(let i=0;i<Math.min(5,lines.length);i++){if(/[a-zA-Z]{3,}/.test(lines[i])){headerIdx=i;break;}}
-  const headers=parseLine(lines[headerIdx]).map(h=>h.toLowerCase().replace(/[^a-z0-9]/g,''));
-  const detect=kws=>{for(const kw of kws){const idx=headers.findIndex(h=>h.includes(kw));if(idx!==-1)return idx;}return -1;};
-  const mapping={date:detect(['date','dt','time','period']),description:detect(['desc','name','memo','narr','payee','detail','title','note','item','particulars']),amount:detect(['amount','amt','value','sum','total','debit','credit','price','cost']),type:detect(['type','category','cat','class','kind']),category:detect(['category','cat','subcategory','group']),recurring:detect(['recurring','repeat','recur'])};
-  const debitIdx=detect(['debit','withdrawal','expense','out']),creditIdx=detect(['credit','income','deposit','received','in']);
-  const rows=lines.slice(headerIdx+1).map(line=>{
-    const cols=parseLine(line),get=idx=>(idx>=0&&idx<cols.length)?cols[idx]:'';
-    let rawDate=get(mapping.date),rawAmt=get(mapping.amount),rawDesc=get(mapping.description),rawType=get(mapping.type).toLowerCase(),rawCat=mapping.category!==mapping.type?get(mapping.category):'',rawRec=get(mapping.recurring);
-    if(mapping.amount===-1&&(debitIdx!==-1||creditIdx!==-1)){const d=parseFloat(get(debitIdx).replace(/[^0-9.-]/g,''))||0,cr=parseFloat(get(creditIdx).replace(/[^0-9.-]/g,''))||0;if(cr>0){rawAmt=cr.toString();rawType=rawType||'income';}else{rawAmt=d.toString();rawType=rawType||'need';}}
-    const amtClean=rawAmt.replace(/[^0-9.-]/g,''),amount=Math.abs(parseFloat(amtClean));
-    if(!amount)return null;
-    const typeMap={income:['income','salary','credit','deposit','received','earn','revenue'],need:['need','essential','expense','debit','bill','rent','utility','transport','grocery','insurance','health'],want:['want','discretionary','leisure','entertainment','dining','shopping','travel'],saving:['saving','invest','investment','retirement','fund','ira','401','pension','emergency']};
-    let type='need'; for(const[t,words]of Object.entries(typeMap)){if(words.some(w=>rawType.includes(w)||rawCat.toLowerCase().includes(w)||rawDesc.toLowerCase().includes(w.slice(0,5)))){type=t;break;}}
-    let date=rawDate.replace(/['"]/g,'').trim(); if(!date)date=new Date().toISOString().split('T')[0];
-    const dp=date.match(/(\d{1,4})[-/.](\d{1,2})[-/.](\d{2,4})/);
-    if(dp){const[,a,b,c]=dp;if(a.length===4)date=`${a}-${b.padStart(2,'0')}-${c.padStart(2,'0')}`;else if(parseInt(a)>12)date=`${c.length===2?'20'+c:c}-${b.padStart(2,'0')}-${a.padStart(2,'0')}`;else date=`${c.length===2?'20'+c:c}-${a.padStart(2,'0')}-${b.padStart(2,'0')}`;}
-    if(isNaN(new Date(date).getTime()))date=new Date().toISOString().split('T')[0];
-    return{date,description:(rawDesc||rawCat||rawType||'Transaction').slice(0,100),type,category:(rawCat||'').slice(0,50),amount,recurring:/yes|true|1|y/i.test(rawRec)};
+  // Handle both comma and semicolon delimiters, and tab-separated
+  const rawLines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if (rawLines.length < 2) return { rows: [], error: 'File appears empty or has only one row.' };
+
+  // Detect delimiter
+  const sample = rawLines[0];
+  const delim = sample.includes('\t') ? '\t' : sample.includes(';') ? ';' : ',';
+
+  const parseLine = line => {
+    const cols = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === delim && !inQ) { cols.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    cols.push(cur.trim());
+    return cols;
+  };
+
+  // Find header row — first row with 2+ alphabetic columns
+  let headerIdx = 0;
+  for (let i = 0; i < Math.min(8, rawLines.length); i++) {
+    const cols = parseLine(rawLines[i]);
+    const alphaCount = cols.filter(c => /[a-zA-Z]{2,}/.test(c)).length;
+    if (alphaCount >= 2) { headerIdx = i; break; }
+  }
+
+  const headers = parseLine(rawLines[headerIdx]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g,''));
+  const detect = (...kws) => { for (const kw of kws) { const idx = headers.findIndex(h => h.includes(kw)); if (idx !== -1) return idx; } return -1; };
+
+  const dateIdx   = detect('date','dt','time','transactiondate','valuedate','postingdate','period');
+  const descIdx   = detect('description','desc','narrative','memo','narration','payee','detail','particulars','name','reference','merchant','transaction','note','remarks');
+  const amtIdx    = detect('amount','amt','value','sum','total');
+  const debitIdx  = detect('debit','withdrawal','dr','withdrawals','expense','debitamount');
+  const creditIdx = detect('credit','deposit','cr','deposits','creditamount');
+  const catIdx    = detect('category','cat','type','subcategory','group','classification');
+
+  const rows = rawLines.slice(headerIdx + 1).map((line, lineNum) => {
+    if (!line.trim()) return null;
+    const cols = parseLine(line);
+    const get = idx => (idx >= 0 && idx < cols.length) ? cols[idx].replace(/^["']|["']$/g,'').trim() : '';
+
+    const rawDesc = get(descIdx);
+    const rawCat  = get(catIdx);
+    const rawDate = get(dateIdx);
+
+    let amount = 0;
+    let type = 'need';
+
+    if (amtIdx !== -1) {
+      const raw = get(amtIdx);
+      // Negative amounts = expense, positive = income
+      const signed = parseFloat(raw.replace(/[^0-9.\-]/g,''));
+      amount = Math.abs(signed);
+      if (!isNaN(signed) && signed > 0) type = 'income';
+    } else if (debitIdx !== -1 || creditIdx !== -1) {
+      const debit  = parseAmount(get(debitIdx));
+      const credit = parseAmount(get(creditIdx));
+      if (credit > 0 && debit === 0) { amount = credit; type = 'income'; }
+      else if (debit > 0) { amount = debit; type = 'need'; }
+      else { amount = Math.max(credit, debit); }
+    }
+
+    if (!amount || amount <= 0) return null;
+
+    // Refine type based on description
+    const detectedType = detectType(rawDesc, rawCat, type==='income'?'income':'');
+    if (type !== 'income') type = detectedType;
+
+    const date = parseDateStr(rawDate);
+
+    return {
+      date,
+      description: (rawDesc || rawCat || `Transaction ${lineNum+1}`).slice(0, 100),
+      type,
+      category: rawCat.slice(0, 50),
+      amount,
+      recurring: false,
+    };
   }).filter(Boolean);
-  return{rows};
+
+  return { rows };
 }
 
 // ─── Projection chart ─────────────────────────────────────────────────────────
@@ -453,10 +562,46 @@ export default function AppDashboard() {
   };
 
   const handleImportFile = e => {
-    const file=e.target.files[0]; if(!file)return;
-    const reader=new FileReader();
-    reader.onload=ev=>{const{rows}=smartParseCSV(ev.target.result);setImportAll(rows);setImportPrev(rows.slice(0,5));setImportModal(true);};
-    reader.readAsText(file); e.target.value='';
+    const file = e.target.files[0]; if (!file) return;
+    e.target.value = '';
+    const reader = new FileReader();
+
+    const processText = text => {
+      const { rows, error } = smartParseCSV(text);
+      if (error || !rows || rows.length === 0) {
+        showToast('No transactions detected — check your file has date and amount columns', 'error');
+        return;
+      }
+      setImportAll(rows); setImportPrev(rows.slice(0, 5)); setImportModal(true);
+    };
+
+    if (file.name.toLowerCase().endsWith('.pdf')) {
+      reader.onload = ev => {
+        const raw = ev.target.result || '';
+        const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+        // Extract lines that look like bank transactions: have a date + amount
+        const txLines = lines.filter(l =>
+          /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/.test(l) && /\d+\.\d{2}/.test(l)
+        );
+        if (txLines.length === 0) {
+          showToast('PDF could not be read — please export as CSV from your bank instead', 'error');
+          return;
+        }
+        const pseudoCSV = 'Date,Description,Amount\n' + txLines.map(l => {
+          const dateM = l.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/);
+          const amtM  = l.match(/(\d[\d,]*\.\d{2})/g);
+          const date  = dateM ? dateM[0] : '';
+          const amount = amtM ? amtM[amtM.length-1].replace(/,/g,'') : '0';
+          const desc  = l.replace(date,'').replace(amount,'').replace(/[",]/g,' ').trim().slice(0,80);
+          return `${date},"${desc}",${amount}`;
+        }).join('\n');
+        processText(pseudoCSV);
+      };
+      reader.readAsText(file);
+    } else {
+      reader.onload = ev => processText(ev.target.result);
+      reader.readAsText(file);
+    }
   };
 
   const confirmImport = async () => {
@@ -681,7 +826,7 @@ export default function AppDashboard() {
                 <button className="fl-btn-ghost fl-btn-icon" onClick={()=>fileRef.current?.click()}><Icon.Import/>Import</button>
                 <button className="fl-btn-ghost fl-btn-icon" onClick={exportCSV}><Icon.Export/>Export</button>
                 <button className="fl-add-fab" onClick={()=>setShowAdd(true)}><Icon.Plus/>Add</button>
-                <input ref={fileRef} type="file" accept=".csv,.txt" style={{display:'none'}} onChange={handleImportFile}/>
+                <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{display:'none'}} onChange={handleImportFile}/>
               </div>
             </div>
             <div className="fl-filter-row">
@@ -999,9 +1144,9 @@ export default function AppDashboard() {
               <div className="fl-export-card"><div className="fl-export-icon-wrap"><Icon.Transactions/></div><h3>CSV Export</h3><p>Raw transaction data. Compatible with any spreadsheet application or finance tool.</p><button className="fl-btn-primary" onClick={exportCSV}>Download CSV</button></div>
               <div className="fl-export-card">
                 <div className="fl-export-icon-wrap"><Icon.Import/></div><h3>Smart Import</h3>
-                <p>Import from any CSV — bank statements, Excel exports, or other apps. Auto-detects column layout and date formats. No reformatting required.</p>
+                <p>Import from any CSV or PDF bank statement. Auto-detects column layouts, date formats, debit/credit columns, and semicolon or tab-separated files. No reformatting required.</p>
                 <button className="fl-btn-primary" onClick={()=>fileRef.current?.click()}>Choose file</button>
-                <input ref={fileRef} type="file" accept=".csv,.txt" style={{display:'none'}} onChange={handleImportFile}/>
+                <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{display:'none'}} onChange={handleImportFile}/>
               </div>
               <div className="fl-export-card">
                 <div className="fl-export-icon-wrap"><Icon.Book/></div><h3>Template</h3>
