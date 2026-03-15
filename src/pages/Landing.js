@@ -33,7 +33,7 @@ export default function Landing() {
           </h1>
           <p className="hero-sub">
             Track every dollar. Watch your FIRE number shrink.<br />
-            The only finance app built for people who want out.
+            The only finance platform built for people who want out.
           </p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={handleStart}>
@@ -43,16 +43,25 @@ export default function Landing() {
           <div className="hero-trust">
             <span>🔒 Secure checkout</span>
             <span>·</span>
-            <span>7-day money back guarantee</span>
+            <span>48-hour money back guarantee</span>
             <span>·</span>
             <span>Cancel anytime</span>
           </div>
           <div className="hero-stats">
-            <div className="stat"><span className="stat-num">4%</span><span className="stat-label">Safe withdrawal rule</span></div>
+            <div className="stat">
+              <span className="stat-num">4%</span>
+              <span className="stat-label">Safe withdrawal rule</span>
+            </div>
             <div className="stat-div" />
-            <div className="stat"><span className="stat-num">25×</span><span className="stat-label">Your FIRE number</span></div>
+            <div className="stat">
+              <span className="stat-num">25×</span>
+              <span className="stat-label">Your FIRE number</span>
+            </div>
             <div className="stat-div" />
-            <div className="stat"><span className="stat-num">$4.99</span><span className="stat-label">Per month</span></div>
+            <div className="stat">
+              <span className="stat-num">$4.99</span>
+              <span className="stat-label">Per month</span>
+            </div>
           </div>
         </div>
         <div className="hero-mockup">
@@ -81,10 +90,10 @@ export default function Landing() {
             </div>
             <div className="mockup-transactions">
               {[
-                { label: 'Salary', amt: '+$5,200', type: 'income' },
-                { label: 'Rent', amt: '-$1,400', type: 'need' },
-                { label: 'Groceries', amt: '-$180', type: 'need' },
-                { label: 'Netflix', amt: '-$15', type: 'want' },
+                { label: 'Salary',     amt: '+$5,200', type: 'income' },
+                { label: 'Rent',       amt: '-$1,400', type: 'need'   },
+                { label: 'Groceries',  amt: '-$180',   type: 'need'   },
+                { label: 'Netflix',    amt: '-$15',    type: 'want'   },
               ].map((t, i) => (
                 <div key={i} className="mockup-tx">
                   <span className="mockup-tx-label">{t.label}</span>
@@ -100,12 +109,12 @@ export default function Landing() {
         <h2 className="section-title">Everything you need.<br/>Nothing you don't.</h2>
         <div className="features-grid">
           {[
-            { icon: '🔥', title: 'FIRE Calculator', desc: 'Real-time projection of your financial independence date based on your actual spending.' },
-            { icon: '📊', title: 'Needs vs Wants', desc: 'Categorize every expense. See exactly where your money leaks and where it builds wealth.' },
+            { icon: '🔥', title: 'FIRE Calculator',    desc: 'Real-time projection of your financial independence date based on your actual spending.' },
+            { icon: '📊', title: 'Needs vs Wants',     desc: 'Categorize every expense. See exactly where your money leaks and where it builds wealth.' },
             { icon: '🔄', title: 'Recurring Tracking', desc: 'Auto-log subscriptions and recurring expenses. Never miss a drain on your FIRE timeline.' },
-            { icon: '📈', title: 'Savings Rate', desc: 'Your most important metric. Track it daily, weekly, monthly — watch freedom approach.' },
-            { icon: '💾', title: 'CSV Export', desc: 'Your data, always yours. Export everything, analyze in Excel, share with your advisor.' },
-            { icon: '🎯', title: 'Custom Categories', desc: 'Build a system that reflects your life. Every category tuned to your FIRE strategy.' },
+            { icon: '📈', title: 'Savings Rate',       desc: 'Your most important metric. Track it daily, weekly, monthly — watch freedom approach.' },
+            { icon: '💾', title: 'CSV Export',         desc: 'Your data, always yours. Export everything, analyze in Excel, share with your advisor.' },
+            { icon: '🎯', title: 'Custom Categories',  desc: 'Build a system that reflects your life. Every category tuned to your FIRE strategy.' },
           ].map((f, i) => (
             <div key={i} className="feature-card">
               <div className="feature-icon">{f.icon}</div>
@@ -128,9 +137,9 @@ export default function Landing() {
               </div>
               <div className="price-divider">or</div>
               <div className="price-option">
-                <span className="price-amount">$39.99</span>
+                <span className="price-amount">$59.99</span>
                 <span className="price-period">/year</span>
-                <span className="price-save">Save 33%</span>
+                <span className="price-save">Best value</span>
               </div>
             </div>
             <ul className="pricing-features">
@@ -142,12 +151,18 @@ export default function Landing() {
               <li>✓ Custom categories</li>
               <li>✓ CSV data export</li>
               <li>✓ Android app included</li>
-              <li>✓ 7-day money back guarantee</li>
+              <li>✓ 48-hour money back guarantee</li>
             </ul>
-            <button className="btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={handleStart}>
+            <button
+              className="btn-primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={handleStart}
+            >
               Start My FIRE Journey →
             </button>
-            <p style={{textAlign:'center',fontSize:13,color:'#8888aa',marginTop:12}}>Cancel anytime · No hidden fees</p>
+            <p style={{ textAlign: 'center', fontSize: 13, color: '#8888aa', marginTop: 12 }}>
+              Cancel anytime · No hidden fees
+            </p>
           </div>
         </div>
       </section>

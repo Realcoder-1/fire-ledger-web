@@ -7,20 +7,18 @@ const ANNUAL_PRICE_ID  = 'pri_01kkk544b2fntpj7s989ntee0x';
 
 export default function Pricing() {
   const { user, signOut } = useAuth();
-  const [billing,     setBilling]     = useState('annual');
-  const [coupon,      setCoupon]      = useState('');
-  const [couponInput, setCouponInput] = useState('');
-  const [couponMsg,   setCouponMsg]   = useState('');
-  const [couponValid, setCouponValid] = useState(false);
+  const [billing,      setBilling]     = useState('annual');
+  const [couponInput,  setCouponInput] = useState('');
+  const [coupon,       setCoupon]      = useState('');
+  const [couponMsg,    setCouponMsg]   = useState('');
+  const [couponValid,  setCouponValid] = useState(false);
 
   const applyCode = () => {
     const code = couponInput.trim().toUpperCase();
     if (!code) return;
-    // We pass it to Paddle — Paddle validates it server-side
-    // Just set it and show confirmation to the user
     setCoupon(code);
     setCouponValid(true);
-    setCouponMsg(`Code "${code}" applied — 20% off will be reflected at checkout.`);
+    setCouponMsg(`Code "${code}" applied — discount will be reflected at checkout.`);
   };
 
   const removeCode = () => {
@@ -39,17 +37,27 @@ export default function Pricing() {
       successUrl: window.location.origin + '/app',
     };
 
-    // Pass discount code to Paddle if one is entered
+    // Paddle v2 — discountCode passed at top level
     if (coupon) {
       checkoutOptions.discountCode = coupon;
     }
 
-    window.Paddle.Checkout.open(checkoutOptions);
+    try {
+      window.Paddle.Checkout.open(checkoutOptions);
+    } catch (err) {
+      console.error('Paddle checkout error:', err);
+      // If discount code caused the error, retry without it
+      if (coupon) {
+        setCouponValid(false);
+        setCoupon('');
+        setCouponMsg('');
+        setCouponInput('');
+        alert('Discount code could not be applied. Please check the code and try again.');
+      }
+    }
   };
 
   const monthly = billing === 'monthly';
-  const displayPrice = monthly ? '$4.99' : '$59.99';
-  const displayPeriod = monthly ? '/month' : '/year';
 
   return (
     <div className="pricing-page">
@@ -68,7 +76,7 @@ export default function Pricing() {
 
         <div className="billing-toggle">
           <button
-            className={!monthly ? '' : 'active'}
+            className={monthly ? 'active' : ''}
             onClick={() => setBilling('monthly')}
           >
             Monthly
@@ -86,8 +94,10 @@ export default function Pricing() {
             <div>
               <div className="p-tier">FIRE Ledger Pro</div>
               <div className="p-price">
-                <span className="p-amount">{displayPrice}</span>
-                <span className="p-period">{displayPeriod}</span>
+                {monthly
+                  ? <><span className="p-amount">$4.99</span><span className="p-period">/month</span></>
+                  : <><span className="p-amount">$59.99</span><span className="p-period">/year</span></>
+                }
               </div>
               {!monthly && <div className="p-equiv">Just $5/month</div>}
             </div>
@@ -104,7 +114,7 @@ export default function Pricing() {
               'Custom categories',
               'CSV data export',
               'Android app included',
-              '7-day money back guarantee',
+              '48-hour money back guarantee',
             ].map((f, i) => (
               <div key={i} className="p-feature">
                 <span className="p-check">✓</span>
@@ -113,7 +123,7 @@ export default function Pricing() {
             ))}
           </div>
 
-          {/* Coupon code section */}
+          {/* Discount code */}
           <div className="p-coupon">
             {!couponValid ? (
               <div className="p-coupon-row">
@@ -143,7 +153,7 @@ export default function Pricing() {
             Start My FIRE Journey
             <span className="p-cta-arrow">→</span>
           </button>
-          <p className="p-guarantee">🔒 Secure checkout · 7-day refund · Cancel anytime</p>
+          <p className="p-guarantee">🔒 Secure checkout · 48-hour refund · Cancel anytime</p>
         </div>
       </div>
     </div>
