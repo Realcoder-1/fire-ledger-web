@@ -367,6 +367,11 @@ export default function AppDashboard() {
   const [swr,           setSwr]         = useState(4);
   const [contribMode,   setContribMode] = useState('annual'); // annual | monthly
   const [contribs,      setContribs]    = useState(0);
+  // Net Worth Calculator
+  const [nw, setNw] = useState({ houseValue:0, carValue:0, cashSavings:0, investments:0, otherAssets:0, creditCard:0, studentLoan:0, mortgage:0, personalLoan:0, otherLiabilities:0 });
+  // Compound Growth Calculator
+  const [cg, setCg] = useState({ initial:0, years:10, growthRate:7, inflationRate:3, contribType:'annual', contribution:0, compounding:'annual' });
+  const [cgResult, setCgResult] = useState(null);
   const [form, setForm] = useState({ amount:'', description:'', type:'need', category:'', date:new Date().toISOString().split('T')[0], recurring:false });
   const addAmtRef  = useRef(null);
   const fileRef    = useRef(null);
@@ -522,6 +527,8 @@ export default function AppDashboard() {
     {id:'projections', icon:<Icon.Projections/>,  label:'Projections'},
     {id:'export',      icon:<Icon.Export/>,        label:'Export & Import'},
     {id:'guide',       icon:<Icon.Guide/>,         label:'Guide'},
+          {id:'networth',    icon:<Icon.Wallet/>,        label:'Net Worth'},
+          {id:'compound',    icon:<Icon.Lightning/>,     label:'Compound Growth'},
     {id:'settings',    icon:<Icon.Settings/>,      label:'Settings'},
   ];
 
@@ -1016,6 +1023,190 @@ export default function AppDashboard() {
                 <p>Download a starter CSV with the recommended column structure and example rows.</p>
                 <div className="fl-format-table">{['Date','Description','Type (income / need / want / saving)','Category','Amount','Recurring (Yes / No)'].map((c,i)=><div key={i} className="fl-format-row"><span className="fl-format-num">{i+1}</span><span>{c}</span></div>)}</div>
                 <button className="fl-btn-ghost" style={{marginTop:8}} onClick={()=>{const s='Date,Description,Type,Category,Amount,Recurring\n2026-03-01,Monthly salary,income,,5000,No\n2026-03-02,Rent,need,Rent,1400,Yes\n2026-03-05,Groceries,need,Groceries,180,No';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv'}));a.download='fire-ledger-template.csv';a.click();showToast('Template downloaded');}}>Download template</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* NET WORTH */}
+        {tab==='networth'&&(
+          <div key="networth" className="fl-page">
+            <div className="fl-page-top"><div><h1 className="fl-title">Net Worth</h1><p className="fl-subtitle">Assets minus liabilities — your real financial picture</p></div></div>
+            <div className="fl-nw-layout">
+              <div className="fl-nw-col">
+                <div className="fl-nw-section fl-nw-assets">
+                  <h3>Assets</h3>
+                  {[
+                    {key:'houseValue',      label:'Property Value'},
+                    {key:'carValue',        label:'Vehicle Value'},
+                    {key:'cashSavings',     label:'Cash & Savings'},
+                    {key:'investments',     label:'Investments'},
+                    {key:'otherAssets',     label:'Other Assets'},
+                  ].map(f=>(
+                    <div key={f.key} className="fl-nw-field">
+                      <label>{f.label}</label>
+                      <div className="fl-fire-input-wrap">
+                        <span className="fl-input-prefix">{sym}</span>
+                        <input className="fl-fire-input" type="number" placeholder="0"
+                          value={nw[f.key]||''}
+                          onChange={e=>setNw(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="fl-nw-subtotal fl-nw-subtotal-green">
+                    <span>Total Assets</span>
+                    <strong>{fmt(Object.entries(nw).filter(([k])=>['houseValue','carValue','cashSavings','investments','otherAssets'].includes(k)).reduce((s,[,v])=>s+v,0))}</strong>
+                  </div>
+                </div>
+              </div>
+              <div className="fl-nw-col">
+                <div className="fl-nw-section fl-nw-liabilities">
+                  <h3>Liabilities</h3>
+                  {[
+                    {key:'mortgage',        label:'Mortgage'},
+                    {key:'creditCard',      label:'Credit Card Debt'},
+                    {key:'studentLoan',     label:'Student Loan'},
+                    {key:'personalLoan',    label:'Personal Loan'},
+                    {key:'otherLiabilities',label:'Other Liabilities'},
+                  ].map(f=>(
+                    <div key={f.key} className="fl-nw-field">
+                      <label>{f.label}</label>
+                      <div className="fl-fire-input-wrap">
+                        <span className="fl-input-prefix">{sym}</span>
+                        <input className="fl-fire-input" type="number" placeholder="0"
+                          value={nw[f.key]||''}
+                          onChange={e=>setNw(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="fl-nw-subtotal fl-nw-subtotal-red">
+                    <span>Total Liabilities</span>
+                    <strong>{fmt(Object.entries(nw).filter(([k])=>['mortgage','creditCard','studentLoan','personalLoan','otherLiabilities'].includes(k)).reduce((s,[,v])=>s+v,0))}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {(()=>{
+              const assets = ['houseValue','carValue','cashSavings','investments','otherAssets'].reduce((s,k)=>s+nw[k],0);
+              const liabs  = ['mortgage','creditCard','studentLoan','personalLoan','otherLiabilities'].reduce((s,k)=>s+nw[k],0);
+              const netWorth = assets - liabs;
+              const debtRatio = assets > 0 ? ((liabs/assets)*100).toFixed(1) : 0;
+              return (
+                <div className="fl-nw-result">
+                  <div className="fl-nw-result-main">
+                    <span className="fl-nw-result-label">Net Worth</span>
+                    <span className="fl-nw-result-value" style={{color:netWorth>=0?'var(--green)':'var(--red)'}}>{fmt(netWorth)}</span>
+                  </div>
+                  <div className="fl-nw-result-stats">
+                    <div className="fl-nw-stat"><span>Debt-to-Asset Ratio</span><strong style={{color:parseFloat(debtRatio)>50?'var(--red)':parseFloat(debtRatio)>30?'var(--gold)':'var(--green)'}}>{debtRatio}%</strong></div>
+                    <div className="fl-nw-stat"><span>% of FIRE number</span><strong style={{color:'var(--purple-light)'}}>{fireCalc.fireNum>0?((Math.max(0,netWorth)/fireCalc.fireNum)*100).toFixed(1):0}%</strong></div>
+                    <div className="fl-nw-stat"><span>FIRE number</span><strong style={{color:'var(--gold)'}}>{fmt(fireCalc.fireNum)}</strong></div>
+                  </div>
+                  <div className="fl-nw-bar-wrap">
+                    <div className="fl-nw-bar-track">
+                      <div className="fl-nw-bar-assets" style={{width:`${assets>0?Math.min((assets/(assets+liabs))*100,100):100}%`}}/>
+                    </div>
+                    <div className="fl-nw-bar-labels"><span style={{color:'var(--green)'}}>Assets {fmt(assets)}</span><span style={{color:'var(--red)'}}>Liabilities {fmt(liabs)}</span></div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* COMPOUND GROWTH */}
+        {tab==='compound'&&(
+          <div key="compound" className="fl-page">
+            <div className="fl-page-top"><div><h1 className="fl-title">Compound Growth</h1><p className="fl-subtitle">See how your money grows over time</p></div></div>
+            <div className="fl-cg-layout">
+              <div className="fl-cg-inputs">
+                <h3>Your Numbers</h3>
+                <div className="fl-fire-field">
+                  <label>Initial Investment</label>
+                  <div className="fl-fire-input-wrap"><span className="fl-input-prefix">{sym}</span>
+                    <input className="fl-fire-input" type="number" placeholder="0" value={cg.initial||''} onChange={e=>setCg(p=>({...p,initial:parseFloat(e.target.value)||0}))}/>
+                  </div>
+                </div>
+                <div className="fl-fire-field">
+                  <label>Investment Timeline</label>
+                  <div className="fl-fire-input-wrap"><span className="fl-input-prefix">yr</span>
+                    <input className="fl-fire-input" type="number" placeholder="10" value={cg.years||''} onChange={e=>setCg(p=>({...p,years:parseInt(e.target.value)||0}))}/>
+                  </div>
+                </div>
+                <div className="fl-fire-field">
+                  <label>Annual Growth Rate</label>
+                  <div className="fl-fire-input-wrap"><span className="fl-input-prefix">%</span>
+                    <input className="fl-fire-input" type="number" placeholder="7" step="0.5" value={cg.growthRate||''} onChange={e=>setCg(p=>({...p,growthRate:parseFloat(e.target.value)||0}))}/>
+                  </div>
+                </div>
+                <div className="fl-fire-field">
+                  <label>Annual Inflation Rate</label>
+                  <div className="fl-fire-input-wrap"><span className="fl-input-prefix">%</span>
+                    <input className="fl-fire-input" type="number" placeholder="3" step="0.5" value={cg.inflationRate||''} onChange={e=>setCg(p=>({...p,inflationRate:parseFloat(e.target.value)||0}))}/>
+                  </div>
+                </div>
+                <div className="fl-fire-field">
+                  <label>Contributions</label>
+                  <div className="fl-contrib-toggle">
+                    <button className={cg.contribType==='annual'?'active':''} onClick={()=>setCg(p=>({...p,contribType:'annual'}))}>Annual</button>
+                    <button className={cg.contribType==='monthly'?'active':''} onClick={()=>setCg(p=>({...p,contribType:'monthly'}))}>Monthly</button>
+                  </div>
+                  <div className="fl-fire-input-wrap" style={{marginTop:6}}><span className="fl-input-prefix">{sym}</span>
+                    <input className="fl-fire-input" type="number" placeholder="0" value={cg.contribution||''} onChange={e=>setCg(p=>({...p,contribution:parseFloat(e.target.value)||0}))}/>
+                  </div>
+                </div>
+                <div className="fl-fire-field">
+                  <label>Compounding Frequency</label>
+                  <div className="fl-contrib-toggle">
+                    <button className={cg.compounding==='annual'?'active':''} onClick={()=>setCg(p=>({...p,compounding:'annual'}))}>Annual</button>
+                    <button className={cg.compounding==='monthly'?'active':''} onClick={()=>setCg(p=>({...p,compounding:'monthly'}))}>Monthly</button>
+                  </div>
+                </div>
+                <button className="fl-btn-primary" style={{width:'100%'}} onClick={()=>{
+                  const n = cg.compounding==='monthly' ? cg.years*12 : cg.years;
+                  const r = cg.compounding==='monthly' ? cg.growthRate/100/12 : cg.growthRate/100;
+                  const annualContrib = cg.contribType==='monthly' ? cg.contribution*12 : cg.contribution;
+                  const periodicContrib = cg.compounding==='monthly' ? annualContrib/12 : annualContrib;
+                  const nominal = cg.initial * Math.pow(1+r,n) + periodicContrib * ((Math.pow(1+r,n)-1)/r);
+                  const realRate = (1+cg.growthRate/100)/(1+cg.inflationRate/100)-1;
+                  const rn = cg.compounding==='monthly' ? realRate/12 : realRate;
+                  const real = cg.initial * Math.pow(1+rn,n) + periodicContrib * ((Math.pow(1+rn,n)-1)/rn);
+                  const totalContribs = cg.initial + annualContrib * cg.years;
+                  const rule72 = cg.growthRate > 0 ? (72/cg.growthRate).toFixed(1) : '—';
+                  setCgResult({ nominal, real, totalContribs, growth: nominal-totalContribs, rule72 });
+                }}>Calculate Growth</button>
+                <button className="fl-btn-ghost" style={{width:'100%',marginTop:8}} onClick={()=>{setCg({initial:0,years:10,growthRate:7,inflationRate:3,contribType:'annual',contribution:0,compounding:'annual'});setCgResult(null);}}>Clear</button>
+              </div>
+              <div className="fl-cg-results">
+                {cgResult ? (
+                  <>
+                    <div className="fl-cg-result-hero">
+                      <span className="fl-cg-label">Nominal Value</span>
+                      <span className="fl-cg-value" style={{color:'var(--purple-light)'}}>{fmt(cgResult.nominal)}</span>
+                      <span className="fl-cg-sub">After {cg.years} years at {cg.growthRate}% growth</span>
+                    </div>
+                    <div className="fl-fire-stat-grid" style={{marginTop:16}}>
+                      {[
+                        {label:'Real Value',        value:fmt(cgResult.real),          hint:'Inflation-adjusted',                     color:'var(--green)'},
+                        {label:'Total Contributed', value:fmt(cgResult.totalContribs), hint:'Your actual money in',                   color:'var(--t1)'},
+                        {label:'Growth',            value:fmt(cgResult.growth),        hint:'Compound interest earned',               color:'var(--gold)'},
+                        {label:'Rule of 72',        value:`${cgResult.rule72} yrs`,    hint:'Years to double at this rate',           color:'var(--purple-light)'},
+                      ].map((s,i)=>(
+                        <div key={i} className="fl-fire-stat">
+                          <span className="fl-fire-stat-label">{s.label}</span>
+                          <span className="fl-fire-stat-value" style={{color:s.color,fontSize:18}}>{s.value}</span>
+                          <span className="fl-fire-stat-hint">{s.hint}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="fl-cg-disclaimer">For illustrative purposes only. Does not constitute financial advice.</div>
+                  </>
+                ) : (
+                  <div className="fl-cg-empty">
+                    <div className="fl-cg-empty-icon"><Icon.Lightning/></div>
+                    <p>Enter your numbers and click Calculate Growth to see how your investment compounds over time.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
