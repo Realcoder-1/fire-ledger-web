@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import './AppDashboard.css';
+import './AppDashboard.tron.css';
 
 // ─── SVG Icon System — no emojis ─────────────────────────────────────────────
 const Icon = {
