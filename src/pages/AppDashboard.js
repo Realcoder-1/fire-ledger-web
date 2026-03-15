@@ -161,7 +161,7 @@ const TOUR_STEPS = [
   { target: 'home',         title: 'Dashboard',          body: 'Your financial independence overview. The ring shows your progress to FIRE. Metrics update in real time as you log transactions.' },
   { target: 'add-btn',      title: 'Log a Transaction',  body: 'Click here to record any income, expense, or savings. Use Income for salary, Need for essentials, Want for discretionary spending, Saving for investments.' },
   { target: 'fire-hero',    title: 'Your FIRE Timeline',  body: 'This shows how many years until you reach financial independence, your projected freedom date, and how far along you are.' },
-  { target: 'fire',         title: 'FIRE Calculator',    body: 'Enter your annual expenses, annual savings, and current savings. The calculator shows your FIRE number and exactly when you'll be free.' },
+  { target: 'fire',         title: 'FIRE Calculator',    body: "Enter your annual expenses, annual savings, and current savings. The calculator shows your FIRE number and exactly when you'll be free." },
   { target: 'projections',  title: 'Projections',        body: 'See your wealth trajectory charted over time. Run a Monte Carlo simulation to model 500 different market scenarios.' },
   { target: 'insights',     title: 'Insights',           body: 'Track your spending patterns. See your savings grade, the 50/30/20 breakdown, and your top expense categories each month.' },
   { target: 'export',       title: 'Export & Import',    body: 'Export your data to Excel or CSV anytime. Import from any bank statement CSV — the smart importer handles any column format.' },
