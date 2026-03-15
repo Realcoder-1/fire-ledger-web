@@ -361,7 +361,12 @@ export default function AppDashboard() {
   const [mcRunning,     setMcRunning]   = useState(false);
   const [projYears,     setProjYears]   = useState(35);
   const [inflation,     setInflation]   = useState(3);
-  const [fireMode,      setFireMode]    = useState('standard'); // standard | coast | lean | fat
+  const [fireMode,      setFireMode]    = useState('standard');
+  const [currentAge,    setCurrentAge]  = useState(30);
+  const [retireAge,     setRetireAge]   = useState(65);
+  const [swr,           setSwr]         = useState(4);
+  const [contribMode,   setContribMode] = useState('annual'); // annual | monthly
+  const [contribs,      setContribs]    = useState(0);
   const [form, setForm] = useState({ amount:'', description:'', type:'need', category:'', date:new Date().toISOString().split('T')[0], recurring:false });
   const addAmtRef  = useRef(null);
   const fileRef    = useRef(null);
@@ -754,9 +759,12 @@ export default function AppDashboard() {
           const fatNum   = fire.annualExpenses * 1.5  * 25;
           const coastNum = fireCalc.fireNum;
           // Coast FIRE: amount needed NOW that grows to FIRE number by age 65
-          const yearsToGrow = Math.max(1, adjFireCalc.years);
-          const coastAmt = coastNum / Math.pow(1.07, yearsToGrow);
-          const coastReached = fire.currentSavings >= coastAmt;
+          const yearsToGrow = Math.max(1, retireAge - currentAge);
+          const annualContrib = contribMode==='monthly' ? contribs*12 : contribs;
+          // Coast FIRE: current savings needed NOW to grow to FIRE number by retirement
+          // accounting for any ongoing contributions
+          const coastAmt = (coastNum - annualContrib * ((Math.pow(1.07,yearsToGrow)-1)/0.07)) / Math.pow(1.07, yearsToGrow);
+          const coastReached = fire.currentSavings >= Math.max(0, coastAmt);
           const displayNum = fireMode==='lean' ? leanNum : fireMode==='fat' ? fatNum : fireCalc.fireNum;
           const displayProgress = Math.min((fire.currentSavings / displayNum)*100, 100);
           return (
@@ -810,6 +818,50 @@ export default function AppDashboard() {
                   <span className="fl-fire-hint">Real return adjusted for inflation (default 3%)</span>
                 </div>
 
+                {/* Coast FIRE extra inputs */}
+                {fireMode==='coast'&&(
+                  <>
+                    <div className="fl-fire-field">
+                      <label>Current Age</label>
+                      <div className="fl-fire-input-wrap">
+                        <span className="fl-input-prefix">yr</span>
+                        <input className="fl-fire-input" type="number" placeholder="30"
+                          value={currentAge||''} onChange={e=>setCurrentAge(parseInt(e.target.value)||0)}/>
+                      </div>
+                    </div>
+                    <div className="fl-fire-field">
+                      <label>Retirement Age</label>
+                      <div className="fl-fire-input-wrap">
+                        <span className="fl-input-prefix">yr</span>
+                        <input className="fl-fire-input" type="number" placeholder="65"
+                          value={retireAge||''} onChange={e=>setRetireAge(parseInt(e.target.value)||0)}/>
+                      </div>
+                      <span className="fl-fire-hint">{Math.max(0,retireAge-currentAge)} years to grow</span>
+                    </div>
+                    <div className="fl-fire-field">
+                      <label>Safe Withdrawal Rate</label>
+                      <div className="fl-fire-input-wrap">
+                        <span className="fl-input-prefix">%</span>
+                        <input className="fl-fire-input" type="number" placeholder="4" step="0.1"
+                          value={swr||''} onChange={e=>setSwr(parseFloat(e.target.value)||4)}/>
+                      </div>
+                      <span className="fl-fire-hint">Annual % drawn from portfolio (default 4%)</span>
+                    </div>
+                    <div className="fl-fire-field">
+                      <label>Contributions</label>
+                      <div className="fl-contrib-toggle">
+                        <button className={contribMode==='annual'?'active':''} onClick={()=>setContribMode('annual')}>Annual</button>
+                        <button className={contribMode==='monthly'?'active':''} onClick={()=>setContribMode('monthly')}>Monthly</button>
+                      </div>
+                      <div className="fl-fire-input-wrap" style={{marginTop:6}}>
+                        <span className="fl-input-prefix">{sym}</span>
+                        <input className="fl-fire-input" type="number" placeholder="0"
+                          value={contribs||''} onChange={e=>setContribs(parseFloat(e.target.value)||0)}/>
+                      </div>
+                      <span className="fl-fire-hint">Optional — how much you still plan to contribute</span>
+                    </div>
+                  </>
+                )}
                 <button className="fl-btn-primary" style={{width:'100%'}} onClick={()=>{saveSettings(fire,null,null);showToast('Settings saved');}}>Save settings</button>
 
                 <div className="fl-whatif">
@@ -867,8 +919,16 @@ export default function AppDashboard() {
                       <strong style={{color:coastReached?'var(--green)':'var(--t1)'}}>{fmt(fire.currentSavings)}</strong>
                     </div>
                     <div className="fl-coast-row">
-                      <span>Status</span>
-                      <strong style={{color:coastReached?'var(--green)':'var(--gold)'}}>{coastReached?'Coast FIRE reached ✓':'Not yet reached'}</strong>
+                      <span>Gap to coast</span>
+                      <strong style={{color:coastReached?'var(--green)':'var(--red)'}}>{coastReached?'Reached ✓':fmt(Math.max(0,coastAmt-fire.currentSavings))}</strong>
+                    </div>
+                    <div className="fl-coast-row">
+                      <span>Safe withdrawal rate</span>
+                      <strong style={{color:'var(--t1)'}}>{swr}%</strong>
+                    </div>
+                    <div className="fl-coast-row">
+                      <span>Annual income at FIRE</span>
+                      <strong style={{color:'var(--purple-light)'}}>{fmt(fireCalc.fireNum * (swr/100))}</strong>
                     </div>
                   </div>
                 )}

@@ -534,3 +534,22 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
 /* ── INFLATION NOTE ──────────────────────────────────── */
 .fl-inflation-note { width:100%; margin-top:12px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--t2); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .fl-inflation-note strong { color:var(--gold); }
+
+/* ── CONTRIBUTION TOGGLE ─────────────────────────────── */
+.fl-contrib-toggle { display:flex; gap:6px; margin-bottom:2px; }
+.fl-contrib-toggle button { flex:1; background:var(--bg3); border:1px solid var(--border); color:var(--t2); padding:6px 12px; border-radius:6px; font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+.fl-contrib-toggle button:hover { border-color:var(--border2); color:var(--t1); }
+.fl-contrib-toggle button.active { background:var(--purple-subtle); border-color:var(--purple-light); color:var(--purple-light); }
+
+/* ── SCROLL HINT ─────────────────────────────────────── */
+.fl-main::after {
+  content:'';
+  position:fixed;
+  bottom:0;
+  right:0;
+  left:var(--sidebar-w);
+  height:48px;
+  background:linear-gradient(transparent, var(--bg));
+  pointer-events:none;
+  z-index:10;
+}
