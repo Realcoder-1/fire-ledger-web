@@ -517,9 +517,6 @@ export default function AppDashboard() {
     {id:'settings',    icon:<Icon.Settings/>,      label:'Settings'},
   ];
 
-  // Dark screen fix — key forces remount on tab change
-  const pageKey = tab;
-
   if (loading) return (
     <div className="fl-loading">
       <div className="fl-logo-mark"><Icon.Flame/></div>
