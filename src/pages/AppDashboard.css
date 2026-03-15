@@ -515,3 +515,22 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
   .fl-mc-result { flex-direction:column; }
   .fl-main::after { left:0; }
 }
+
+/* ── FIRE MODE TABS ──────────────────────────────────── */
+.fl-fire-mode-tabs { display:flex; gap:6px; flex-wrap:wrap; }
+.fl-fire-mode-btn { background:var(--bg3); border:1px solid var(--border); color:var(--t2); padding:7px 14px; border-radius:7px; font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+.fl-fire-mode-btn:hover { border-color:var(--border2); color:var(--t1); }
+.fl-fire-mode-btn.active { background:var(--purple-subtle); border-color:var(--purple-light); color:var(--purple-light); }
+
+/* ── FIRE MODE DESCRIPTION ───────────────────────────── */
+.fl-fire-mode-desc { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:14px 18px; margin-bottom:16px; font-size:13px; color:var(--t2); line-height:1.6; }
+.fl-fire-mode-desc strong { color:var(--t1); }
+
+/* ── COAST FIRE CARD ─────────────────────────────────── */
+.fl-coast-card { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+.fl-coast-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--t2); }
+.fl-coast-row strong { font-family:'JetBrains Mono',monospace; font-size:14px; }
+
+/* ── INFLATION NOTE ──────────────────────────────────── */
+.fl-inflation-note { width:100%; margin-top:12px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--t2); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.fl-inflation-note strong { color:var(--gold); }
