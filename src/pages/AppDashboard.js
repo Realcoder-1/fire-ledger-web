@@ -29,6 +29,7 @@ const Icon = {
   Wallet:       () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M2 7h12" stroke="currentColor" strokeWidth="1.4"/><circle cx="11.5" cy="10" r="1" fill="currentColor"/><path d="M5 2h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   Edit:         () => <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9.5V11h1.5l5-5L7 4.5l-5 5zM10.5 3l-.8-.8a.7.7 0 00-1 0L8 2.9l1.5 1.5.7-.7a.7.7 0 000-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>,
   Lightning:    () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9.5 2L4 9h5.5L6.5 14l6.5-7H7.5L9.5 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
+  X:            () => <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
 };
 
 // ─── Currency config ──────────────────────────────────────────────────────────
@@ -139,14 +140,14 @@ function ProjectionChart({ points, fireNum, sym, mcResult }) {
   return(
     <svg viewBox={`0 0 ${W} ${H}`} className="fl-proj-chart" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--purple-light)" stopOpacity="0.25"/><stop offset="100%" stopColor="var(--purple-light)" stopOpacity="0"/></linearGradient>
-        <linearGradient id="mcb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--purple-light)" stopOpacity="0.06"/><stop offset="100%" stopColor="var(--purple-light)" stopOpacity="0.01"/></linearGradient>
+        <linearGradient id="proj-fill-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--purple-light)" stopOpacity="0.25"/><stop offset="100%" stopColor="var(--purple-light)" stopOpacity="0"/></linearGradient>
+        <linearGradient id="proj-mc-band" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--purple-light)" stopOpacity="0.06"/><stop offset="100%" stopColor="var(--purple-light)" stopOpacity="0.01"/></linearGradient>
       </defs>
       {yTicks.map(t=><g key={t.v}><line x1={PAD.left} y1={t.y} x2={W-PAD.right} y2={t.y} stroke="rgba(255,255,255,0.04)" strokeWidth="1"/><text x={PAD.left-6} y={t.y+4} textAnchor="end" fontSize="9" fill="rgba(255,255,255,0.25)">{t.v>=1000000?`${sym}${(t.v/1000000).toFixed(1)}M`:t.v>=1000?`${sym}${(t.v/1000).toFixed(0)}k`:`${sym}${Math.round(t.v)}`}</text></g>)}
       {xTicks.map(p=><text key={p.year} x={xS(p.year)} y={H-4} textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.25)">Yr {p.year}</text>)}
-      {mcResult&&<path d={aD(mcResult.percentiles.p90,mcResult.percentiles.p10)} fill="url(#mcb)"/>}
+      {mcResult&&<path d={aD(mcResult.percentiles.p90,mcResult.percentiles.p10)} fill="url(#proj-mc-band)"/>}
       {mcResult&&<><path d={pathD(mcResult.percentiles.p90)} fill="none" stroke="var(--purple-light)" strokeWidth="1" strokeDasharray="3 4" opacity="0.25"/><path d={pathD(mcResult.percentiles.p10)} fill="none" stroke="var(--red)" strokeWidth="1" strokeDasharray="3 4" opacity="0.25"/></>}
-      <path d={`${pathD(points.map(p=>p.value))} L${xS(points.length-1)},${yS(0)} L${xS(0)},${yS(0)} Z`} fill="url(#pg)"/>
+      <path d={`${pathD(points.map(p=>p.value))} L${xS(points.length-1)},${yS(0)} L${xS(0)},${yS(0)} Z`} fill="url(#proj-fill-grad)"/>
       {fireY>PAD.top&&fireY<H-PAD.bottom&&<><line x1={PAD.left} y1={fireY} x2={W-PAD.right} y2={fireY} stroke="var(--gold)" strokeWidth="1.5" strokeDasharray="5 4" opacity="0.6"/><text x={W-PAD.right+3} y={fireY+4} fontSize="9" fill="var(--gold)" opacity="0.7">FIRE</text></>}
       {crossIdx>0&&<><circle cx={xS(crossIdx)} cy={yS(points[crossIdx].value)} r="4.5" fill="var(--green)" opacity="0.9"/><line x1={xS(crossIdx)} y1={PAD.top} x2={xS(crossIdx)} y2={H-PAD.bottom} stroke="var(--green)" strokeWidth="1" strokeDasharray="3 4" opacity="0.35"/><text x={xS(crossIdx)} y={PAD.top-3} textAnchor="middle" fontSize="9" fill="var(--green)">Free</text></>}
       <path d={pathD(points.map(p=>p.value))} fill="none" stroke="var(--purple-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -394,7 +395,7 @@ export default function AppDashboard() {
 
   useEffect(() => {
     if (!showAdd) return;
-    const h = e => { if(e.key==='Escape') setShowAdd(false); if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) addTx(); };
+    const h = e => { if(e.key==='Escape') closeModal(); if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) (editTx?saveEdit:addTx)(); };
     window.addEventListener('keydown',h); return()=>window.removeEventListener('keydown',h);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAdd,form]);
@@ -621,8 +622,8 @@ export default function AppDashboard() {
               <div className="fl-fire-hero-right">
                 <svg viewBox="0 0 140 140" className="fl-fire-ring">
                   <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="11"/>
-                  <circle cx="70" cy="70" r="56" fill="none" stroke="url(#hg)" strokeWidth="11" strokeDasharray="352" strokeDashoffset={352-(352*fireCalc.progress/100)} strokeLinecap="round" transform="rotate(-90 70 70)"/>
-                  <defs><linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--purple-light)"/><stop offset="100%" stopColor="var(--purple-dark)"/></linearGradient></defs>
+                  <circle cx="70" cy="70" r="56" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="11" strokeDasharray="352" strokeDashoffset={352-(352*fireCalc.progress/100)} strokeLinecap="round" transform="rotate(-90 70 70)"/>
+                  <defs><linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--purple-light)"/><stop offset="100%" stopColor="var(--purple-dark)"/></linearGradient></defs>
                 </svg>
                 <div className="fl-ring-center"><span className="fl-ring-pct">{fireCalc.progress.toFixed(0)}%</span><span className="fl-ring-sub">to FIRE</span></div>
               </div>
@@ -766,7 +767,7 @@ export default function AppDashboard() {
               </div>
               <div className="fl-fire-results">
                 <div className="fl-fire-big-ring">
-                  <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16"/><circle cx="100" cy="100" r="85" fill="none" stroke="url(#fg2)" strokeWidth="16" strokeDasharray="534" strokeDashoffset={534-(534*fireCalc.progress/100)} strokeLinecap="round" transform="rotate(-90 100 100)"/><defs><linearGradient id="fg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--purple-light)"/><stop offset="100%" stopColor="var(--purple-dark)"/></linearGradient></defs></svg>
+                  <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16"/><circle cx="100" cy="100" r="85" fill="none" stroke="url(#fire-calc-grad)" strokeWidth="16" strokeDasharray="534" strokeDashoffset={534-(534*fireCalc.progress/100)} strokeLinecap="round" transform="rotate(-90 100 100)"/><defs><linearGradient id="fire-calc-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--purple-light)"/><stop offset="100%" stopColor="var(--purple-dark)"/></linearGradient></defs></svg>
                   <div className="fl-fire-big-center"><span className="fl-fire-big-pct">{fireCalc.progress.toFixed(1)}%</span><span className="fl-fire-big-sub">to FIRE</span></div>
                 </div>
                 <div className="fl-fire-stat-grid">
@@ -909,13 +910,13 @@ export default function AppDashboard() {
               <div className="fl-amount-section">
                 <div className="fl-amount-input-wrap" style={{borderColor:typeConfig[form.type].border}}>
                   <span className="fl-amount-prefix" style={{color:typeConfig[form.type].color}}>{sym}</span>
-                  <input ref={addAmtRef} className="fl-amount-input" style={{color:typeConfig[form.type].color}} type="text" inputMode="decimal" placeholder="0.00" value={rawAmt} onChange={e=>{const raw=e.target.value.replace(/[^0-9.]/g,'');setRawAmt(fmtInput(raw));setForm(p=>({...p,amount:raw}));}} onKeyDown={e=>{if(e.key==='Enter')addTx();}}/>
+                  <input ref={addAmtRef} className="fl-amount-input" style={{color:typeConfig[form.type].color}} type="text" inputMode="decimal" placeholder="0.00" value={rawAmt} onChange={e=>{const raw=e.target.value.replace(/[^0-9.]/g,'');setRawAmt(fmtInput(raw));setForm(p=>({...p,amount:raw}));}} onKeyDown={e=>{if(e.key==='Enter')(editTx?saveEdit:addTx)();}}/>
                 </div>
                 <div className="fl-quick-amounts">{[10,25,50,100].map(a=><button key={a} className="fl-quick-amt" style={{borderColor:form.amount===a.toString()?typeConfig[form.type].border:''}} onClick={()=>{setRawAmt(fmtInput(a.toString()));setForm(p=>({...p,amount:a.toString()}));}}>{sym}{a}</button>)}</div>
               </div>
               <div className="fl-field-group"><label className="fl-field-label">Description</label><input className="fl-field-input" placeholder="e.g. Monthly rent, salary, Netflix…" value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} onKeyDown={e=>{if(e.key==='Enter')(editTx?saveEdit:addTx)();}}/></div>
               <div className="fl-field-row">
-                <div className="fl-field-group" style={{flex:1}}><label className="fl-field-label">Category</label><select className="fl-field-input" value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))}><option value="">Optional</option>{(cats[form.type==='need'?'needs':form.type==='want'?'wants':form.type==='saving'?'savings':null]||[]).map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+                <div className="fl-field-group" style={{flex:1}}><label className="fl-field-label">Category</label><select className="fl-field-input" value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))}><option value="">Optional</option>{(form.type==='income'?[]:(cats[form.type==='need'?'needs':form.type==='want'?'wants':'savings']||[])).map(c=><option key={c} value={c}>{c}</option>)}</select></div>
                 <div className="fl-field-group" style={{flex:1}}><label className="fl-field-label">Date</label><input className="fl-field-input" type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))}/></div>
               </div>
               <div className="fl-modal-footer">
