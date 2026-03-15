@@ -27,6 +27,7 @@ const Icon = {
   Book:         () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9H3V2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M10 2v3h3M5 7h5M5 10h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   Target:       () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.4"/><circle cx="8" cy="8" r="1" fill="currentColor"/></svg>,
   Wallet:       () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M2 7h12" stroke="currentColor" strokeWidth="1.4"/><circle cx="11.5" cy="10" r="1" fill="currentColor"/><path d="M5 2h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  Edit:         () => <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9.5V11h1.5l5-5L7 4.5l-5 5zM10.5 3l-.8-.8a.7.7 0 00-1 0L8 2.9l1.5 1.5.7-.7a.7.7 0 000-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>,
   Lightning:    () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9.5 2L4 9h5.5L6.5 14l6.5-7H7.5L9.5 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
 };
 
@@ -92,10 +93,10 @@ const makeFmt = (currency) => {
   };
 };
 
-const TYPE_COLOR  = { income:'#52c98a', need:'#e05c5c', want:'#e0825c', saving:'#5b9cf6' };
+const TYPE_COLOR  = { income:'#52c98a', need:'#e05c5c', want:'#e0825c', saving:'#fbbf24' };
 const TYPE_LABEL  = { income:'Income',  need:'Need',    want:'Want',    saving:'Saving'  };
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const amtColor = t => t==='income'?'var(--green)':t==='saving'?'var(--blue)':'var(--red)';
+const amtColor = t => t==='income'?'var(--green)':t==='saving'?'var(--gold)':'var(--red)';
 const fmtInput = v => { if(!v&&v!==0)return''; const n=v.toString().replace(/[^0-9.]/g,''); const p=n.split('.'); p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,','); return p.join('.'); };
 
 function smartParseCSV(text) {
@@ -151,6 +152,44 @@ function ProjectionChart({ points, fireNum, sym, mcResult }) {
       <path d={pathD(points.map(p=>p.value))} fill="none" stroke="var(--purple-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       <circle cx={xS(0)} cy={yS(points[0].value)} r="3.5" fill="var(--purple-light)"/>
     </svg>
+  );
+}
+
+
+// ─── Walkthrough Tour ─────────────────────────────────────────────────────────
+const TOUR_STEPS = [
+  { target: 'home',         title: 'Dashboard',          body: 'Your financial independence overview. The ring shows your progress to FIRE. Metrics update in real time as you log transactions.' },
+  { target: 'add-btn',      title: 'Log a Transaction',  body: 'Click here to record any income, expense, or savings. Use Income for salary, Need for essentials, Want for discretionary spending, Saving for investments.' },
+  { target: 'fire-hero',    title: 'Your FIRE Timeline',  body: 'This shows how many years until you reach financial independence, your projected freedom date, and how far along you are.' },
+  { target: 'fire',         title: 'FIRE Calculator',    body: 'Enter your annual expenses, annual savings, and current savings. The calculator shows your FIRE number and exactly when you'll be free.' },
+  { target: 'projections',  title: 'Projections',        body: 'See your wealth trajectory charted over time. Run a Monte Carlo simulation to model 500 different market scenarios.' },
+  { target: 'insights',     title: 'Insights',           body: 'Track your spending patterns. See your savings grade, the 50/30/20 breakdown, and your top expense categories each month.' },
+  { target: 'export',       title: 'Export & Import',    body: 'Export your data to Excel or CSV anytime. Import from any bank statement CSV — the smart importer handles any column format.' },
+];
+
+function TourOverlay({ step, onNext, onSkip }) {
+  if (step < 0 || step >= TOUR_STEPS.length) return null;
+  const s = TOUR_STEPS[step];
+  const isLast = step === TOUR_STEPS.length - 1;
+  return (
+    <div className="fl-tour-overlay">
+      <div className="fl-tour-card">
+        <div className="fl-tour-header">
+          <div className="fl-tour-progress">
+            {TOUR_STEPS.map((_,i) => <div key={i} className={`fl-tour-dot ${i===step?'active':i<step?'done':''}`}/>)}
+          </div>
+          <button className="fl-tour-skip" onClick={onSkip}>Skip tour</button>
+        </div>
+        <h3 className="fl-tour-title">{s.title}</h3>
+        <p className="fl-tour-body">{s.body}</p>
+        <div className="fl-tour-footer">
+          <span className="fl-tour-count">{step + 1} of {TOUR_STEPS.length}</span>
+          <button className="fl-btn-primary" onClick={onNext} style={{padding:'8px 20px',fontSize:13}}>
+            {isLast ? 'Done' : 'Next'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -298,6 +337,8 @@ export default function AppDashboard() {
   const [tab,           setTab]         = useState('home');
   const [txs,           setTxs]         = useState([]);
   const [showAdd,       setShowAdd]     = useState(false);
+  const [editTx,        setEditTx]      = useState(null);  // tx being edited
+  const [tourStep,      setTourStep]    = useState(-1);    // -1 = off
   const [showOnboard,   setShowOnboard] = useState(false);
   const [onboardStep,   setOnboardStep] = useState(0);
   const [fire,          setFire]        = useState({ annualExpenses:40000, annualSavings:20000, currentSavings:50000 });
@@ -375,6 +416,29 @@ export default function AppDashboard() {
     setTxs(p=>p.filter(t=>t.id!==id)); showToast('Deleted','error');
   };
 
+  const openEdit = (tx) => {
+    setEditTx(tx);
+    setForm({ amount: tx.amount.toString(), description: tx.description, type: tx.type, category: tx.category||'', date: tx.date, recurring: tx.recurring });
+    setRawAmt(fmtInput(tx.amount.toString()));
+    setShowAdd(true);
+  };
+
+  const saveEdit = async () => {
+    if (!form.amount || !form.description) return;
+    const updates = { amount: parseFloat(form.amount), description: form.description, type: form.type, category: form.category, date: form.date, recurring: form.recurring };
+    const { data } = await supabase.from('transactions').update(updates).eq('id', editTx.id).select().single();
+    if (data) { setTxs(p => p.map(t => t.id === editTx.id ? data : t)); showToast('Transaction updated'); }
+    setEditTx(null); setShowAdd(false);
+    setForm({ amount:'', description:'', type:'need', category:'', date: new Date().toISOString().split('T')[0], recurring:false });
+    setRawAmt('');
+  };
+
+  const closeModal = () => {
+    setShowAdd(false); setEditTx(null);
+    setForm({ amount:'', description:'', type:'need', category:'', date: new Date().toISOString().split('T')[0], recurring:false });
+    setRawAmt('');
+  };
+
   const handleImportFile = e => {
     const file=e.target.files[0]; if(!file)return;
     const reader=new FileReader();
@@ -439,7 +503,7 @@ export default function AppDashboard() {
     income:{label:'Income', icon:<Icon.ArrowUp/>,  color:'var(--green)', bg:'rgba(82,201,138,0.1)',  border:'rgba(82,201,138,0.35)'},
     need:  {label:'Need',   icon:<Icon.ArrowDown/>, color:'var(--red)',   bg:'rgba(224,92,92,0.1)',   border:'rgba(224,92,92,0.35)'},
     want:  {label:'Want',   icon:<Icon.ArrowDown/>, color:'var(--red)',   bg:'rgba(224,92,92,0.1)',   border:'rgba(224,92,92,0.35)'},
-    saving:{label:'Saving', icon:<Icon.ArrowRight/>,color:'var(--blue)',  bg:'rgba(91,156,246,0.1)',  border:'rgba(91,156,246,0.35)'},
+    saving:{label:'Saving', icon:<Icon.ArrowRight/>,color:'var(--gold)', bg:'rgba(251,191,36,0.1)', border:'rgba(251,191,36,0.35)'},
   };
 
   const NAV_ITEMS = [
@@ -453,6 +517,9 @@ export default function AppDashboard() {
     {id:'settings',    icon:<Icon.Settings/>,      label:'Settings'},
   ];
 
+  // Dark screen fix — key forces remount on tab change
+  const pageKey = tab;
+
   if (loading) return (
     <div className="fl-loading">
       <div className="fl-logo-mark"><Icon.Flame/></div>
@@ -464,6 +531,7 @@ export default function AppDashboard() {
   return (
     <div className="fl-shell">
       {toast && <div className={`fl-toast ${toast.type}`}>{toast.msg}</div>}
+      <TourOverlay step={tourStep} onNext={()=>{ const s=TOUR_STEPS[tourStep+1]; if(s&&['home','fire','projections','insights','export'].includes(s.target))setTab(s.target); setTourStep(p=>p+1>=TOUR_STEPS.length?-1:p+1); }} onSkip={()=>setTourStep(-1)}/>
       {milestone && (
         <div className="fl-milestone" onClick={()=>setMilestone(null)}>
           <Icon.CheckCircle/>
@@ -481,7 +549,7 @@ export default function AppDashboard() {
             {onboardStep===0&&<div className="ob-step"><h2>Welcome to FIRELedger</h2><p>Your personal financial independence tracker. Let's set up your profile in 4 steps so your dashboard reflects your actual numbers from day one.</p><button className="fl-btn-primary" onClick={()=>setOnboardStep(1)}>Get started</button></div>}
             {onboardStep===1&&<div className="ob-step"><h2>Select your currency</h2><p>All figures will be displayed in your chosen currency.</p><div className="ob-currency-grid">{Object.entries(CURRENCIES).map(([code,c])=><button key={code} className={`ob-currency-btn ${currency===code?'active':''}`} onClick={()=>setCurrency(code)}><span className="ob-curr-code">{code}</span><span className="ob-curr-name">{c.name}</span><span className="ob-curr-sym">{c.symbol}</span></button>)}</div><button className="fl-btn-primary" onClick={()=>setOnboardStep(2)}>Continue</button></div>}
             {onboardStep===2&&<div className="ob-step"><h2>Annual expenses</h2><p>How much do you expect to spend per year in retirement? This sets your FIRE number (expenses × 25).</p><div className="ob-input-wrap"><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="40000" value={fire.annualExpenses||''} onChange={e=>setFire(p=>({...p,annualExpenses:parseFloat(e.target.value)||0}))}/></div><div className="ob-hint">FIRE target = {fmt(fire.annualExpenses*25)}</div><button className="fl-btn-primary" onClick={()=>setOnboardStep(3)}>Continue</button></div>}
-            {onboardStep===3&&<div className="ob-step"><h2>Your savings</h2><p>Annual savings and total invested so far.</p><div className="ob-input-wrap"><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="Annual savings" value={fire.annualSavings||''} onChange={e=>setFire(p=>({...p,annualSavings:parseFloat(e.target.value)||0}))}/></div><div className="ob-input-wrap" style={{marginTop:10}}><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="Current savings" value={fire.currentSavings||''} onChange={e=>setFire(p=>({...p,currentSavings:parseFloat(e.target.value)||0}))}/></div><div className="ob-hint">{calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years===Infinity?'Set savings to calculate':'Estimated '+calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years+' years to FIRE'}</div><button className="fl-btn-primary" style={{marginTop:12}} onClick={async()=>{await saveSettings(fire,cats,currency);setShowOnboard(false);showToast('Profile saved');}}>Launch dashboard</button></div>}
+            {onboardStep===3&&<div className="ob-step"><h2>Your savings</h2><p>Annual savings and total invested so far.</p><div className="ob-input-wrap"><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="Annual savings" value={fire.annualSavings||''} onChange={e=>setFire(p=>({...p,annualSavings:parseFloat(e.target.value)||0}))}/></div><div className="ob-input-wrap" style={{marginTop:10}}><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="Current savings" value={fire.currentSavings||''} onChange={e=>setFire(p=>({...p,currentSavings:parseFloat(e.target.value)||0}))}/></div><div className="ob-hint">{calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years===Infinity?'Set savings to calculate':'Estimated '+calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years+' years to FIRE'}</div><button className="fl-btn-primary" style={{marginTop:12}} onClick={async()=>{await saveSettings(fire,cats,currency);setShowOnboard(false);showToast('Profile saved'); setTimeout(()=>setTourStep(0), 300);}}>Launch dashboard</button></div>}
           </div>
         </div>
       )}
@@ -529,11 +597,11 @@ export default function AppDashboard() {
         </div>
       </aside>
 
-      <main className="fl-main">
+      <main className="fl-main" id="fl-main-scroll">
 
         {/* DASHBOARD */}
         {tab==='home'&&(
-          <div className="fl-page">
+          <div key="home" className="fl-page">
             <div className="fl-page-top">
               <div>
                 <h1 className="fl-title">{now.getHours()<12?'Good morning':now.getHours()<17?'Good afternoon':'Good evening'}</h1>
@@ -541,7 +609,7 @@ export default function AppDashboard() {
               </div>
               <div style={{display:'flex',gap:10,alignItems:'center'}}>
                 <div className="fl-month-nav"><button onClick={()=>navMonth(-1)}><Icon.ChevLeft/></button><span>{MONTHS[selMonth]} {selYear}</span><button onClick={()=>navMonth(1)} disabled={isCurr}><Icon.ChevRight/></button></div>
-                <button className="fl-add-fab" onClick={()=>{setShowAdd(true);setTimeout(()=>addAmtRef.current?.focus(),80);}}><Icon.Plus/>Log transaction</button>
+                <button className="fl-add-fab" onClick={()=>{setEditTx(null);setRawAmt('');setForm({amount:'',description:'',type:'need',category:'',date:new Date().toISOString().split('T')[0],recurring:false});setShowAdd(true);setTimeout(()=>addAmtRef.current?.focus(),80);}}><Icon.Plus/>Log transaction</button>
               </div>
             </div>
 
@@ -567,7 +635,7 @@ export default function AppDashboard() {
               {[
                 {label:'Income',  value:fmt(income),       sub:'This month',                                     color:'var(--green)', icon:<Icon.ArrowUp/>},
                 {label:'Spent',   value:fmt(needs+wants),  sub:`${income>0?(((needs+wants)/income)*100).toFixed(0):0}% of income`,  color:'var(--red)',   icon:<Icon.ArrowDown/>},
-                {label:'Saved',   value:fmt(savings),      sub:`${savRate}% savings rate`,                       color:'var(--blue)',  icon:<Icon.ArrowRight/>},
+                {label:'Saved', value:fmt(savings), sub:`${savRate}% savings rate`, color:'var(--gold)', icon:<Icon.ArrowRight/>},
                 {label:'Grade',   value:grade,             sub:'Monthly savings score',                          color:gradeClr,       icon:<Icon.Star/>},
               ].map((m,i)=>(
                 <div key={i} className="fl-metric-card" style={{'--accent':m.color}}>
@@ -594,7 +662,7 @@ export default function AppDashboard() {
 
         {/* TRANSACTIONS */}
         {tab==='transactions'&&(
-          <div className="fl-page">
+          <div key="tx" className="fl-page">
             <div className="fl-page-top">
               <div><h1 className="fl-title">Transactions</h1><p className="fl-subtitle">{txs.length} entries</p></div>
               <div style={{display:'flex',gap:9,flexWrap:'wrap'}}>
@@ -617,6 +685,7 @@ export default function AppDashboard() {
                   <div className="fl-tx-card-badge" style={{background:amtColor(t.type)+'18',color:amtColor(t.type)}}>{TYPE_LABEL[t.type]}</div>
                   <div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.category?`${t.category} · `:''}{t.date}{t.recurring?' · Recurring':''}</span></div>
                   <span className="fl-tx-card-amount" style={{color:amtColor(t.type)}}>{t.type==='income'||t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span>
+                  <button className="fl-tx-edit" onClick={()=>openEdit(t)}><Icon.Edit/></button>
                   <button className="fl-tx-del" onClick={()=>deleteTx(t.id)}><Icon.X/></button>
                 </div>
               ))}
@@ -627,7 +696,7 @@ export default function AppDashboard() {
 
         {/* INSIGHTS */}
         {tab==='insights'&&(
-          <div className="fl-page">
+          <div key="insights" className="fl-page">
             <div className="fl-page-top">
               <div><h1 className="fl-title">Insights</h1><p className="fl-subtitle">Financial patterns for {MONTHS[selMonth]} {selYear}</p></div>
               <div className="fl-month-nav"><button onClick={()=>navMonth(-1)}><Icon.ChevLeft/></button><span>{MONTHS[selMonth]} {selYear}</span><button onClick={()=>navMonth(1)} disabled={isCurr}><Icon.ChevRight/></button></div>
@@ -636,7 +705,7 @@ export default function AppDashboard() {
               <div className="fl-insight-card fl-insight-wide">
                 <h3>Monthly Overview</h3>
                 <div className="fl-overview-bars">
-                  {[{label:'Income',val:income,color:'var(--green)'},{label:'Needs',val:needs,color:'var(--red)'},{label:'Wants',val:wants,color:'var(--red)'},{label:'Savings',val:savings,color:'var(--blue)'}].map(b=>(
+                  {[{label:'Income',val:income,color:'var(--green)'},{label:'Needs',val:needs,color:'var(--red)'},{label:'Wants',val:wants,color:'var(--red)'},{label:'Savings',val:savings,color:'var(--gold)'}].map(b=>(
                     <div key={b.label} className="fl-bar-row">
                       <span className="fl-bar-label">{b.label}</span>
                       <div className="fl-bar-track"><div className="fl-bar-fill" style={{width:`${income>0?Math.min((b.val/income)*100,100):0}%`,background:b.color}}/></div>
@@ -657,7 +726,7 @@ export default function AppDashboard() {
               <div className="fl-insight-card">
                 <h3>50 / 30 / 20 Rule</h3>
                 <div className="fl-rule-list">
-                  {[{label:'Needs',actual:income>0?(needs/income)*100:0,target:50,color:'var(--red)'},{label:'Wants',actual:income>0?(wants/income)*100:0,target:30,color:'var(--red)'},{label:'Savings',actual:income>0?(savings/income)*100:0,target:20,color:'var(--blue)'}].map(r=>(
+                  {[{label:'Needs',actual:income>0?(needs/income)*100:0,target:50,color:'var(--red)'},{label:'Wants',actual:income>0?(wants/income)*100:0,target:30,color:'var(--red)'},{label:'Savings',actual:income>0?(savings/income)*100:0,target:20,color:'var(--gold)'}].map(r=>(
                     <div key={r.label} className="fl-rule-row">
                       <span>{r.label}</span>
                       <div className="fl-rule-bar-track"><div className="fl-rule-bar-fill" style={{width:`${Math.min(r.actual,100)}%`,background:r.color}}/><div className="fl-rule-target" style={{left:`${r.target}%`}}/></div>
@@ -679,7 +748,7 @@ export default function AppDashboard() {
 
         {/* FIRE CALC */}
         {tab==='fire'&&(
-          <div className="fl-page">
+          <div key="fire" className="fl-page">
             <div className="fl-page-top"><div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div></div>
             <div className="fl-fire-layout">
               <div className="fl-fire-inputs">
@@ -704,7 +773,7 @@ export default function AppDashboard() {
                   <div className="fl-fire-big-center"><span className="fl-fire-big-pct">{fireCalc.progress.toFixed(1)}%</span><span className="fl-fire-big-sub">to FIRE</span></div>
                 </div>
                 <div className="fl-fire-stat-grid">
-                  {[{label:'FIRE Number',value:fmt(fireCalc.fireNum),hint:'25× annual expenses',color:'var(--gold)'},{label:'Years Away',value:fireCalc.years===Infinity?'—':fireCalc.years,hint:'At 7% annual return',color:fireCalc.years<=10?'var(--green)':fireCalc.years<=20?'var(--gold)':'var(--red)'},{label:'Freedom Date',value:fireDate,hint:'Projected',color:'var(--purple-light)'},{label:'Gap Remaining',value:fmt(Math.max(0,fireCalc.fireNum-fire.currentSavings)),hint:'Still needed',color:'var(--blue)'}].map((s,i)=>(
+                  {[{label:'FIRE Number',value:fmt(fireCalc.fireNum),hint:'25× annual expenses',color:'var(--gold)'},{label:'Years Away',value:fireCalc.years===Infinity?'—':fireCalc.years,hint:'At 7% annual return',color:fireCalc.years<=10?'var(--green)':fireCalc.years<=20?'var(--gold)':'var(--red)'},{label:'Freedom Date',value:fireDate,hint:'Projected',color:'var(--purple-light)'},{label:'Gap Remaining',value:fmt(Math.max(0,fireCalc.fireNum-fire.currentSavings)),hint:'Still needed',color:'var(--purple-light)'}].map((s,i)=>(
                     <div key={i} className="fl-fire-stat"><span className="fl-fire-stat-label">{s.label}</span><span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label==='Freedom Date'?16:undefined}}>{s.value}</span><span className="fl-fire-stat-hint">{s.hint}</span></div>
                   ))}
                 </div>
@@ -715,7 +784,7 @@ export default function AppDashboard() {
 
         {/* PROJECTIONS */}
         {tab==='projections'&&(
-          <div className="fl-page">
+          <div key="proj" className="fl-page">
             <div className="fl-page-top">
               <div><h1 className="fl-title">Projections</h1><p className="fl-subtitle">Wealth trajectory and scenario modelling</p></div>
               <select className="fl-field-input" style={{width:'auto',padding:'8px 12px',fontSize:13}} value={projYears} onChange={e=>{setProjYears(parseInt(e.target.value));setMcResult(null);}}>
@@ -766,7 +835,7 @@ export default function AppDashboard() {
 
         {/* EXPORT */}
         {tab==='export'&&(
-          <div className="fl-page">
+          <div key="export" className="fl-page">
             <div className="fl-page-top"><div><h1 className="fl-title">Export & Import</h1><p className="fl-subtitle">Your data, your way — no lock-in</p></div></div>
             <div className="fl-export-grid">
               <div className="fl-export-card"><div className="fl-export-icon-wrap"><Icon.Insights/></div><h3>Excel Report</h3><p>Full financial report with FIRE summary and all transactions — formatted for Excel or Google Sheets.</p><button className="fl-btn-primary" onClick={exportExcel}>Download report</button></div>
@@ -792,14 +861,14 @@ export default function AppDashboard() {
 
         {/* SETTINGS */}
         {tab==='settings'&&(
-          <div className="fl-page">
+          <div key="settings" className="fl-page">
             <div className="fl-page-top"><h1 className="fl-title">Settings</h1></div>
             <div className="fl-settings-grid">
               <div className="fl-settings-card">
                 <h3>Custom Categories</h3>
                 {['needs','wants','savings'].map(type=>(
                   <div key={type} className="fl-cat-group">
-                    <h4 style={{color:type==='needs'?'var(--red)':type==='wants'?'var(--red)':'var(--blue)'}}>{type.charAt(0).toUpperCase()+type.slice(1)}</h4>
+                    <h4 style={{color:type==='needs'?'var(--red)':type==='wants'?'var(--red)':'var(--gold)'}}>{type.charAt(0).toUpperCase()+type.slice(1)}</h4>
                     <div className="fl-cat-tags">
                       {cats[type].map(cat=><span key={cat} className="fl-cat-tag">{cat}<button onClick={()=>{const u={...cats,[type]:cats[type].filter(c=>c!==cat)};setCats(u);saveSettings(null,u,null);}}><Icon.X/></button></span>)}
                       <input className="fl-cat-add-input" placeholder="Add category" onKeyDown={e=>{if(e.key==='Enter'&&e.target.value.trim()){const u={...cats,[type]:[...cats[type],e.target.value.trim()]};setCats(u);saveSettings(null,u,null);e.target.value='';showToast('Category added');}}}/>
@@ -835,7 +904,7 @@ export default function AppDashboard() {
       {showAdd&&(
         <div className="fl-overlay" onClick={()=>setShowAdd(false)}>
           <div className="fl-modal fl-modal-log" onClick={e=>e.stopPropagation()}>
-            <div className="fl-modal-header"><h2>Log Transaction</h2><button className="fl-modal-close" onClick={()=>setShowAdd(false)}><Icon.X/></button></div>
+            <div className="fl-modal-header"><h2>{editTx ? 'Edit Transaction' : 'Log Transaction'}</h2><button className="fl-modal-close" onClick={closeModal}><Icon.X/></button></div>
             <div className="fl-modal-body">
               <div className="fl-type-grid">
                 {['income','need','want','saving'].map(t=>{const cfg=typeConfig[t],active=form.type===t;return<button key={t} className={`fl-type-pill ${active?'active':''}`} style={active?{background:cfg.bg,borderColor:cfg.border,color:cfg.color}:{}} onClick={()=>setForm(p=>({...p,type:t}))}><span className="fl-type-pill-icon">{cfg.icon}</span><span>{cfg.label}</span></button>;})}
@@ -847,14 +916,14 @@ export default function AppDashboard() {
                 </div>
                 <div className="fl-quick-amounts">{[10,25,50,100].map(a=><button key={a} className="fl-quick-amt" style={{borderColor:form.amount===a.toString()?typeConfig[form.type].border:''}} onClick={()=>{setRawAmt(fmtInput(a.toString()));setForm(p=>({...p,amount:a.toString()}));}}>{sym}{a}</button>)}</div>
               </div>
-              <div className="fl-field-group"><label className="fl-field-label">Description</label><input className="fl-field-input" placeholder="e.g. Monthly rent, salary, Netflix…" value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} onKeyDown={e=>{if(e.key==='Enter')addTx();}}/></div>
+              <div className="fl-field-group"><label className="fl-field-label">Description</label><input className="fl-field-input" placeholder="e.g. Monthly rent, salary, Netflix…" value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} onKeyDown={e=>{if(e.key==='Enter')(editTx?saveEdit:addTx)();}}/></div>
               <div className="fl-field-row">
                 <div className="fl-field-group" style={{flex:1}}><label className="fl-field-label">Category</label><select className="fl-field-input" value={form.category} onChange={e=>setForm(p=>({...p,category:e.target.value}))}><option value="">Optional</option>{(cats[form.type==='need'?'needs':form.type==='want'?'wants':form.type==='saving'?'savings':null]||[]).map(c=><option key={c} value={c}>{c}</option>)}</select></div>
                 <div className="fl-field-group" style={{flex:1}}><label className="fl-field-label">Date</label><input className="fl-field-input" type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))}/></div>
               </div>
               <div className="fl-modal-footer">
                 <label className="fl-recurring-label"><input type="checkbox" checked={form.recurring} onChange={e=>setForm(p=>({...p,recurring:e.target.checked}))}/>Recurring</label>
-                <div className="fl-modal-actions"><span className="fl-kbd-hint">Ctrl+Enter to save</span><button className="fl-btn-primary" onClick={addTx}>Log {TYPE_LABEL[form.type].toLowerCase()}</button></div>
+                <div className="fl-modal-actions"><span className="fl-kbd-hint">Ctrl+Enter to save</span><button className="fl-btn-primary" onClick={editTx ? saveEdit : addTx}>{editTx ? 'Save changes' : 'Log '+TYPE_LABEL[form.type].toLowerCase()}</button></div>
               </div>
             </div>
           </div>
