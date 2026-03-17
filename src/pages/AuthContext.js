@@ -13,8 +13,36 @@ export function AuthProvider({ children }) {
   const [trialDaysLeft,   setTrialDaysLeft]   = useState(0);
   const [accessChecked,   setAccessChecked]   = useState(false);
 
-  const checkAccess = async (currentUser) => {
-    if (!currentUser) { setHasSubscription(false); setIsTrial(false); setAccessChecked(true); return; }
+ const checkAccess = async (currentUser) => {
+  console.log('checkAccess called, user:', currentUser?.email ?? 'null');
+  try {
+    if (!currentUser) {
+      setHasSubscription(false);
+      setIsTrial(false);
+      return;
+    }
+    const { data: sub, error } = await supabase
+      .from('subscriptions')
+      .select('status')
+      .eq('user_id', currentUser.id)
+      .in('status', ['active', 'trialing'])
+      .maybeSingle();
+    console.log('sub result:', sub, 'error:', error);
+    if (sub) {
+      setHasSubscription(true); setIsTrial(false); setTrialDaysLeft(0); return;
+    }
+    const daysLeft = Math.max(0, Math.ceil(7 - (new Date() - new Date(currentUser.created_at)) / 86400000));
+    console.log('daysLeft:', daysLeft);
+    if (daysLeft > 0) { setHasSubscription(true); setIsTrial(true); setTrialDaysLeft(daysLeft); }
+    else { setHasSubscription(false); setIsTrial(false); setTrialDaysLeft(0); }
+  } catch(e) {
+    console.error('checkAccess threw:', e);
+    setHasSubscription(false); setIsTrial(false);
+  } finally {
+    console.log('setting accessChecked true');
+    setAccessChecked(true);
+  }
+};
 
     const { data: sub } = await supabase
       .from('subscriptions')
