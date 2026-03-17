@@ -11,9 +11,10 @@ export function AuthProvider({ children }) {
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isTrial,         setIsTrial]         = useState(false);
   const [trialDaysLeft,   setTrialDaysLeft]   = useState(0);
+  const [accessChecked,   setAccessChecked]   = useState(false);
 
   const checkAccess = async (currentUser) => {
-    if (!currentUser) { setHasSubscription(false); setIsTrial(false); return; }
+    if (!currentUser) { setHasSubscription(false); setIsTrial(false); setAccessChecked(true); return; }
 
     // Check paid subscription first
     const { data: sub } = await supabase
@@ -23,7 +24,7 @@ export function AuthProvider({ children }) {
       .in('status', ['active', 'trialing'])
       .maybeSingle();
 
-    if (sub) { setHasSubscription(true); setIsTrial(false); setTrialDaysLeft(0); return; }
+    if (sub) { setHasSubscription(true); setIsTrial(false); setTrialDaysLeft(0); setAccessChecked(true); return; }
 
     // Check trial — based on account creation date
     const createdAt = new Date(currentUser.created_at);
@@ -40,6 +41,7 @@ export function AuthProvider({ children }) {
       setIsTrial(false);
       setTrialDaysLeft(0);
     }
+    setAccessChecked(true);
   };
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) checkAccess(session.user);
-      else { setHasSubscription(false); setIsTrial(false); }
+      else { setHasSubscription(false); setIsTrial(false); setAccessChecked(false); }
     });
 
     return () => subscription.unsubscribe();
@@ -68,7 +70,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, loading, hasSubscription, isTrial, trialDaysLeft,
+      user, loading, hasSubscription, isTrial, trialDaysLeft, accessChecked,
       signInWithGoogle, signOut, refreshSubscription
     }}>
       {children}
