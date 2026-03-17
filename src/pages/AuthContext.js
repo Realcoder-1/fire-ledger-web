@@ -16,7 +16,6 @@ export function AuthProvider({ children }) {
   const checkAccess = async (currentUser) => {
     if (!currentUser) { setHasSubscription(false); setIsTrial(false); setAccessChecked(true); return; }
 
-    // Check paid subscription first
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('status')
@@ -26,14 +25,13 @@ export function AuthProvider({ children }) {
 
     if (sub) { setHasSubscription(true); setIsTrial(false); setTrialDaysLeft(0); setAccessChecked(true); return; }
 
-    // Check trial — based on account creation date
     const createdAt = new Date(currentUser.created_at);
     const now       = new Date();
     const daysSince = (now - createdAt) / (1000 * 60 * 60 * 24);
     const daysLeft  = Math.max(0, Math.ceil(TRIAL_DAYS - daysSince));
 
     if (daysLeft > 0) {
-      setHasSubscription(true); // grant access during trial
+      setHasSubscription(true);
       setIsTrial(true);
       setTrialDaysLeft(daysLeft);
     } else {
@@ -47,14 +45,13 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      if (session?.user) checkAccess(session.user);
+      checkAccess(session?.user ?? null); // always call — null path resolves immediately
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) checkAccess(session.user);
-      else { setHasSubscription(false); setIsTrial(false); setAccessChecked(false); }
+      checkAccess(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();

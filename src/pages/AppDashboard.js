@@ -443,13 +443,7 @@ function GuidePage() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
-  const { user, signOut, hasSubscription, isTrial, trialDaysLeft, accessChecked } = useAuth();
-
-  useEffect(() => {
-    if (accessChecked && !hasSubscription) {
-      window.location.href = '/pricing';
-    }
-  }, [accessChecked, hasSubscription]);
+  const { user, signOut, isTrial, trialDaysLeft } = useAuth();
 
   const [tab,           setTab]         = useState('home');
   const [txs,           setTxs]         = useState([]);
@@ -683,8 +677,6 @@ export default function AppDashboard() {
     {id:'guide',       icon:<Icon.Guide/>,         label:'Guide'},
     {id:'settings',    icon:<Icon.Settings/>,      label:'Settings'},
   ];
-
-  if (!accessChecked) return null;
 
   if (loading) return (
     <div className="fl-loading">
