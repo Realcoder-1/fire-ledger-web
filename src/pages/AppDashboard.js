@@ -443,7 +443,14 @@ function GuidePage() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
-  const { user, signOut, isTrial, trialDaysLeft } = useAuth();
+  const { user, signOut, hasSubscription, isTrial, trialDaysLeft, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !hasSubscription) {
+      window.location.href = '/pricing';
+    }
+  }, [hasSubscription, authLoading]);
+
   const [tab,           setTab]         = useState('home');
   const [txs,           setTxs]         = useState([]);
   const [showAdd,       setShowAdd]     = useState(false);
@@ -677,6 +684,8 @@ export default function AppDashboard() {
     {id:'settings',    icon:<Icon.Settings/>,      label:'Settings'},
   ];
 
+  if (authLoading) return null;
+
   if (loading) return (
     <div className="fl-loading">
       <div className="fl-logo-mark"><Icon.Flame/></div>
@@ -742,37 +751,18 @@ export default function AppDashboard() {
           ))}
         </nav>
         <div className="fl-sidebar-footer">
-        {isTrial && (
-          <div className="fl-trial-banner">
-            <div className="fl-trial-days">
-              <span className="fl-trial-num">{trialDaysLeft}</span>
-              <span className="fl-trial-label">day{trialDaysLeft!==1?'s':''} left</span>
+          {isTrial && (
+            <div className="fl-trial-banner">
+              <div className="fl-trial-days">
+                <span className="fl-trial-num">{trialDaysLeft}</span>
+                <span className="fl-trial-label">day{trialDaysLeft!==1?'s':''} left</span>
+              </div>
+              <div className="fl-trial-info">
+                <span>Free trial</span>
+                <a href="/pricing" className="fl-trial-upgrade">Upgrade →</a>
+              </div>
             </div>
-            <div className="fl-trial-info">
-              <span>Free trial</span>
-              <a href="/pricing" className="fl-trial-upgrade">Upgrade →</a>
-            </div>
-          </div>
-        )}
-        <div className="fl-sidebar-divider"/>
-        {isTrial && (
-          <div className="fl-trial-banner">
-            <div className="fl-trial-days">
-              <span className="fl-trial-num">{trialDaysLeft}</span>
-              <span className="fl-trial-label">day{trialDaysLeft!==1?'s':''} left</span>
-            </div>
-            <div className="fl-trial-right">
-              <p>Free trial</p>
-              <a href="/pricing" className="fl-upgrade-btn">Upgrade →</a>
-            </div>
-          </div>
-        )}
-        {!isTrial && (
-          <a href="/pricing" className="fl-upgrade-nudge">
-            <span>Pro Plan</span>
-            <span className="fl-upgrade-nudge-cta">Upgrade →</span>
-          </a>
-        )}
+          )}
           <div className="fl-user-chip">
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
@@ -1407,7 +1397,7 @@ export default function AppDashboard() {
                 <h3 style={{marginTop:24,marginBottom:16}}>Account</h3>
                 <div className="fl-account-row">
                   <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-                  <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>Pro · Active</div></div>
+                  <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>{isTrial ? `Trial · ${trialDaysLeft} day${trialDaysLeft!==1?'s':''} left` : 'Pro · Active'}</div></div>
                 </div>
                 <button className="fl-btn-ghost fl-btn-icon" style={{width:'100%',marginTop:16}} onClick={exportExcel}><Icon.Export/>Download report</button>
                 <button className="fl-btn-danger fl-btn-icon" style={{width:'100%',marginTop:10}} onClick={signOut}><Icon.LogOut/>Sign out</button>
