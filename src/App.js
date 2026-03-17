@@ -8,15 +8,16 @@ import Privacy from './pages/Privacy';
 import Refund from './pages/Refund';
 
 function ProtectedRoute({ children }) {
-  const { user, loading, hasSubscription } = useAuth();
-  if (loading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#08080f',color:'#8888aa',fontFamily:'DM Sans,sans-serif'}}>Loading...</div>;
+  const { user, accessChecked, hasSubscription } = useAuth();
+  if (!accessChecked) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#08080f',color:'#8888aa',fontFamily:'DM Sans,sans-serif'}}>Loading...</div>;
   if (!user) return <Navigate to="/" />;
   if (!hasSubscription) return <Navigate to="/pricing" />;
   return children;
 }
 
 function AppRoutes() {
-  const { user, hasSubscription } = useAuth();
+  const { user, accessChecked, hasSubscription } = useAuth();
+  if (!accessChecked) return null;
   return (
     <Routes>
       <Route path="/" element={user ? <Navigate to="/app" /> : <Landing />} />
