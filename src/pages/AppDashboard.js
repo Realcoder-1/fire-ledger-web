@@ -443,7 +443,7 @@ function GuidePage() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isTrial, trialDaysLeft } = useAuth();
   const [tab,           setTab]         = useState('home');
   const [txs,           setTxs]         = useState([]);
   const [showAdd,       setShowAdd]     = useState(false);
@@ -742,6 +742,37 @@ export default function AppDashboard() {
           ))}
         </nav>
         <div className="fl-sidebar-footer">
+        {isTrial && (
+          <div className="fl-trial-banner">
+            <div className="fl-trial-days">
+              <span className="fl-trial-num">{trialDaysLeft}</span>
+              <span className="fl-trial-label">day{trialDaysLeft!==1?'s':''} left</span>
+            </div>
+            <div className="fl-trial-info">
+              <span>Free trial</span>
+              <a href="/pricing" className="fl-trial-upgrade">Upgrade →</a>
+            </div>
+          </div>
+        )}
+        <div className="fl-sidebar-divider"/>
+        {isTrial && (
+          <div className="fl-trial-banner">
+            <div className="fl-trial-days">
+              <span className="fl-trial-num">{trialDaysLeft}</span>
+              <span className="fl-trial-label">day{trialDaysLeft!==1?'s':''} left</span>
+            </div>
+            <div className="fl-trial-right">
+              <p>Free trial</p>
+              <a href="/pricing" className="fl-upgrade-btn">Upgrade →</a>
+            </div>
+          </div>
+        )}
+        {!isTrial && (
+          <a href="/pricing" className="fl-upgrade-nudge">
+            <span>Pro Plan</span>
+            <span className="fl-upgrade-nudge-cta">Upgrade →</span>
+          </a>
+        )}
           <div className="fl-user-chip">
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>

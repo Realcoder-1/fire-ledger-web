@@ -628,3 +628,30 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
   .fl-fire-stat-grid { grid-template-columns:1fr 1fr; }
   .fl-fire-ring-row { flex-direction:column; align-items:flex-start; }
 }
+
+/* ── TRIAL BANNER ────────────────────────────────────── */
+.fl-trial-banner { display:flex; align-items:center; gap:12px; background:var(--purple-subtle); border:1px solid rgba(167,139,250,0.25); border-radius:10px; padding:10px 12px; margin-bottom:10px; width:100%; }
+.fl-trial-days { display:flex; flex-direction:column; align-items:center; background:rgba(167,139,250,0.15); border-radius:7px; padding:6px 10px; min-width:44px; }
+.fl-trial-num { font-size:20px; font-weight:800; color:var(--purple-light); letter-spacing:-1px; line-height:1; font-family:'JetBrains Mono',monospace; }
+.fl-trial-label { font-size:9px; color:var(--t2); text-transform:uppercase; letter-spacing:1px; margin-top:1px; }
+.fl-trial-right { display:flex; flex-direction:column; gap:4px; flex:1; }
+.fl-trial-right p { font-size:11px; color:var(--t2); font-weight:600; }
+.fl-upgrade-btn { font-size:12px; font-weight:700; color:var(--purple-light); text-decoration:none; transition:opacity 0.15s; }
+.fl-upgrade-btn:hover { opacity:0.8; }
+
+/* ── UPGRADE NUDGE (post-trial) ──────────────────────── */
+.fl-upgrade-nudge { display:flex; justify-content:space-between; align-items:center; background:var(--purple-subtle); border:1px solid rgba(167,139,250,0.2); border-radius:10px; padding:10px 12px; margin-bottom:10px; width:100%; text-decoration:none; transition:all 0.15s; }
+.fl-upgrade-nudge:hover { border-color:rgba(167,139,250,0.4); background:rgba(167,139,250,0.1); }
+.fl-upgrade-nudge span { font-size:12px; color:var(--t2); font-weight:600; }
+.fl-upgrade-nudge-cta { color:var(--purple-light) !important; font-weight:700 !important; }
+
+/* ── TRIAL BANNER ────────────────────────────────────── */
+.fl-trial-banner { display:flex; align-items:center; gap:10px; background:var(--purple-subtle); border:1px solid rgba(167,139,250,0.25); border-radius:10px; padding:10px 12px; margin-bottom:10px; }
+.fl-trial-days { display:flex; flex-direction:column; align-items:center; background:rgba(167,139,250,0.15); border-radius:7px; padding:6px 10px; min-width:40px; flex-shrink:0; }
+.fl-trial-num { font-size:20px; font-weight:800; color:var(--purple-light); letter-spacing:-1px; line-height:1; font-family:'JetBrains Mono',monospace; }
+.fl-trial-label { font-size:9px; color:var(--t2); text-transform:uppercase; letter-spacing:0.5px; margin-top:1px; }
+.fl-trial-info { display:flex; flex-direction:column; gap:4px; flex:1; }
+.fl-trial-info span { font-size:11px; color:var(--t2); font-weight:500; }
+.fl-trial-upgrade { font-size:12px; font-weight:700; color:var(--purple-light); text-decoration:none; transition:color 0.15s; }
+.fl-trial-upgrade:hover { color:#c4b5fd; }
+.fl-sidebar-divider { height:1px; background:var(--border); margin-bottom:10px; }

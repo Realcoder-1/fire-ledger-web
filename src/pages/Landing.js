@@ -15,7 +15,7 @@ export default function Landing() {
     <div className="landing">
       <nav className="nav">
         <div className="nav-logo">FIRE<span>Ledger</span></div>
-        <button className="nav-cta" onClick={handleStart}>Get Started →</button>
+        <button className="nav-cta" onClick={handleStart}>Start Free Trial →</button>
       </nav>
 
       <section className="hero">
@@ -26,7 +26,7 @@ export default function Landing() {
           <div className="grid-overlay" />
         </div>
         <div className="hero-content">
-          <div className="hero-badge">Financial Independence · Retire Early</div>
+          <div className="hero-badge">7-Day Free Trial · No Credit Card Required</div>
           <h1 className="hero-title">
             Know exactly when<br />
             <span className="hero-accent">you're free.</span>
@@ -37,15 +37,15 @@ export default function Landing() {
           </p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={handleStart}>
-              Start My FIRE Journey →
+              Start Free — No Card Needed →
             </button>
           </div>
           <div className="hero-trust">
-            <span>🔒 Secure checkout</span>
+            <span>✓ 7 days free</span>
             <span>·</span>
-            <span>48-hour money back guarantee</span>
+            <span>✓ No credit card</span>
             <span>·</span>
-            <span>Cancel anytime</span>
+            <span>✓ Cancel anytime</span>
           </div>
           <div className="hero-stats">
             <div className="stat">
@@ -59,8 +59,8 @@ export default function Landing() {
             </div>
             <div className="stat-div" />
             <div className="stat">
-              <span className="stat-num">$4.99</span>
-              <span className="stat-label">Per month</span>
+              <span className="stat-num">Free</span>
+              <span className="stat-label">For 7 days</span>
             </div>
           </div>
         </div>
@@ -90,10 +90,10 @@ export default function Landing() {
             </div>
             <div className="mockup-transactions">
               {[
-                { label: 'Salary',     amt: '+$5,200', type: 'income' },
-                { label: 'Rent',       amt: '-$1,400', type: 'need'   },
-                { label: 'Groceries',  amt: '-$180',   type: 'need'   },
-                { label: 'Netflix',    amt: '-$15',    type: 'want'   },
+                { label: 'Salary',    amt: '+$5,200', type: 'income' },
+                { label: 'Rent',      amt: '-$1,400', type: 'need'   },
+                { label: 'Groceries', amt: '-$180',   type: 'need'   },
+                { label: 'Netflix',   amt: '-$15',    type: 'want'   },
               ].map((t, i) => (
                 <div key={i} className="mockup-tx">
                   <span className="mockup-tx-label">{t.label}</span>
@@ -109,12 +109,12 @@ export default function Landing() {
         <h2 className="section-title">Everything you need.<br/>Nothing you don't.</h2>
         <div className="features-grid">
           {[
-            { icon: '🔥', title: 'FIRE Calculator',    desc: 'Real-time projection of your financial independence date based on your actual spending.' },
+            { icon: '🔥', title: 'FIRE Calculator',    desc: 'Real-time projection of your financial independence date — Standard, Lean, Fat, and Coast FIRE modes.' },
             { icon: '📊', title: 'Needs vs Wants',     desc: 'Categorize every expense. See exactly where your money leaks and where it builds wealth.' },
-            { icon: '🔄', title: 'Recurring Tracking', desc: 'Auto-log subscriptions and recurring expenses. Never miss a drain on your FIRE timeline.' },
-            { icon: '📈', title: 'Savings Rate',       desc: 'Your most important metric. Track it daily, weekly, monthly — watch freedom approach.' },
-            { icon: '💾', title: 'CSV Export',         desc: 'Your data, always yours. Export everything, analyze in Excel, share with your advisor.' },
-            { icon: '🎯', title: 'Custom Categories',  desc: 'Build a system that reflects your life. Every category tuned to your FIRE strategy.' },
+            { icon: '📈', title: 'Monte Carlo',        desc: '500 simulations of your portfolio. See your probability of reaching FIRE under real market conditions.' },
+            { icon: '💰', title: 'Net Worth Tracker',  desc: 'Assets vs liabilities. Know your real financial picture and how close you are to your FIRE number.' },
+            { icon: '📉', title: 'Compound Growth',    desc: 'See exactly how your investments compound over time with inflation adjustment and Rule of 72.' },
+            { icon: '💾', title: 'Smart Import',       desc: 'Import any bank statement CSV or PDF. Auto-detects formats — no reformatting needed.' },
           ].map((f, i) => (
             <div key={i} className="feature-card">
               <div className="feature-icon">{f.icon}</div>
@@ -126,9 +126,10 @@ export default function Landing() {
       </section>
 
       <section className="pricing" id="pricing">
-        <h2 className="section-title">One plan.<br/>Everything included.</h2>
+        <h2 className="section-title">Start free.<br/>Upgrade when you're ready.</h2>
         <div className="single-pricing">
           <div className="pricing-card featured">
+            <div className="pricing-badge">7 Days Free</div>
             <div className="pricing-tier">FIRE Ledger Pro</div>
             <div className="pricing-options">
               <div className="price-option">
@@ -144,12 +145,11 @@ export default function Landing() {
             </div>
             <ul className="pricing-features">
               <li>✓ Unlimited transaction history</li>
-              <li>✓ Real-time FIRE calculator</li>
-              <li>✓ Needs vs Wants breakdown</li>
-              <li>✓ Advanced insights & savings rate</li>
-              <li>✓ Recurring transaction tracking</li>
+              <li>✓ FIRE, Lean, Fat & Coast FIRE calculators</li>
+              <li>✓ Monte Carlo simulation</li>
+              <li>✓ Net Worth & Compound Growth tools</li>
+              <li>✓ Smart CSV & PDF import</li>
               <li>✓ Custom categories</li>
-              <li>✓ CSV data export</li>
               <li>✓ Android app included</li>
               <li>✓ 48-hour money back guarantee</li>
             </ul>
@@ -158,10 +158,10 @@ export default function Landing() {
               style={{ width: '100%', justifyContent: 'center' }}
               onClick={handleStart}
             >
-              Start My FIRE Journey →
+              Start Free Trial →
             </button>
             <p style={{ textAlign: 'center', fontSize: 13, color: '#8888aa', marginTop: 12 }}>
-              Cancel anytime · No hidden fees
+              No credit card required · Cancel anytime
             </p>
           </div>
         </div>
