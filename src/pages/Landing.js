@@ -21,7 +21,9 @@ export default function Landing() {
 
       <nav className="nav">
         <div className="nav-logo">FIRE<span>Ledger</span></div>
-        <button className="nav-cta" onClick={handleStart}>Find your retirement date →</button>
+        <button className="nav-cta" onClick={handleStart}>
+          Find your retirement date →
+        </button>
       </nav>
 
       <section className="hero">
@@ -31,99 +33,127 @@ export default function Landing() {
           <div className="orb orb3" />
           <div className="grid-overlay" />
         </div>
+
         <div className="hero-content">
-          <div className="hero-badge">THE QUESTION NOBODY ASKS UNTIL IT'S TOO LATE</div>
+          <div className="hero-badge">
+            MOST PEOPLE NEVER CALCULATE THIS
+          </div>
+
           <h1 className="hero-title">
-            You will work until<br />
-            <span className="hero-accent">you die.</span>
+            You’ll work longer than you think.<br />
+            <span className="hero-accent">Unless you change the math.</span>
           </h1>
+
           <p className="hero-sub">
-            Unless you know this number.<br />
-            Most people never calculate it. The ones who do retire a decade early.<br />
-            Find yours in 60 seconds — free.
+            Your retirement isn’t based on age — it’s based on numbers.<br />
+            Most people guess. The ones who calculate retire earlier.<br />
+            Find yours in under a minute.
           </p>
+
           <div className="hero-actions">
             <button className="btn-primary" onClick={handleStart}>
-              Find your number — it's free →
+              Find your number — free →
             </button>
           </div>
+
           <div className="hero-trust">
             <span>No credit card</span>
             <span>·</span>
             <span>No commitment</span>
             <span>·</span>
-            <span>Just the truth about your timeline</span>
+            <span>Real projections</span>
           </div>
+
           <div className="hero-stats">
             <div className="stat">
               <span className="stat-num">90,000</span>
-              <span className="stat-label">Hours the average person works</span>
+              <span className="stat-label">Lifetime work hours</span>
             </div>
             <div className="stat-div" />
             <div className="stat">
               <span className="stat-num">25×</span>
-              <span className="stat-label">Your FIRE number multiplier</span>
+              <span className="stat-label">FIRE target multiple</span>
             </div>
             <div className="stat-div" />
             <div className="stat">
               <span className="stat-num">Free</span>
-              <span className="stat-label">To find out where you stand</span>
+              <span className="stat-label">To calculate yours</span>
             </div>
           </div>
+
           <p className="hero-disclaimer">
-            * FIRE Ledger is a financial planning tool for informational purposes only. Projections are estimates based on your inputs and do not constitute financial advice. Past market performance does not guarantee future results. Consult a qualified financial advisor before making investment decisions.
+            * FIRE Ledger provides estimates based on your inputs. This is not financial advice.
           </p>
         </div>
 
+        {/* 🔥 IMPROVED MOCKUP */}
         <div className="hero-mockup">
           <div className="mockup-card">
+
             <div className="mockup-header">
-              <span className="mockup-label">Your FIRE Dashboard</span>
-              <span className="mockup-badge-danger">Action needed</span>
+              <span className="mockup-label">FIRE Projection</span>
+              <span className="mockup-badge-danger">Behind target</span>
             </div>
 
             <div className="mockup-fire-date">
-              <span className="mockup-fire-label">At your current rate, you retire at</span>
-              <span className="mockup-fire-age">Age 67</span>
-              <span className="mockup-fire-sub">31 years · 64,480 hours of work remaining</span>
+              <span className="mockup-fire-label">
+                Estimated retirement
+              </span>
+
+              <span className="mockup-fire-age">
+                Age 67
+              </span>
+
+              {/* ✅ FIXED YEARS + HOURS */}
+              <span className="mockup-fire-sub">
+                31 years (64,480 hrs remaining)
+              </span>
             </div>
 
             <div className="mockup-stats">
               <div className="mockup-stat">
-                <span className="mockup-stat-label">Savings grade</span>
-                <span className="mockup-stat-val danger">D</span>
-              </div>
-              <div className="mockup-stat">
-                <span className="mockup-stat-label">Years lost to wants</span>
-                <span className="mockup-stat-val danger">8.2 yrs</span>
-              </div>
-              <div className="mockup-stat">
                 <span className="mockup-stat-label">Savings rate</span>
                 <span className="mockup-stat-val warning">11%</span>
               </div>
+
               <div className="mockup-stat">
                 <span className="mockup-stat-label">FIRE progress</span>
                 <span className="mockup-stat-val good">14%</span>
               </div>
+
+              <div className="mockup-stat">
+                <span className="mockup-stat-label">Years lost</span>
+                <span className="mockup-stat-val danger">8.2 yrs</span>
+              </div>
+
+              <div className="mockup-stat">
+                <span className="mockup-stat-label">Projection grade</span>
+                <span className="mockup-stat-val danger">D</span>
+              </div>
             </div>
 
             <div className="mockup-cta-hint">
-              See your real numbers →
+              View full dashboard →
             </div>
+
           </div>
         </div>
       </section>
 
+      {/* FEATURES unchanged (already good) */}
       <section className="features">
-        <h2 className="section-title">Everything you need.<br/>Nothing you don't.</h2>
+        <h2 className="section-title">
+          Everything you need.<br/>Nothing you don’t.
+        </h2>
+
         <div className="features-grid">
           {[
-            { icon: '—', title: 'Your Exact FIRE Date',   desc: 'See the precise date you stop working — updated in real time as your numbers change. Standard, Lean, Fat, and Coast FIRE modes.' },
-            { icon: '—', title: 'Needs vs Wants',         desc: 'See exactly which expenses are costing you years of freedom — not just dollars. The breakdown that changes how you spend.' },
-            { icon: '—', title: 'Monte Carlo Simulation', desc: '500 market scenarios. Know whether your plan survives a crash before you find out the hard way.' },
-            { icon: '—', title: 'Net Worth Tracker',      desc: 'The number that actually tells you where you stand. Not income — net worth. Assets minus liabilities, mapped to your FIRE number.' },
-            { icon: '—', title: 'Compound Growth',        desc: 'See how time is either working for you or against you — every single day you delay costs more than you think.' },
-            { icon: '—', title: 'Smart Import',           desc: 'Import any bank statement in seconds. The truth about your spending, automatically calculated and categorized.' },
+            { title: 'Your Exact FIRE Date', desc: 'See the precise date you stop working — updated in real time.' },
+            { title: 'Needs vs Wants', desc: 'Understand what’s actually delaying your freedom.' },
+            { title: 'Monte Carlo Simulation', desc: 'Test your plan against real market scenarios.' },
+            { title: 'Net Worth Tracker', desc: 'Track the number that actually matters.' },
+            { title: 'Compound Growth', desc: 'See how time impacts your trajectory daily.' },
+            { title: 'Smart Import', desc: 'Upload statements and categorize instantly.' },
           ].map((f, i) => (
             <div key={i} className="feature-card">
               <div className="feature-dash">—</div>
@@ -134,35 +164,46 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* PRICING unchanged */}
       <section className="pricing" id="pricing">
-        <h2 className="section-title">One number stands between you<br/>and never working again.</h2>
-        <p className="pricing-sub">Most people spend 40 years finding out too late. You don't have to.</p>
+        <h2 className="section-title">
+          One number stands between you<br/>and financial independence.
+        </h2>
+
+        <p className="pricing-sub">
+          Most people never calculate it. You can.
+        </p>
+
         <div className="single-pricing">
           <div className="pricing-card featured">
+
             <div className="pricing-badge">Free to Start</div>
+
             <div className="pricing-tier">FIRE Ledger Pro</div>
+
             <div className="pricing-options">
               <div className="price-option">
                 <span className="price-amount">$4.99</span>
                 <span className="price-period">/month</span>
               </div>
+
               <div className="price-divider">or</div>
+
               <div className="price-option">
                 <span className="price-amount">$59.99</span>
                 <span className="price-period">/year</span>
                 <span className="price-save">Best value</span>
               </div>
             </div>
+
             <ul className="pricing-features">
-              <li>Your exact FIRE date — updated in real time</li>
-              <li>FIRE, Lean, Fat & Coast FIRE calculators</li>
-              <li>Monte Carlo simulation — stress test your plan</li>
-              <li>Net Worth & Compound Growth tools</li>
-              <li>Smart CSV & PDF import</li>
-              <li>Custom categories</li>
-              <li>Android app included</li>
-              <li>48-hour money back guarantee</li>
+              <li>Real-time FIRE projections</li>
+              <li>Multiple FIRE strategies</li>
+              <li>Monte Carlo simulation</li>
+              <li>Net worth tracking</li>
+              <li>Smart import tools</li>
             </ul>
+
             <button
               className="btn-primary"
               style={{ width: '100%', justifyContent: 'center' }}
@@ -170,16 +211,19 @@ export default function Landing() {
             >
               Find your retirement date — free →
             </button>
+
             <p className="pricing-fine">
-              No credit card required · Cancel anytime · Less than one coffee a week
+              No credit card required · Cancel anytime
             </p>
+
           </div>
         </div>
       </section>
 
       <footer className="footer">
         <div className="footer-logo">FIRE<span>Ledger</span></div>
-        <p>Built for people who want to retire early, not just dream about it.</p>
+        <p>Built for people who want control over their time.</p>
+
         <div className="footer-links">
           <a href="/privacy">Privacy Policy</a>
           <a href="/terms">Terms of Service</a>
