@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import PaywallModal from './PaywallModal';
 import './AppDashboard.css';
 
 // ─── SVG Icon System — no emojis ─────────────────────────────────────────────
@@ -30,6 +31,7 @@ const Icon = {
   Edit:         () => <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9.5V11h1.5l5-5L7 4.5l-5 5zM10.5 3l-.8-.8a.7.7 0 00-1 0L8 2.9l1.5 1.5.7-.7a.7.7 0 000-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>,
   Lightning:    () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9.5 2L4 9h5.5L6.5 14l6.5-7H7.5L9.5 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
   X:            () => <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  Lock:         () => <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M4 5V3.5a2 2 0 014 0V5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
 };
 
 // ─── Currency config ──────────────────────────────────────────────────────────
@@ -100,15 +102,16 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 const amtColor = t => t==='income'?'var(--green)':t==='saving'?'var(--gold)':'var(--red)';
 const fmtInput = v => { if(!v&&v!==0)return''; const n=v.toString().replace(/[^0-9.]/g,''); const p=n.split('.'); p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,','); return p.join('.'); };
 
+// ─── Free tabs — everything else shows the paywall ───────────────────────────
+const FREE_TABS = ['home', 'transactions', 'fire', 'guide', 'settings'];
+
 function parseDateStr(raw) {
   if (!raw) return new Date().toISOString().split('T')[0];
   const s = raw.replace(/['"]/g,'').trim();
-  // Try native parse first (handles ISO, long formats)
   const native = new Date(s);
   if (!isNaN(native.getTime()) && s.length > 5) {
     return native.toISOString().split('T')[0];
   }
-  // DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY etc
   const m = s.match(/(\d{1,4})[/.-]([\d]{1,2})[/.-](\d{2,4})/);
   if (m) {
     let [,a,b,cc] = m;
@@ -117,7 +120,6 @@ function parseDateStr(raw) {
     if (parseInt(a) > 12) return `${year}-${b.padStart(2,'0')}-${a.padStart(2,'0')}`;
     return `${year}-${a.padStart(2,'0')}-${b.padStart(2,'0')}`;
   }
-  // Month name: Jan 15 2024 or 15 Jan 2024
   const months = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
   const ml = s.toLowerCase().match(/(\d{1,2})\s*([a-z]{3})[a-z]*\s*(\d{2,4})/);
   if (ml) { const y=ml[3].length===2?'20'+ml[3]:ml[3]; return `${y}-${String(months[ml[2]]||1).padStart(2,'0')}-${ml[1].padStart(2,'0')}`; }
@@ -128,7 +130,6 @@ function parseDateStr(raw) {
 
 function parseAmount(raw) {
   if (!raw) return 0;
-  // Remove currency symbols, spaces, commas — keep digits, dot, minus
   const clean = raw.toString().replace(/[^0-9.-]/g,'');
   return Math.abs(parseFloat(clean)) || 0;
 }
@@ -144,19 +145,14 @@ function detectType(desc, cat, rawType) {
   for (const [type, words] of Object.entries(typeMap)) {
     if (words.some(w => t.includes(w))) return type;
   }
-  // Fallback: positive amount in credit column = income, else need
   return 'need';
 }
 
 function smartParseCSV(text) {
-  // Handle both comma and semicolon delimiters, and tab-separated
   const rawLines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
   if (rawLines.length < 2) return { rows: [], error: 'File appears empty or has only one row.' };
-
-  // Detect delimiter
   const sample = rawLines[0];
   const delim = sample.includes('\t') ? '\t' : sample.includes(';') ? ';' : ',';
-
   const parseLine = line => {
     const cols = []; let cur = '', inQ = false;
     for (let i = 0; i < line.length; i++) {
@@ -168,40 +164,31 @@ function smartParseCSV(text) {
     cols.push(cur.trim());
     return cols;
   };
-
-  // Find header row — first row with 2+ alphabetic columns
   let headerIdx = 0;
   for (let i = 0; i < Math.min(8, rawLines.length); i++) {
     const cols = parseLine(rawLines[i]);
     const alphaCount = cols.filter(c => /[a-zA-Z]{2,}/.test(c)).length;
     if (alphaCount >= 2) { headerIdx = i; break; }
   }
-
   const headers = parseLine(rawLines[headerIdx]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g,''));
   const detect = (...kws) => { for (const kw of kws) { const idx = headers.findIndex(h => h.includes(kw)); if (idx !== -1) return idx; } return -1; };
-
   const dateIdx   = detect('date','dt','time','transactiondate','valuedate','postingdate','period');
   const descIdx   = detect('description','desc','narrative','memo','narration','payee','detail','particulars','name','reference','merchant','transaction','note','remarks');
   const amtIdx    = detect('amount','amt','value','sum','total');
   const debitIdx  = detect('debit','withdrawal','dr','withdrawals','expense','debitamount');
   const creditIdx = detect('credit','deposit','cr','deposits','creditamount');
   const catIdx    = detect('category','cat','type','subcategory','group','classification');
-
   const rows = rawLines.slice(headerIdx + 1).map((line, lineNum) => {
     if (!line.trim()) return null;
     const cols = parseLine(line);
     const get = idx => (idx >= 0 && idx < cols.length) ? cols[idx].replace(/^["']|["']$/g,'').trim() : '';
-
     const rawDesc = get(descIdx);
     const rawCat  = get(catIdx);
     const rawDate = get(dateIdx);
-
     let amount = 0;
     let type = 'need';
-
     if (amtIdx !== -1) {
       const raw = get(amtIdx);
-      // Negative amounts = expense, positive = income
       const signed = parseFloat(raw.replace(/[^0-9.-]/g,''));
       amount = Math.abs(signed);
       if (!isNaN(signed) && signed > 0) type = 'income';
@@ -212,15 +199,10 @@ function smartParseCSV(text) {
       else if (debit > 0) { amount = debit; type = 'need'; }
       else { amount = Math.max(credit, debit); }
     }
-
     if (!amount || amount <= 0) return null;
-
-    // Refine type based on description
     const detectedType = detectType(rawDesc, rawCat, type==='income'?'income':'');
     if (type !== 'income') type = detectedType;
-
     const date = parseDateStr(rawDate);
-
     return {
       date,
       description: (rawDesc || rawCat || `Transaction ${lineNum+1}`).slice(0, 100),
@@ -230,7 +212,6 @@ function smartParseCSV(text) {
       recurring: false,
     };
   }).filter(Boolean);
-
   return { rows };
 }
 
@@ -264,7 +245,6 @@ function ProjectionChart({ points, fireNum, sym, mcResult }) {
     </svg>
   );
 }
-
 
 // ─── Walkthrough Tour ─────────────────────────────────────────────────────────
 const TOUR_STEPS = [
@@ -365,9 +345,7 @@ function GuidePage() {
           <p className="fl-subtitle">Everything you need to know to get the most out of FIRE Ledger</p>
         </div>
       </div>
-
       <div className="fl-guide-layout">
-        {/* Sidebar nav */}
         <nav className="fl-guide-nav">
           {sections.map((s,i)=>(
             <button key={i} className={`fl-guide-nav-item ${active===i?'active':''}`} onClick={()=>setActive(i)}>
@@ -377,8 +355,6 @@ function GuidePage() {
             </button>
           ))}
         </nav>
-
-        {/* Content */}
         <div className="fl-guide-content">
           <div className="fl-guide-section-title">
             <span className="fl-guide-section-icon">{sections[active].icon}</span>
@@ -395,8 +371,6 @@ function GuidePage() {
               </div>
             ))}
           </div>
-
-          {/* Quick reference card */}
           {active === 0 && (
             <div className="fl-guide-ref">
               <h4>Quick Reference</h4>
@@ -415,7 +389,6 @@ function GuidePage() {
               </div>
             </div>
           )}
-
           {active === 2 && (
             <div className="fl-guide-ref">
               <h4>Savings Rate vs Years to FIRE</h4>
@@ -443,13 +416,13 @@ function GuidePage() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
-  const { user, signOut, isTrial, trialDaysLeft } = useAuth();
+  const { user, signOut, isTrial, trialDaysLeft, hasSubscription } = useAuth();
 
   const [tab,           setTab]         = useState('home');
   const [txs,           setTxs]         = useState([]);
   const [showAdd,       setShowAdd]     = useState(false);
-  const [editTx,        setEditTx]      = useState(null);  // tx being edited
-  const [tourStep,      setTourStep]    = useState(-1);    // -1 = off
+  const [editTx,        setEditTx]      = useState(null);
+  const [tourStep,      setTourStep]    = useState(-1);
   const [showOnboard,   setShowOnboard] = useState(false);
   const [onboardStep,   setOnboardStep] = useState(0);
   const [fire,          setFire]        = useState({ annualExpenses:40000, annualSavings:20000, currentSavings:50000 });
@@ -475,11 +448,10 @@ export default function AppDashboard() {
   const [currentAge,    setCurrentAge]  = useState(30);
   const [retireAge,     setRetireAge]   = useState(65);
   const [swr,           setSwr]         = useState(4);
-  const [contribMode,   setContribMode] = useState('annual'); // annual | monthly
+  const [contribMode,   setContribMode] = useState('annual');
   const [contribs,      setContribs]    = useState(0);
-  // Net Worth Calculator
+  const [paywallFeature,setPaywallFeature] = useState(null); // null = closed
   const [nw, setNw] = useState({ houseValue:0, carValue:0, cashSavings:0, investments:0, otherAssets:0, creditCard:0, studentLoan:0, mortgage:0, personalLoan:0, otherLiabilities:0 });
-  // Compound Growth Calculator
   const [cg, setCg] = useState({ initial:0, years:10, growthRate:7, inflationRate:3, contribType:'annual', contribution:0, compounding:'annual' });
   const [cgResult, setCgResult] = useState(null);
   const [form, setForm] = useState({ amount:'', description:'', type:'need', category:'', date:new Date().toISOString().split('T')[0], recurring:false });
@@ -489,6 +461,15 @@ export default function AppDashboard() {
   const { fmt, fmtD, sym } = makeFmt(currency);
 
   const showToast = (msg, type='success') => { setToast({msg,type}); setTimeout(()=>setToast(null),2800); };
+
+  // ─── Paywall gate — free tabs bypass, everything else needs Pro/trial ────────
+  const navTo = (tabId, tabLabel) => {
+    if (hasSubscription || isTrial || FREE_TABS.includes(tabId)) {
+      setTab(tabId);
+    } else {
+      setPaywallFeature(tabLabel);
+    }
+  };
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -566,7 +547,6 @@ export default function AppDashboard() {
     const file = e.target.files[0]; if (!file) return;
     e.target.value = '';
     const reader = new FileReader();
-
     const processText = text => {
       const { rows, error } = smartParseCSV(text);
       if (error || !rows || rows.length === 0) {
@@ -575,12 +555,10 @@ export default function AppDashboard() {
       }
       setImportAll(rows); setImportPrev(rows.slice(0, 5)); setImportModal(true);
     };
-
     if (file.name.toLowerCase().endsWith('.pdf')) {
       reader.onload = ev => {
         const raw = ev.target.result || '';
         const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-        // Extract lines that look like bank transactions: have a date + amount
         const txLines = lines.filter(l =>
           /\d{1,2}[/-]\d{1,2}[/-]\d{2,4}/.test(l) && /\d+\.\d{2}/.test(l)
         );
@@ -688,6 +666,16 @@ export default function AppDashboard() {
 
   return (
     <div className="fl-shell">
+
+      {/* PAYWALL MODAL */}
+      {paywallFeature && (
+        <PaywallModal
+          feature={paywallFeature}
+          yearsToFire={isFinite(fireCalc.years) ? Math.round(fireCalc.years) : null}
+          onClose={() => setPaywallFeature(null)}
+        />
+      )}
+
       {toast && <div className={`fl-toast ${toast.type}`}>{toast.msg}</div>}
       <TourOverlay step={tourStep} onNext={()=>{ const s=TOUR_STEPS[tourStep+1]; if(s&&['home','fire','projections','insights','export'].includes(s.target))setTab(s.target); setTourStep(p=>p+1>=TOUR_STEPS.length?-1:p+1); }} onSkip={()=>setTourStep(-1)}/>
       {milestone && (
@@ -734,13 +722,18 @@ export default function AppDashboard() {
           <span className="fl-brand-name">FIRELedger</span>
         </div>
         <nav className="fl-nav">
-          {NAV_ITEMS.map(t=>(
-            <button key={t.id} className={`fl-nav-item ${tab===t.id?'active':''}`} onClick={()=>setTab(t.id)}>
-              <span className="fl-nav-icon">{t.icon}</span>
-              <span>{t.label}</span>
-              {tab===t.id&&<div className="fl-nav-indicator"/>}
-            </button>
-          ))}
+          {NAV_ITEMS.map(t=>{
+            const isPro = !FREE_TABS.includes(t.id);
+            const locked = isPro && !hasSubscription && !isTrial;
+            return (
+              <button key={t.id} className={`fl-nav-item ${tab===t.id?'active':''}`} onClick={()=>navTo(t.id, t.label)}>
+                <span className="fl-nav-icon">{t.icon}</span>
+                <span>{t.label}</span>
+                {locked && <span className="fl-nav-lock"><Icon.Lock/></span>}
+                {tab===t.id&&<div className="fl-nav-indicator"/>}
+              </button>
+            );
+          })}
         </nav>
         <div className="fl-sidebar-footer">
           {isTrial && (
@@ -755,9 +748,14 @@ export default function AppDashboard() {
               </div>
             </div>
           )}
+          {!hasSubscription && !isTrial && (
+            <a href="/pricing" className="fl-upgrade-banner">
+              🔥 Upgrade to Pro
+            </a>
+          )}
           <div className="fl-user-chip">
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-            <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
+            <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">{hasSubscription ? 'Pro' : isTrial ? 'Trial' : 'Free'}</span></div>
           </div>
           <div className="fl-curr-wrap">
             <button className="fl-curr-btn" onClick={()=>setShowCurrMenu(p=>!p)}>{currency}</button>
@@ -778,26 +776,37 @@ export default function AppDashboard() {
                 <p className="fl-subtitle">{todaySpd>0?`${fmtD(todaySpd)} spent today`:'No spending logged today'}{streak>1&&<span className="fl-streak"> · {streak}-day streak</span>}</p>
               </div>
               <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                <div className="fl-month-nav"><button onClick={()=>navMonth(-1)}><Icon.ChevLeft/></button><span>{MONTHS[selMonth]} {selYear}</span><button onClick={()=>navMonth(1)} disabled={isCurr}><Icon.ChevRight/></button></div>
-                <button className="fl-add-fab" onClick={()=>{setEditTx(null);setRawAmt('');setForm({amount:'',description:'',type:'need',category:'',date:new Date().toISOString().split('T')[0],recurring:false});setShowAdd(true);setTimeout(()=>addAmtRef.current?.focus(),80);}}><Icon.Plus/>Log transaction</button>
+                <button id="add-btn" className="fl-add-fab" onClick={()=>setShowAdd(true)}><Icon.Plus/>Log</button>
               </div>
             </div>
 
-            <div className="fl-fire-hero">
-              <div className="fl-fire-hero-left">
-                <div className="fl-fire-label">Financial Independence · {CURRENCIES[currency].symbol} {currency}</div>
-                <div className="fl-fire-years">{fireCalc.years===Infinity?'—':fireCalc.years}<span className="fl-fire-years-unit">{fireCalc.years!==Infinity?' years away':''}</span></div>
-                <div className="fl-fire-date">Projected freedom: <strong>{fireDate}</strong></div>
-                <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{width:`${fireCalc.progress}%`}}/></div>
-                <div className="fl-fire-progress-label">{fireCalc.progress.toFixed(1)}% complete · {fmt(fire.currentSavings)} of {fmt(fireCalc.fireNum)}</div>
-              </div>
-              <div className="fl-fire-hero-right">
-                <svg viewBox="0 0 140 140" className="fl-fire-ring">
-                  <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="11"/>
-                  <circle cx="70" cy="70" r="56" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="11" strokeDasharray="352" strokeDashoffset={352-(352*fireCalc.progress/100)} strokeLinecap="round" transform="rotate(-90 70 70)"/>
-                  <defs><linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--purple-light)"/><stop offset="100%" stopColor="var(--purple-dark)"/></linearGradient></defs>
+            <div className="fl-fire-hero" id="fire-hero">
+              <div className="fl-fire-hero-ring">
+                <svg viewBox="0 0 160 160" className="fl-hero-svg">
+                  <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12"/>
+                  <circle cx="80" cy="80" r="68" fill="none" stroke="url(#heroGrad)" strokeWidth="12"
+                    strokeDasharray="427" strokeDashoffset={427-(427*fireCalc.progress/100)}
+                    strokeLinecap="round" transform="rotate(-90 80 80)"/>
+                  <defs><linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="var(--purple-light)"/>
+                    <stop offset="100%" stopColor="var(--pink)"/>
+                  </linearGradient></defs>
                 </svg>
-                <div className="fl-ring-center"><span className="fl-ring-pct">{fireCalc.progress.toFixed(0)}%</span><span className="fl-ring-sub">to FIRE</span></div>
+                <div className="fl-hero-ring-center">
+                  <span className="fl-hero-pct">{fireCalc.progress.toFixed(0)}%</span>
+                  <span className="fl-hero-sub">to FIRE</span>
+                </div>
+              </div>
+              <div className="fl-fire-hero-info">
+                <div className="fl-fire-hero-main">
+                  <span className="fl-fire-hero-years">{fireCalc.years===Infinity?'∞':fireCalc.years}</span>
+                  <span className="fl-fire-hero-label">years to financial independence</span>
+                </div>
+                <div className="fl-fire-hero-stats">
+                  <div className="fl-fhs"><span className="fl-fhs-label">FIRE number</span><span className="fl-fhs-val" style={{color:'var(--gold)'}}>{fmt(fireCalc.fireNum)}</span></div>
+                  <div className="fl-fhs"><span className="fl-fhs-label">Current savings</span><span className="fl-fhs-val">{fmt(fire.currentSavings)}</span></div>
+                  <div className="fl-fhs"><span className="fl-fhs-label">Freedom date</span><span className="fl-fhs-val" style={{color:'var(--purple-light)'}}>{fireDate}</span></div>
+                </div>
               </div>
             </div>
 
@@ -1389,7 +1398,7 @@ export default function AppDashboard() {
                 <h3 style={{marginTop:24,marginBottom:16}}>Account</h3>
                 <div className="fl-account-row">
                   <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-                  <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>{isTrial ? `Trial · ${trialDaysLeft} day${trialDaysLeft!==1?'s':''} left` : 'Pro · Active'}</div></div>
+                  <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>{isTrial ? `Trial · ${trialDaysLeft} day${trialDaysLeft!==1?'s':''} left` : hasSubscription ? 'Pro · Active' : 'Free'}</div></div>
                 </div>
                 <button className="fl-btn-ghost fl-btn-icon" style={{width:'100%',marginTop:16}} onClick={exportExcel}><Icon.Export/>Download report</button>
                 <button className="fl-btn-danger fl-btn-icon" style={{width:'100%',marginTop:10}} onClick={signOut}><Icon.LogOut/>Sign out</button>
