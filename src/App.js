@@ -16,7 +16,7 @@ function ProtectedRoute({ children }) {
 }
 
 function AppRoutes() {
-  const { user, hasSubscription } = useAuth();
+  const { user } = useAuth();
   return (
     <Routes>
       <Route path="/" element={user ? <Navigate to="/app" /> : <Landing />} />
