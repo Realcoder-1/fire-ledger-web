@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import PaywallModal from './PaywallModal';
 import './AppDashboard.css';
 
 // ─── SVG Icon System — no emojis ─────────────────────────────────────────────
@@ -443,8 +444,10 @@ function GuidePage() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isTrial, trialDaysLeft, hasSubscription } = useAuth();
+
   const [tab,           setTab]         = useState('home');
+  const [paywallFeature,setPaywallFeature] = useState(null);
   const [txs,           setTxs]         = useState([]);
   const [showAdd,       setShowAdd]     = useState(false);
   const [editTx,        setEditTx]      = useState(null);  // tx being edited
@@ -488,6 +491,8 @@ export default function AppDashboard() {
   const { fmt, fmtD, sym } = makeFmt(currency);
 
   const showToast = (msg, type='success') => { setToast({msg,type}); setTimeout(()=>setToast(null),2800); };
+
+  const FREE_TABS = ['home','transactions','fire','guide','settings'];
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -687,6 +692,13 @@ export default function AppDashboard() {
 
   return (
     <div className="fl-shell">
+      {paywallFeature && (
+        <PaywallModal
+          feature={paywallFeature}
+          yearsToFire={isFinite(fireCalc.years) ? Math.round(fireCalc.years) : null}
+          onClose={() => setPaywallFeature(null)}
+        />
+      )}
       {toast && <div className={`fl-toast ${toast.type}`}>{toast.msg}</div>}
       <TourOverlay step={tourStep} onNext={()=>{ const s=TOUR_STEPS[tourStep+1]; if(s&&['home','fire','projections','insights','export'].includes(s.target))setTab(s.target); setTourStep(p=>p+1>=TOUR_STEPS.length?-1:p+1); }} onSkip={()=>setTourStep(-1)}/>
       {milestone && (
@@ -734,7 +746,10 @@ export default function AppDashboard() {
         </div>
         <nav className="fl-nav">
           {NAV_ITEMS.map(t=>(
-            <button key={t.id} className={`fl-nav-item ${tab===t.id?'active':''}`} onClick={()=>setTab(t.id)}>
+            <button key={t.id} className={`fl-nav-item ${tab===t.id?'active':''}`} onClick={()=>{
+              if(FREE_TABS.includes(t.id)||hasSubscription||isTrial){setTab(t.id);}
+              else{setPaywallFeature(t.label);}
+            }}>
               <span className="fl-nav-icon">{t.icon}</span>
               <span>{t.label}</span>
               {tab===t.id&&<div className="fl-nav-indicator"/>}
@@ -742,6 +757,18 @@ export default function AppDashboard() {
           ))}
         </nav>
         <div className="fl-sidebar-footer">
+          {isTrial && (
+            <div className="fl-trial-banner">
+              <div className="fl-trial-days">
+                <span className="fl-trial-num">{trialDaysLeft}</span>
+                <span className="fl-trial-label">day{trialDaysLeft!==1?'s':''} left</span>
+              </div>
+              <div className="fl-trial-info">
+                <span>Free trial</span>
+                <a href="/pricing" className="fl-trial-upgrade">Upgrade →</a>
+              </div>
+            </div>
+          )}
           <div className="fl-user-chip">
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
@@ -1376,7 +1403,7 @@ export default function AppDashboard() {
                 <h3 style={{marginTop:24,marginBottom:16}}>Account</h3>
                 <div className="fl-account-row">
                   <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-                  <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>Pro · Active</div></div>
+                  <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>{isTrial ? `Trial · ${trialDaysLeft} day${trialDaysLeft!==1?'s':''} left` : 'Pro · Active'}</div></div>
                 </div>
                 <button className="fl-btn-ghost fl-btn-icon" style={{width:'100%',marginTop:16}} onClick={exportExcel}><Icon.Export/>Download report</button>
                 <button className="fl-btn-danger fl-btn-icon" style={{width:'100%',marginTop:10}} onClick={signOut}><Icon.LogOut/>Sign out</button>
