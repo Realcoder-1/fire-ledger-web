@@ -11,7 +11,7 @@ function ProtectedRoute({ children }) {
   const { user, loading, hasSubscription } = useAuth();
   if (loading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#08080f',color:'#8888aa',fontFamily:'DM Sans,sans-serif'}}>Loading...</div>;
   if (!user) return <Navigate to="/" />;
-  if (!hasSubscription) return <Navigate to="/pricing" />;
+  
   return children;
 }
 
