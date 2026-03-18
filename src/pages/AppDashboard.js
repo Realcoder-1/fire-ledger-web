@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./AppDashboard.css";
 import { formatCurrency } from "../lib/format";
 
 export default function AppDashboard() {
   // 🔥 Replace with real data later
-  const [data, setData] = useState({
+  const [data] = useState({
     age: 25,
     retirementAge: 67,
     yearsRemaining: 42,
