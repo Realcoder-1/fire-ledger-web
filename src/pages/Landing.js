@@ -15,7 +15,7 @@ export default function Landing() {
     <div className="landing">
       <nav className="nav">
         <div className="nav-logo">FIRE<span>Ledger</span></div>
-        <button className="nav-cta" onClick={handleStart}>Get Started Free →</button>
+        <button className="nav-cta" onClick={handleStart}>Find my retirement date →</button>
       </nav>
 
       <section className="hero">
@@ -68,42 +68,41 @@ export default function Landing() {
             * FIRE Ledger is a financial planning tool for informational purposes only. Projections are estimates based on your inputs and do not constitute financial advice. Past market performance does not guarantee future results. Consult a qualified financial advisor before making investment decisions.
           </p>
         </div>
+
         <div className="hero-mockup">
           <div className="mockup-card">
             <div className="mockup-header">
-              <span className="mockup-label">FIRE Progress</span>
-              <span className="mockup-years">12.4 yrs away</span>
+              <span className="mockup-label">Your FIRE Dashboard</span>
+              <span className="mockup-badge-danger">Action needed</span>
             </div>
-            <div className="mockup-ring-wrap">
-              <svg viewBox="0 0 120 120" className="mockup-ring">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10"/>
-                <circle cx="60" cy="60" r="50" fill="none" stroke="url(#fireGrad)" strokeWidth="10"
-                  strokeDasharray="314" strokeDashoffset="188" strokeLinecap="round"
-                  transform="rotate(-90 60 60)"/>
-                <defs>
-                  <linearGradient id="fireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#a78bfa"/>
-                    <stop offset="100%" stopColor="#f472b6"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="mockup-ring-text">
-                <span className="mockup-pct">40%</span>
-                <span className="mockup-pct-label">to FIRE</span>
+
+            <div className="mockup-fire-date">
+              <span className="mockup-fire-label">At your current rate, you retire at</span>
+              <span className="mockup-fire-age">Age 67</span>
+              <span className="mockup-fire-sub">That's 31 years from now</span>
+            </div>
+
+            <div className="mockup-stats">
+              <div className="mockup-stat">
+                <span className="mockup-stat-label">Savings grade</span>
+                <span className="mockup-stat-val danger">D</span>
+              </div>
+              <div className="mockup-stat">
+                <span className="mockup-stat-label">Years lost to wants</span>
+                <span className="mockup-stat-val danger">8.2 yrs</span>
+              </div>
+              <div className="mockup-stat">
+                <span className="mockup-stat-label">Savings rate</span>
+                <span className="mockup-stat-val warning">11%</span>
+              </div>
+              <div className="mockup-stat">
+                <span className="mockup-stat-label">FIRE progress</span>
+                <span className="mockup-stat-val good">14%</span>
               </div>
             </div>
-            <div className="mockup-transactions">
-              {[
-                { label: 'Salary',    amt: '+$5,200', type: 'income' },
-                { label: 'Rent',      amt: '-$1,400', type: 'need'   },
-                { label: 'Groceries', amt: '-$180',   type: 'need'   },
-                { label: 'Netflix',   amt: '-$15',    type: 'want'   },
-              ].map((t, i) => (
-                <div key={i} className="mockup-tx">
-                  <span className="mockup-tx-label">{t.label}</span>
-                  <span className={`mockup-tx-amt ${t.type}`}>{t.amt}</span>
-                </div>
-              ))}
+
+            <div className="mockup-cta-hint">
+              See your real numbers →
             </div>
           </div>
         </div>
@@ -113,12 +112,12 @@ export default function Landing() {
         <h2 className="section-title">Everything you need.<br/>Nothing you don't.</h2>
         <div className="features-grid">
           {[
-            { icon: '🔥', title: 'FIRE Calculator',    desc: 'Real-time projection of your financial independence date — Standard, Lean, Fat, and Coast FIRE modes.' },
-            { icon: '📊', title: 'Needs vs Wants',     desc: 'Categorize every expense. See exactly where your money leaks and where it builds wealth.' },
-            { icon: '📈', title: 'Monte Carlo',        desc: '500 simulations of your portfolio. See your probability of reaching FIRE under real market conditions.' },
-            { icon: '💰', title: 'Net Worth Tracker',  desc: 'Assets vs liabilities. Know your real financial picture and how close you are to your FIRE number.' },
-            { icon: '📉', title: 'Compound Growth',    desc: 'See exactly how your investments compound over time with inflation adjustment and Rule of 72.' },
-            { icon: '💾', title: 'Smart Import',       desc: 'Import any bank statement CSV or PDF. Auto-detects formats — no reformatting needed.' },
+            { icon: '📅', title: 'Your FIRE Date',      desc: 'See the exact date you stop working — updated in real time as your numbers change.' },
+            { icon: '📊', title: 'Needs vs Wants',      desc: 'See exactly which expenses are costing you years of freedom — not just dollars.' },
+            { icon: '📈', title: 'Monte Carlo',         desc: '500 market simulations. Know if your plan survives a crash before it\'s too late.' },
+            { icon: '💰', title: 'Net Worth Tracker',   desc: 'The number that actually tells you where you stand. Not income — net worth.' },
+            { icon: '📉', title: 'Compound Growth',     desc: 'See how time is either working for you or against you — every single day.' },
+            { icon: '💾', title: 'Smart Import',        desc: 'Import any bank statement in seconds. The truth about your spending, instantly.' },
           ].map((f, i) => (
             <div key={i} className="feature-card">
               <div className="feature-icon">{f.icon}</div>
@@ -130,7 +129,8 @@ export default function Landing() {
       </section>
 
       <section className="pricing" id="pricing">
-        <h2 className="section-title">Start free.<br/>Upgrade when you're ready.</h2>
+        <h2 className="section-title">One number stands between you<br/>and never working again.</h2>
+        <p className="pricing-sub">Most people spend 40 years finding out too late. You don't have to.</p>
         <div className="single-pricing">
           <div className="pricing-card featured">
             <div className="pricing-badge">Free to Start</div>
@@ -148,9 +148,9 @@ export default function Landing() {
               </div>
             </div>
             <ul className="pricing-features">
-              <li>✓ Unlimited transaction history</li>
+              <li>✓ Your exact FIRE date — updated in real time</li>
               <li>✓ FIRE, Lean, Fat & Coast FIRE calculators</li>
-              <li>✓ Monte Carlo simulation</li>
+              <li>✓ Monte Carlo simulation — stress test your plan</li>
               <li>✓ Net Worth & Compound Growth tools</li>
               <li>✓ Smart CSV & PDF import</li>
               <li>✓ Custom categories</li>
@@ -162,10 +162,10 @@ export default function Landing() {
               style={{ width: '100%', justifyContent: 'center' }}
               onClick={handleStart}
             >
-              Get Started Free →
+              Find my retirement date — free →
             </button>
-            <p style={{ textAlign: 'center', fontSize: 13, color: '#8888aa', marginTop: 12 }}>
-              No credit card required · Cancel anytime
+            <p className="pricing-fine">
+              No credit card required · Cancel anytime · Less than one coffee a week
             </p>
           </div>
         </div>
