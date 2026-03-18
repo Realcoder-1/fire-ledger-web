@@ -659,6 +659,10 @@ export default function AppDashboard() {
   const grade    = gradeRaw>=60?'A+':gradeRaw>=50?'A':gradeRaw>=40?'B':gradeRaw>=30?'C':'D';
   const gradeClr = gradeRaw>=50?'var(--green)':gradeRaw>=35?'var(--gold)':'var(--red)';
   const projPts  = buildProjection(fire.currentSavings,fire.annualSavings,fire.annualExpenses,projYears);
+const hoursPerYear = 2080; // standard full time work hours per year
+const hoursRemaining = fireCalc.years !== Infinity
+  ? Math.round(fireCalc.years * hoursPerYear).toLocaleString()
+  : null;
 
   const navMonth = (dir)=>{let m=selMonth+dir,y=selYear;if(m<0){m=11;y--;}else if(m>11){m=0;y++;}setSelMonth(m);setSelYear(y);};
 
@@ -798,6 +802,17 @@ export default function AppDashboard() {
             </div>
 
             <div className="fl-fire-hero">
+{hoursRemaining && (
+  <div className="fl-hours-banner">
+    <div className="fl-hours-left">
+      <span className="fl-hours-num">{hoursRemaining}</span>
+      <span className="fl-hours-label">hours of work remaining before you're free</span>
+    </div>
+    <div className="fl-hours-right">
+      <span className="fl-hours-hint">Based on your current savings rate</span>
+    </div>
+  </div>
+)}
               <div className="fl-fire-hero-left">
                 <div className="fl-fire-label">Financial Independence · {CURRENCIES[currency].symbol} {currency}</div>
                 <div className="fl-fire-years">{fireCalc.years===Infinity?'—':fireCalc.years}<span className="fl-fire-years-unit">{fireCalc.years!==Infinity?' years away':''}</span></div>

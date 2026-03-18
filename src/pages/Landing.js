@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import HoursPopup from '../components/HoursPopup';
 import './Landing.css';
 
 export default function Landing() {
   const { signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
+  const [popupDone, setPopupDone] = useState(false);
 
   const handleStart = () => {
     if (user) navigate('/app');
@@ -13,9 +16,12 @@ export default function Landing() {
 
   return (
     <div className="landing">
+
+      {!popupDone && <HoursPopup onClose={() => setPopupDone(true)} />}
+
       <nav className="nav">
         <div className="nav-logo">FIRE<span>Ledger</span></div>
-        <button className="nav-cta" onClick={handleStart}>Find my retirement date →</button>
+        <button className="nav-cta" onClick={handleStart}>Find your retirement date →</button>
       </nav>
 
       <section className="hero">
@@ -38,30 +44,30 @@ export default function Landing() {
           </p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={handleStart}>
-              Find my number — it's free →
+              Find your number — it's free →
             </button>
           </div>
           <div className="hero-trust">
-            <span>✓ No credit card</span>
+            <span>No credit card</span>
             <span>·</span>
-            <span>✓ No commitment</span>
+            <span>No commitment</span>
             <span>·</span>
-            <span>✓ Just the truth about your timeline</span>
+            <span>Just the truth about your timeline</span>
           </div>
           <div className="hero-stats">
             <div className="stat">
-              <span className="stat-num">4%</span>
-              <span className="stat-label">Safe withdrawal rule</span>
+              <span className="stat-num">90,000</span>
+              <span className="stat-label">Hours the average person works</span>
             </div>
             <div className="stat-div" />
             <div className="stat">
               <span className="stat-num">25×</span>
-              <span className="stat-label">Your FIRE number</span>
+              <span className="stat-label">Your FIRE number multiplier</span>
             </div>
             <div className="stat-div" />
             <div className="stat">
               <span className="stat-num">Free</span>
-              <span className="stat-label">To get started</span>
+              <span className="stat-label">To find out where you stand</span>
             </div>
           </div>
           <p className="hero-disclaimer">
@@ -79,7 +85,7 @@ export default function Landing() {
             <div className="mockup-fire-date">
               <span className="mockup-fire-label">At your current rate, you retire at</span>
               <span className="mockup-fire-age">Age 67</span>
-              <span className="mockup-fire-sub">That's 31 years from now</span>
+              <span className="mockup-fire-sub">31 years · 64,480 hours of work remaining</span>
             </div>
 
             <div className="mockup-stats">
@@ -112,15 +118,15 @@ export default function Landing() {
         <h2 className="section-title">Everything you need.<br/>Nothing you don't.</h2>
         <div className="features-grid">
           {[
-            { icon: '📅', title: 'Your FIRE Date',      desc: 'See the exact date you stop working — updated in real time as your numbers change.' },
-            { icon: '📊', title: 'Needs vs Wants',      desc: 'See exactly which expenses are costing you years of freedom — not just dollars.' },
-            { icon: '📈', title: 'Monte Carlo',         desc: '500 market simulations. Know if your plan survives a crash before it\'s too late.' },
-            { icon: '💰', title: 'Net Worth Tracker',   desc: 'The number that actually tells you where you stand. Not income — net worth.' },
-            { icon: '📉', title: 'Compound Growth',     desc: 'See how time is either working for you or against you — every single day.' },
-            { icon: '💾', title: 'Smart Import',        desc: 'Import any bank statement in seconds. The truth about your spending, instantly.' },
+            { icon: '—', title: 'Your Exact FIRE Date',   desc: 'See the precise date you stop working — updated in real time as your numbers change. Standard, Lean, Fat, and Coast FIRE modes.' },
+            { icon: '—', title: 'Needs vs Wants',         desc: 'See exactly which expenses are costing you years of freedom — not just dollars. The breakdown that changes how you spend.' },
+            { icon: '—', title: 'Monte Carlo Simulation', desc: '500 market scenarios. Know whether your plan survives a crash before you find out the hard way.' },
+            { icon: '—', title: 'Net Worth Tracker',      desc: 'The number that actually tells you where you stand. Not income — net worth. Assets minus liabilities, mapped to your FIRE number.' },
+            { icon: '—', title: 'Compound Growth',        desc: 'See how time is either working for you or against you — every single day you delay costs more than you think.' },
+            { icon: '—', title: 'Smart Import',           desc: 'Import any bank statement in seconds. The truth about your spending, automatically calculated and categorized.' },
           ].map((f, i) => (
             <div key={i} className="feature-card">
-              <div className="feature-icon">{f.icon}</div>
+              <div className="feature-dash">—</div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
             </div>
@@ -148,21 +154,21 @@ export default function Landing() {
               </div>
             </div>
             <ul className="pricing-features">
-              <li>✓ Your exact FIRE date — updated in real time</li>
-              <li>✓ FIRE, Lean, Fat & Coast FIRE calculators</li>
-              <li>✓ Monte Carlo simulation — stress test your plan</li>
-              <li>✓ Net Worth & Compound Growth tools</li>
-              <li>✓ Smart CSV & PDF import</li>
-              <li>✓ Custom categories</li>
-              <li>✓ Android app included</li>
-              <li>✓ 48-hour money back guarantee</li>
+              <li>Your exact FIRE date — updated in real time</li>
+              <li>FIRE, Lean, Fat & Coast FIRE calculators</li>
+              <li>Monte Carlo simulation — stress test your plan</li>
+              <li>Net Worth & Compound Growth tools</li>
+              <li>Smart CSV & PDF import</li>
+              <li>Custom categories</li>
+              <li>Android app included</li>
+              <li>48-hour money back guarantee</li>
             </ul>
             <button
               className="btn-primary"
               style={{ width: '100%', justifyContent: 'center' }}
               onClick={handleStart}
             >
-              Find my retirement date — free →
+              Find your retirement date — free →
             </button>
             <p className="pricing-fine">
               No credit card required · Cancel anytime · Less than one coffee a week
