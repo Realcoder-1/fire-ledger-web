@@ -15,7 +15,7 @@ export default function Landing() {
     <div className="landing">
       <nav className="nav">
         <div className="nav-logo">FIRE<span>Ledger</span></div>
-        <button className="nav-cta" onClick={handleStart}>Start Free Trial →</button>
+        <button className="nav-cta" onClick={handleStart}>Get Started Free →</button>
       </nav>
 
       <section className="hero">
@@ -26,26 +26,27 @@ export default function Landing() {
           <div className="grid-overlay" />
         </div>
         <div className="hero-content">
-          <div className="hero-badge">7-Day Free Trial · No Credit Card Required</div>
+          <div className="hero-badge">THE QUESTION NOBODY ASKS UNTIL IT'S TOO LATE</div>
           <h1 className="hero-title">
-            Know exactly when<br />
-            <span className="hero-accent">you're free.</span>
+            You will work until<br />
+            <span className="hero-accent">you die.</span>
           </h1>
           <p className="hero-sub">
-            Track every dollar. Watch your FIRE number shrink.<br />
-            The only finance platform built for people who want out.
+            Unless you know this number.<br />
+            Most people never calculate it. The ones who do retire a decade early.<br />
+            Find yours in 60 seconds — free.
           </p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={handleStart}>
-              Start Free — No Card Needed →
+              Find my number — it's free →
             </button>
           </div>
           <div className="hero-trust">
-            <span>✓ 7 days free</span>
-            <span>·</span>
             <span>✓ No credit card</span>
             <span>·</span>
-            <span>✓ Cancel anytime</span>
+            <span>✓ No commitment</span>
+            <span>·</span>
+            <span>✓ Just the truth about your timeline</span>
           </div>
           <div className="hero-stats">
             <div className="stat">
@@ -60,9 +61,12 @@ export default function Landing() {
             <div className="stat-div" />
             <div className="stat">
               <span className="stat-num">Free</span>
-              <span className="stat-label">For 7 days</span>
+              <span className="stat-label">To get started</span>
             </div>
           </div>
+          <p className="hero-disclaimer">
+            * FIRE Ledger is a financial planning tool for informational purposes only. Projections are estimates based on your inputs and do not constitute financial advice. Past market performance does not guarantee future results. Consult a qualified financial advisor before making investment decisions.
+          </p>
         </div>
         <div className="hero-mockup">
           <div className="mockup-card">
@@ -129,7 +133,7 @@ export default function Landing() {
         <h2 className="section-title">Start free.<br/>Upgrade when you're ready.</h2>
         <div className="single-pricing">
           <div className="pricing-card featured">
-            <div className="pricing-badge">7 Days Free</div>
+            <div className="pricing-badge">Free to Start</div>
             <div className="pricing-tier">FIRE Ledger Pro</div>
             <div className="pricing-options">
               <div className="price-option">
@@ -158,7 +162,7 @@ export default function Landing() {
               style={{ width: '100%', justifyContent: 'center' }}
               onClick={handleStart}
             >
-              Start Free Trial →
+              Get Started Free →
             </button>
             <p style={{ textAlign: 'center', fontSize: 13, color: '#8888aa', marginTop: 12 }}>
               No credit card required · Cancel anytime
