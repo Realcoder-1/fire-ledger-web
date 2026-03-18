@@ -492,7 +492,7 @@ export default function AppDashboard() {
 
   const showToast = (msg, type='success') => { setToast({msg,type}); setTimeout(()=>setToast(null),2800); };
 
-  const FREE_TABS = ['home','transactions','fire','guide','settings'];
+  const FREE_TABS = ['home','transactions','fire','projections','guide','settings'];
 
   const load = useCallback(async () => {
     if (!userId) return;
