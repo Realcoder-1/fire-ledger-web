@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import PaywallModal from './PaywallModal';
 import './AppDashboard.css';
+import ScrollHint from '../components/ScrollHint';
 
 // ─── SVG Icon System ──────────────────────────────────────────────────────────
 const Icon = {
@@ -584,7 +585,7 @@ export default function AppDashboard() {
     { q:'How is my data stored?', a:'Your data is stored securely on Supabase (AWS infrastructure), encrypted in transit and at rest. We never sell or share it.' },
     { q:'How do I cancel?', a:'Cancel anytime from your payment provider (Paddle). Your access continues to the end of the billing period.' },
     { q:'How do I delete my data?', a:'Email thimbleforgeapps@gmail.com and we will delete all your data within 48 hours.' },
-    { q:'Is this financial advice?', a:'No. FIRE Ledger is a planning tool. For regulated advice, consult a qualified financial adviser.' },
+    { q:'Will I actually be able to reach financial independence?', a:'FIRE Ledger shows you the precise gap between where you are and where you need to be — and how every financial decision moves that date. The projections are based on your real data and established financial models (the 4% rule, 7% real return). They answer the question you actually care about: when can you stop working, and will you get there. Whether you reach it depends on your choices. This tool makes those choices visible and measurable.' },
     { q:'What browsers are supported?', a:'All modern browsers — Chrome, Firefox, Safari, Edge. The Android app is also available.' },
     { q:'How do I import bank statements?', a:'Go to Export & Import → Smart Import. Upload any CSV from your bank. The importer handles any column format automatically.' },
   ];
@@ -754,6 +755,7 @@ export default function AppDashboard() {
         {tab==='insights'&&(
           <div key="insights" className="fl-page">
             <div className="fl-page-top">
+<ScrollHint text="Scroll down for your savings grade and spending breakdown" />
               <div><h1 className="fl-title">Insights</h1><p className="fl-subtitle">Financial patterns for {MONTHS[selMonth]} {selYear}</p></div>
               <div className="fl-month-nav"><button onClick={()=>navMonth(-1)}><Icon.ChevLeft/></button><span>{MONTHS[selMonth]} {selYear}</span><button onClick={()=>navMonth(1)} disabled={isCurr}><Icon.ChevRight/></button></div>
             </div>
@@ -782,8 +784,9 @@ export default function AppDashboard() {
           const leanIncome=leanNum*(swr/100); const fatIncome=fatNum*(swr/100);
           return(
           <div key="fire" className="fl-page">
-            <div className="fl-page-top"><div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div><div className="fl-fire-mode-tabs">{[{id:'standard',label:'FIRE'},{id:'lean',label:'Lean'},{id:'fat',label:'Fat'},{id:'coast',label:'Coast'}].map(m=><button key={m.id} className={`fl-fire-mode-btn ${fireMode===m.id?'active':''}`} onClick={()=>setFireMode(m.id)}>{m.label}</button>)}</div></div>
-            <div className="fl-fire-mode-desc">{fireMode==='standard'&&<p><strong>FIRE</strong> — 25× annual expenses. Withdraw {swr}% per year.</p>}{fireMode==='lean'&&<p><strong>Lean FIRE</strong> — Retire on 75% of current expenses. FIRE number = {fmt(leanNum)}.</p>}{fireMode==='fat'&&<p><strong>Fat FIRE</strong> — Retire on 150% of current expenses. FIRE number = {fmt(fatNum)}.</p>}{fireMode==='coast'&&<p><strong>Coast FIRE</strong> — Coast number = {fmt(coastAmt)}. {coastReached?'✓ You have reached Coast FIRE.':'Need '+fmt(Math.max(0,coastAmt-fire.currentSavings))+' more.'}</p>}</div>
+            <div className="fl-page-top">
+<div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div><div className="fl-fire-mode-tabs">{[{id:'standard',label:'FIRE'},{id:'lean',label:'Lean'},{id:'fat',label:'Fat'},{id:'coast',label:'Coast'}].map(m=><button key={m.id} className={`fl-fire-mode-btn ${fireMode===m.id?'active':''}`} onClick={()=>setFireMode(m.id)}>{m.label}</button>)}</div></div>
+            <div className="fl-fire-mode-desc"><ScrollHint text="Scroll down to see your FIRE projection, stats, and what-if slider" />{fireMode==='standard'&&<p><strong>FIRE</strong> — 25× annual expenses. Withdraw {swr}% per year.</p>}{fireMode==='lean'&&<p><strong>Lean FIRE</strong> — Retire on 75% of current expenses. FIRE number = {fmt(leanNum)}.</p>}{fireMode==='fat'&&<p><strong>Fat FIRE</strong> — Retire on 150% of current expenses. FIRE number = {fmt(fatNum)}.</p>}{fireMode==='coast'&&<p><strong>Coast FIRE</strong> — Coast number = {fmt(coastAmt)}. {coastReached?'✓ You have reached Coast FIRE.':'Need '+fmt(Math.max(0,coastAmt-fire.currentSavings))+' more.'}</p>}</div>
             <div className="fl-fire-layout">
               <div className="fl-fire-inputs">
                 <h3>Your Numbers</h3>
@@ -838,7 +841,7 @@ export default function AppDashboard() {
         {/* PROJECTIONS */}
         {tab==='projections'&&(
           <div key="proj" className="fl-page">
-            <div className="fl-page-top"><div><h1 className="fl-title">Projections</h1><p className="fl-subtitle">Wealth trajectory and scenario modelling</p></div><select className="fl-field-input" style={{width:'auto',padding:'8px 12px',fontSize:13}} value={projYears} onChange={e=>{setProjYears(parseInt(e.target.value));setMcResult(null);}}>{[10,15,20,25,30,35,40].map(y=><option key={y} value={y}>{y} years</option>)}</select></div>
+            <div className="fl-page-top"><ScrollHint text="Scroll down to view your wealth trajectory chart — and run the Monte Carlo simulation below it" /><div><h1 className="fl-title">Projections</h1><p className="fl-subtitle">Wealth trajectory and scenario modelling</p></div><select className="fl-field-input" style={{width:'auto',padding:'8px 12px',fontSize:13}} value={projYears} onChange={e=>{setProjYears(parseInt(e.target.value));setMcResult(null);}}>{[10,15,20,25,30,35,40].map(y=><option key={y} value={y}>{y} years</option>)}</select></div>
             <div className="fl-proj-card"><div className="fl-proj-card-header"><div><h3>Wealth Trajectory</h3><p>7% annual return{mcResult?' with Monte Carlo bands':''}</p></div><div className="fl-proj-legend"><span className="fl-legend-item" style={{color:'var(--purple-light)'}}>Projected</span><span className="fl-legend-item" style={{color:'var(--gold)'}}>FIRE target</span></div></div><ProjectionChart points={projPts} fireNum={fireCalc.fireNum} sym={sym} mcResult={mcResult}/><div className="fl-proj-milestones">{[0.25,0.5,0.75,1.0].map(pct=>{const target=fireCalc.fireNum*pct;const yr=projPts.findIndex(p=>p.value>=target);return yr>0?<div key={pct} className="fl-proj-milestone"><span className="fl-proj-ms-label">{Math.round(pct*100)}%</span><span className="fl-proj-ms-val">{fmt(target)}</span><span className="fl-proj-ms-yr">Year {yr}</span></div>:null;})}</div></div>
             <div className="fl-proj-stats">{[{label:'Value at Year 10',value:fmt(projPts[Math.min(10,projPts.length-1)]?.value||0),color:'var(--t1)'},{label:'Value at Year 20',value:fmt(projPts[Math.min(20,projPts.length-1)]?.value||0),color:'var(--t1)'},{label:`Value at Year ${projYears}`,value:fmt(projPts[projPts.length-1]?.value||0),color:'var(--purple-light)'},{label:'FIRE Target',value:fmt(fireCalc.fireNum),color:'var(--gold)'}].map((s,i)=><div key={i} className="fl-proj-stat-box"><span className="fl-proj-stat-label">{s.label}</span><span className="fl-proj-stat-val" style={{color:s.color}}>{s.value}</span></div>)}</div>
             <div className="fl-mc-card"><div className="fl-mc-header"><div><h3>Monte Carlo Simulation</h3><p>500 simulations with randomised returns (mean 7%, std dev 12%).</p></div><button className="fl-btn-primary" onClick={runMC} disabled={mcRunning}>{mcRunning?'Running…':'Run simulation'}</button></div>{mcResult&&<><div className="fl-mc-result"><div className="fl-mc-success"><div className="fl-mc-pct" style={{color:mcResult.successRate>=80?'var(--green)':mcResult.successRate>=60?'var(--gold)':'var(--red)'}}>{mcResult.successRate}%</div><div className="fl-mc-success-label">Success rate</div><div className="fl-mc-success-sub">{mcResult.successRate} of 500 runs reached FIRE</div></div><div className="fl-mc-bands">{[{label:'Optimistic (P90)',val:mcResult.percentiles.p90[projYears],color:'var(--green)'},{label:'Median (P50)',val:mcResult.percentiles.p50[projYears],color:'var(--purple-light)'},{label:'Pessimistic (P10)',val:mcResult.percentiles.p10[projYears],color:'var(--red)'}].map(b=><div key={b.label} className="fl-mc-band-row"><span style={{color:b.color,fontWeight:600,fontSize:12}}>{b.label}</span><span style={{fontWeight:700,fontFamily:'JetBrains Mono,monospace',fontSize:15,color:b.color}}>{fmt(b.val||0)}</span></div>)}</div></div><p className="fl-mc-disclaimer"><strong>Disclaimer:</strong> Simulations are illustrative only and do not constitute financial advice. Consult a qualified financial adviser.</p></>}{!mcResult&&<div className="fl-mc-empty"><p>Run the simulation to see how your portfolio performs across 500 market scenarios.</p></div>}</div>
@@ -861,7 +864,7 @@ export default function AppDashboard() {
         {/* NET WORTH */}
         {tab==='networth'&&(
           <div key="networth" className="fl-page">
-            <div className="fl-page-top"><div><h1 className="fl-title">Net Worth</h1><p className="fl-subtitle">Assets minus liabilities</p></div></div>
+            <div className="fl-page-top"><ScrollHint text="Fill in your figures — your net worth summary appears below" /><div><h1 className="fl-title">Net Worth</h1><p className="fl-subtitle">Assets minus liabilities</p></div></div>
             <div className="fl-nw-layout">
               <div className="fl-nw-col"><div className="fl-nw-section fl-nw-assets"><h3>Assets</h3>{[{key:'houseValue',label:'Property Value'},{key:'carValue',label:'Vehicle Value'},{key:'cashSavings',label:'Cash & Savings'},{key:'investments',label:'Investments'},{key:'otherAssets',label:'Other Assets'}].map(f=><div key={f.key} className="fl-nw-field"><label>{f.label}</label><div className="fl-fire-input-wrap"><span className="fl-input-prefix">{sym}</span><input className="fl-fire-input" type="number" placeholder="0" value={nw[f.key]||''} onChange={e=>setNw(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/></div></div>)}<div className="fl-nw-subtotal fl-nw-subtotal-green"><span>Total Assets</span><strong>{fmt(Object.entries(nw).filter(([k])=>['houseValue','carValue','cashSavings','investments','otherAssets'].includes(k)).reduce((s,[,v])=>s+v,0))}</strong></div></div></div>
               <div className="fl-nw-col"><div className="fl-nw-section fl-nw-liabilities"><h3>Liabilities</h3>{[{key:'mortgage',label:'Mortgage'},{key:'creditCard',label:'Credit Card Debt'},{key:'studentLoan',label:'Student Loan'},{key:'personalLoan',label:'Personal Loan'},{key:'otherLiabilities',label:'Other Liabilities'}].map(f=><div key={f.key} className="fl-nw-field"><label>{f.label}</label><div className="fl-fire-input-wrap"><span className="fl-input-prefix">{sym}</span><input className="fl-fire-input" type="number" placeholder="0" value={nw[f.key]||''} onChange={e=>setNw(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/></div></div>)}<div className="fl-nw-subtotal fl-nw-subtotal-red"><span>Total Liabilities</span><strong>{fmt(Object.entries(nw).filter(([k])=>['mortgage','creditCard','studentLoan','personalLoan','otherLiabilities'].includes(k)).reduce((s,[,v])=>s+v,0))}</strong></div></div></div>
@@ -873,7 +876,7 @@ export default function AppDashboard() {
         {/* COMPOUND */}
         {tab==='compound'&&(
           <div key="compound" className="fl-page">
-            <div className="fl-page-top"><div><h1 className="fl-title">Compound Growth</h1><p className="fl-subtitle">See how your money grows over time</p></div></div>
+            <div className="fl-page-top"><ScrollHint text="Enter your numbers on the left — results appear on the right" /><div><h1 className="fl-title">Compound Growth</h1><p className="fl-subtitle">See how your money grows over time</p></div></div>
             <div className="fl-cg-layout">
               <div className="fl-cg-inputs"><h3>Your Numbers</h3>
                 {[{key:'initial',label:'Initial Investment',ph:'0'},{key:'years',label:'Years',ph:'10'},{key:'growthRate',label:'Annual Growth Rate %',ph:'7'},{key:'inflationRate',label:'Annual Inflation Rate %',ph:'3'},{key:'contribution',label:'Contributions',ph:'0'}].map(f=><div key={f.key} className="fl-fire-field"><label>{f.label}</label><div className="fl-fire-input-wrap"><span className="fl-input-prefix">{['initial','contribution'].includes(f.key)?sym:'%'}</span><input className="fl-fire-input" type="number" placeholder={f.ph} value={cg[f.key]||''} onChange={e=>setCg(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/></div></div>)}
@@ -942,7 +945,7 @@ export default function AppDashboard() {
             {/* Contact in settings */}
             <div className="fl-settings-card" style={{marginTop:14,gridColumn:'1/-1'}}>
               <h3>Contact</h3>
-              <p style={{fontSize:13,color:'var(--t2)',marginTop:8,marginBottom:16}}>This is a solo product. Every message goes directly to the founder. Response within 24 hours.</p>
+              <p style={{fontSize:13,color:'var(--t2)',marginTop:8,marginBottom:16}}>Our team reads and responds to every message. Whether you have a question, encounter an issue, or want to share feedback  reach  out directly. We  respond  within  24  hours.</p>
               <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
                 <a href="mailto:thimbleforgeapps@gmail.com" style={{display:'flex',alignItems:'center',gap:8,background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:8,padding:'10px 14px',textDecoration:'none',color:'var(--t2)',fontSize:13,transition:'all 0.15s'}}>✉ thimbleforgeapps@gmail.com</a>
                 <a href="https://x.com/Fireledger01" target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:8,background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:8,padding:'10px 14px',textDecoration:'none',color:'var(--t2)',fontSize:13,transition:'all 0.15s'}}>𝕏 @Fireledger01</a>
