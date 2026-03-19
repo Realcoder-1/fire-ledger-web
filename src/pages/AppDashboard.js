@@ -422,7 +422,7 @@ export default function AppDashboard() {
   const { fmt, fmtD, sym } = makeFmt(currency);
 
   const showToast = (msg, type = 'success') => { setToast({ msg, type }); setTimeout(() => setToast(null), 2800); };
-  const FREE_TABS = ['home', 'transactions', 'fire', 'projections', 'guide', 'settings'];
+
 
   const load = useCallback(async () => {
     if (!userId) return;
