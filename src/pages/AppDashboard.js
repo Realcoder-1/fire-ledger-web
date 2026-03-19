@@ -744,7 +744,11 @@ export default function AppDashboard() {
             </div>
             <div className="fl-tx-cards">
               {filtered.map(t=>(
-                <div key={t.id} className="fl-tx-card"><div className="fl-tx-card-badge" style={{background:amtColor(t.type)+'18',color:amtColor(t.type)}}>{TYPE_LABEL[t.type]}</div><div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.category?`${t.category} · `:''}{t.date}{t.recurring?' · Recurring':''}</span></div><span className="fl-tx-card-amount" style={{color:amtColor(t.type)}}>{t.type==='income'||t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span><button className="fl-tx-edit" onClick={()=>openEdit(t)}><Icon.Edit/></button><button className="fl-tx-del" onClick={()=>deleteTx(t.id)}><Icon.X/></button></div>
+                <div key={t.id} className="fl-tx-card"><div className="fl-tx-card-badge" style={{background:amtColor(t.type)+'18',color:amtColor(t.type)}}>{TYPE_LABEL[t.type]}</div><div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">
+  {[t.category, t.date, t.recurring && 'Recurring']
+    .filter(Boolean)
+    .join(' · ')}
+</span></div><span className="fl-tx-card-amount" style={{color:amtColor(t.type)}}>{t.type==='income'||t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span><button className="fl-tx-edit" onClick={()=>openEdit(t)}><Icon.Edit/></button><button className="fl-tx-del" onClick={()=>deleteTx(t.id)}><Icon.X/></button></div>
               ))}
               {filtered.length===0&&<div className="fl-empty"><p>No transactions found</p></div>}
             </div>
