@@ -1,12 +1,12 @@
-import './ScrollHint.css';
+import React from 'react';
 
 export default function ScrollHint({ text }) {
   return (
-    <div className="scroll-hint">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M7 2v10M3 8l4 4 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    <div className="fl-scroll-hint">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+        <path d="M5.5 1.5v8M2 6l3.5 3.5L9 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
-      <span>{text || 'Scroll down to see more'}</span>
+      <span>{text}</span>
     </div>
   );
 }
