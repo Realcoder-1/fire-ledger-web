@@ -1,56 +1,95 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './HoursPopup.css';
 
 export default function HoursPopup({ onClose }) {
   const { signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
-  const [hours] = useState(Math.round(Math.random() * 20000 + 30000));
+  const [visible, setVisible]   = useState(false);
+  const [step, setStep]         = useState('hook'); // 'hook' | 'signin'
 
-  const handleStart = () => {
-    onClose();
-    if (user) navigate('/app');
-    else signInWithGoogle();
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(onClose, 400);
+  };
+
+  const handleCTA = () => {
+    if (user) {
+      // Already signed in — go straight to app
+      handleClose();
+      navigate('/app');
+    } else {
+      // Show sign-in step instead of immediately triggering OAuth
+      setStep('signin');
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    handleClose();
+    signInWithGoogle();
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
-      backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', zIndex: 2000, padding: 24
-    }} onClick={onClose}>
-      <div style={{
-        background: '#0e0e1a', border: '1px solid rgba(167,139,250,0.3)',
-        borderRadius: 20, padding: '40px 36px', maxWidth: 420, width: '100%',
-        textAlign: 'center', position: 'relative',
-        boxShadow: '0 0 80px rgba(167,139,250,0.15), 0 40px 80px rgba(0,0,0,0.5)'
-      }} onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} style={{
-          position: 'absolute', top: 16, right: 16, background: 'none',
-          border: 'none', color: '#8888aa', fontSize: 18, cursor: 'pointer'
-        }}>✕</button>
+    <div className={`hp-overlay ${visible ? 'visible' : ''}`}>
+      <div className={`hp-card ${visible ? 'visible' : ''}`}>
 
-        <div style={{ fontSize: 48, marginBottom: 8 }}>⏱</div>
-        <div style={{
-          fontFamily: 'Playfair Display, serif', fontSize: 42, fontWeight: 900,
-          letterSpacing: -2, color: '#f472b6', marginBottom: 8
-        }}>
-          {hours.toLocaleString()}
-        </div>
-        <div style={{ fontSize: 14, color: '#8888aa', marginBottom: 24, lineHeight: 1.6 }}>
-          The average person has <strong style={{ color: '#f0f0f8' }}>this many working hours left</strong> before retirement age.<br/>
-          How many of yours are actually necessary?
-        </div>
-        <button onClick={handleStart} style={{
-          width: '100%', background: 'linear-gradient(135deg, #a78bfa, #f472b6)',
-          color: 'white', border: 'none', padding: '14px 24px', borderRadius: 12,
-          fontFamily: 'DM Sans, sans-serif', fontSize: 15, fontWeight: 700,
-          cursor: 'pointer', marginBottom: 10,
-          boxShadow: '0 0 30px rgba(167,139,250,0.4)'
-        }}>
-          Find out how many I can cut →
-        </button>
-        <div style={{ fontSize: 12, color: '#8888aa' }}>Free to start · No credit card</div>
+        {/* ── STEP 1: The hook ── */}
+        {step === 'hook' && <>
+          <div className="hp-site-tag">fireledger.app</div>
+          <div className="hp-number">90,000</div>
+          <div className="hp-unit">hours</div>
+          <p className="hp-statement">
+            That's how long the average person spends at work over their lifetime.
+          </p>
+          <div className="hp-divider" />
+          <p className="hp-question">How many do you have left?</p>
+          <p className="hp-sub">
+            Most people never calculate it.<br />
+            The ones who do — retire a decade earlier.
+          </p>
+          <button className="hp-cta" onClick={handleCTA}>
+            Calculate mine →
+          </button>
+          <button className="hp-skip" onClick={handleClose}>
+            I'd rather not know
+          </button>
+        </>}
+
+        {/* ── STEP 2: Sign-in choice ── */}
+        {step === 'signin' && <>
+          <div className="hp-site-tag">fireledger.app</div>
+          <p className="hp-question" style={{marginBottom: 12}}>
+            Start your free 7-day trial
+          </p>
+          <p className="hp-sub" style={{marginBottom: 28}}>
+            No credit card required. Full access to every feature.
+          </p>
+          <button className="hp-google-btn" onClick={handleGoogleSignIn}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{flexShrink:0}}>
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+              <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </button>
+          <p className="hp-signin-fine">
+            By continuing you agree to our{' '}
+            <a href="/terms" className="hp-link" onClick={handleClose}>Terms</a>{' '}
+            and{' '}
+            <a href="/privacy" className="hp-link" onClick={handleClose}>Privacy Policy</a>
+          </p>
+          <button className="hp-skip" onClick={() => setStep('hook')}>
+            ← Go back
+          </button>
+        </>}
+
       </div>
     </div>
   );
