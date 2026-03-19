@@ -64,7 +64,7 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
 
 .fl-add-fab { display:flex; align-items:center; gap:7px; background:linear-gradient(135deg,var(--purple-light),var(--purple-dark)); color:white; border:none; padding:10px 18px; border-radius:9px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; box-shadow:0 3px 14px var(--purple-glow); }
 .fl-add-fab:hover { transform:translateY(-1px); box-shadow:0 5px 20px rgba(124,58,237,0.4); }
-.fl-btn-primary { background:linear-gradient(135deg,var(--purple-light),var(--purple-dark)); color:white; border:none; padding:10px 20px; border-radius:9px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 10px var(--purple-glow); }
+.fl-btn-primary { background: linear-gradient(135deg, var(--purple), var(--pink)); color:white; border:none; padding:10px 20px; border-radius:9px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 10px var(--purple-glow); }
 .fl-btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 18px rgba(124,58,237,0.4); }
 .fl-btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
 .fl-btn-ghost { background:none; border:1px solid var(--border2); color:var(--t2); padding:10px 18px; border-radius:9px; font-family:'Inter',sans-serif; font-size:13px; cursor:pointer; transition:all 0.15s; }
