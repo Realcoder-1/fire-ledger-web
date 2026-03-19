@@ -319,7 +319,46 @@ export default function Landing() {
     // Sign-in is handled inside the popup itself — just close here
   };
 
-  const handleStart = () => { if (user) navigate('/app'); else signInWithGoogle(); };
+  const handleStart = () => {
+  if (!user) {
+    signInWithGoogle();
+    return;
+  }
+
+  openCheckout(); // 🔥 THIS is the connection
+};
+const openCheckout = () => {
+  if (!window.Paddle || !window.Paddle.Checkout) {
+    console.error('Paddle not loaded properly');
+    return;
+  }
+
+  const expiryRaw = localStorage.getItem(TIMER_KEY);
+  const expiry = expiryRaw ? parseInt(expiryRaw, 10) : null;
+
+  const isValid = expiry && Date.now() < expiry;
+
+  console.log('Checkout debug:', {
+    expiry,
+    now: Date.now(),
+    isValid,
+    discount: isValid ? DISCOUNT_CODE : null
+  });
+
+  const checkoutConfig = {
+    items: [{ priceId: PRICES.trial.monthly }]
+  };
+
+  // Apply discount ONLY if timer valid
+  if (isValid) {
+    checkoutConfig.discount_code = DISCOUNT_CODE;
+
+    // Fallback (some Paddle setups prefer ID)
+    checkoutConfig.discountId = 'dsc_01km3qwg22qqd90612kd8peq6m';
+  }
+
+  window.Paddle.Checkout.open(checkoutConfig);
+};
   const scrollTo = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
 
   const FAQS = [
