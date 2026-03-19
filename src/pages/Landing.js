@@ -183,13 +183,14 @@ export default function Landing() {
           <div className="grid-overlay"/>
         </div>
         <div className="hero-content">
-          <span className="hero-eyebrow">The question most people never ask</span>
+          <span className="hero-eyebrow">THE QUESTION NOBODY ASKS UNTIL IT'S TOO LATE</span>
           <h1 className="hero-title">
-            When can you<br/>
-            <span className="hero-title-line2">stop working?</span>
+            You will work <br/>
+            <span className="hero-title-line2">until you die</span>
           </h1>
           <p className="hero-sub">
-            Most people have no answer. They work until retirement age simply because they never calculated the alternative.<br/>
+           Unless you know this number. Most people never calculate it. The ones who do retire a decade early.
+Find yours in 60 seconds — free.<br/>
             FIRE Ledger gives you the number — and shows you exactly how to reach it.
           </p>
           <div className="hero-actions">
@@ -332,7 +333,7 @@ export default function Landing() {
         <span className="section-eyebrow">The reality most people avoid</span>
         <h2 className="section-title">
           Most people will work until 65<br/>
-          <em>not because they chose to —<br/>because they never ran the numbers.</em>
+          <em>not because they chose to <br/>because they never ran the numbers.</em>
         </h2>
         <p className="section-body">
           There is a precise point at which your investments generate enough income that work becomes optional. It has a date. It has a number. It is calculable right now, from your actual figures. Most people never calculate it. The ones who do — retire a decade earlier. FIRE Ledger exists for the second group.
