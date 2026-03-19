@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect} from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+
 import HoursPopup from '../components/HoursPopup';
 import ScrollHint from '../components/ScrollHint';
 import './Landing.css';
@@ -294,7 +294,6 @@ function SmartScrollHint({ text }) {
 // ── Main Landing ───────────────────────────────────────
 export default function Landing() {
   const { signInWithGoogle, user } = useAuth();
-  const navigate = useNavigate();
   const [showPopup,    setShowPopup]    = useState(false);
   const [navScrolled,  setNavScrolled]  = useState(false);
   const [openFaq,      setOpenFaq]      = useState(null);
