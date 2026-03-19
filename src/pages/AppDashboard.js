@@ -389,8 +389,8 @@ export default function AppDashboard() {
   const [projYears,      setProjYears]    = useState(35);
   const [inflation,      setInflation]    = useState(3);
   const [fireMode,       setFireMode]     = useState('standard');
-  const [currentAge,     setCurrentAge]   = useState(30);
-  const [retireAge,      setRetireAge]    = useState(65);
+  const [currentAge,     setCurrentAge]   = useState(30);   
+  const [retireAge,      setRetireAge]    = useState(65);    
   const [swr,            setSwr]          = useState(4);
   const [contribMode,    setContribMode]  = useState('annual');
   const [contribs,       setContribs]     = useState(0);
@@ -792,7 +792,38 @@ export default function AppDashboard() {
                 ))}
                 <div className="fl-fire-field"><label>Inflation Rate</label><div className="fl-fire-input-wrap"><span className="fl-input-prefix">%</span><input className="fl-fire-input" type="number" placeholder="3" step="0.5" value={inflation||''} onChange={e=>setInflation(parseFloat(e.target.value)||0)}/></div></div>
                 <div className="fl-fire-field"><label>Safe Withdrawal Rate</label><div className="fl-fire-input-wrap"><span className="fl-input-prefix">%</span><input className="fl-fire-input" type="number" placeholder="4" step="0.1" value={swr||''} onChange={e=>setSwr(parseFloat(e.target.value)||4)}/></div></div>
-                <button className="fl-btn-primary" style={{width:'100%'}} onClick={()=>{saveSettings(fire,null,null);showToast('Settings saved');}}>Save settings</button>
+                {fireMode==='coast'&&<>
+  <div className="fl-fire-field">
+    <label>Current Age</label>
+    <div className="fl-fire-input-wrap">
+      <span className="fl-input-prefix">yr</span>
+      <input className="fl-fire-input" type="number" placeholder="30"
+        value={currentAge||''} onChange={e=>setCurrentAge(parseInt(e.target.value)||0)}/>
+    </div>
+  </div>
+  <div className="fl-fire-field">
+    <label>Retirement Age</label>
+    <div className="fl-fire-input-wrap">
+      <span className="fl-input-prefix">yr</span>
+      <input className="fl-fire-input" type="number" placeholder="65"
+        value={retireAge||''} onChange={e=>setRetireAge(parseInt(e.target.value)||0)}/>
+    </div>
+    <span className="fl-fire-hint">{Math.max(0,retireAge-currentAge)} years to grow</span>
+  </div>
+  <div className="fl-fire-field">
+    <label>Contributions</label>
+    <div className="fl-contrib-toggle">
+      <button className={contribMode==='annual'?'active':''} onClick={()=>setContribMode('annual')}>Annual</button>
+      <button className={contribMode==='monthly'?'active':''} onClick={()=>setContribMode('monthly')}>Monthly</button>
+    </div>
+    <div className="fl-fire-input-wrap" style={{marginTop:6}}>
+      <span className="fl-input-prefix">{sym}</span>
+      <input className="fl-fire-input" type="number" placeholder="0"
+        value={contribs||''} onChange={e=>setContribs(parseFloat(e.target.value)||0)}/>
+    </div>
+    <span className="fl-fire-hint">Optional — how much you still plan to contribute</span>
+  </div>
+</>}<button className="fl-btn-primary" style={{width:'100%'}} onClick={()=>{saveSettings(fire,null,null);showToast('Settings saved');}}>Save settings</button>
                 <div className="fl-whatif"><h4>What if I saved more?</h4><div className="fl-whatif-row"><span style={{whiteSpace:'nowrap',minWidth:90}}>{sym}{whatIf.toLocaleString()} /mo</span><input type="range" min="0" max="5000" step="50" value={whatIf} onChange={e=>setWhatIf(parseInt(e.target.value))} className="fl-slider"/></div>{whatIf>0&&<div className="fl-whatif-result">Saves <strong style={{color:'var(--green)'}}>{Math.max(0,fireCalc.years-fireWI.years)} years</strong> — retire in <strong style={{color:'var(--purple-light)'}}>{fireWI.years} years</strong></div>}</div>
               </div>
               <div className="fl-fire-results">
