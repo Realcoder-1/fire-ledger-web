@@ -15,7 +15,7 @@ const PRICES = {
   trial:    { monthly: 'pri_01kkk53619cxb49atjaykftcn7', annual: 'pri_01kkk544b2fntpj7s989ntee0x' },
   standard: { monthly: 'pri_01kkk53619cxb49atjaykftcn7', annual: 'pri_01kkk544b2fntpj7s989ntee0x' },
 };
-const DISCOUNT_CODE = 'dsc_01km3qwg22qqd90612kd8peq6m'; // 50% off during trial
+const DISCOUNT_CODE = 'TRIALWELCOME'; // 50% off during trial
 
 // ── Urgency Timer ──────────────────────────────────────
 function UrgencyTimer({ onExpire, onTick }) {
