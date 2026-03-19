@@ -401,7 +401,7 @@ export default function AppDashboard() {
   // Guidance state
   const [guidance,       setGuidance]     = useState(null);
   const [showGuidance,   setShowGuidance] = useState(false);
-  const [importCount,    setImportCount]  = useState(0);
+  const [, setImportCount]  = useState(0);
   // Inactivity banner
   const [inactivityDismissed, setInactivityDismissed] = useState(false);
   // FAQ for settings
