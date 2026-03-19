@@ -647,7 +647,7 @@ export default function AppDashboard() {
         <div className="fl-brand"><div className="fl-brand-icon-wrap"><Icon.Flame/></div><span className="fl-brand-name">FIRELedger</span></div>
         <nav className="fl-nav">
           {NAV_ITEMS.map(t=>(
-            <button key={t.id} className={`fl-nav-item ${tab===t.id?'active':''}`} onClick={()=>{if(FREE_TABS.includes(t.id)||hasSubscription||isTrial){setTab(t.id);}else{setPaywallFeature(t.label);}}}>
+            <button key={t.id} className={`fl-nav-item ${tab===t.id?'active':''}`} onClick={()=>{if(hasSubscription||isTrial){setTab(t.id);}else{setPaywallFeature(t.label);}else{setPaywallFeature(t.label);}}}>
               <span className="fl-nav-icon">{t.icon}</span><span>{t.label}</span>{tab===t.id&&<div className="fl-nav-indicator"/>}
             </button>
           ))}
