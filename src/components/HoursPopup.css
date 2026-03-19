@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
 .hp-overlay {
   position: fixed;
   inset: 0;
@@ -11,13 +13,11 @@
   transition: background 0.4s ease, backdrop-filter 0.4s ease;
   pointer-events: none;
 }
-
 .hp-overlay.visible {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   pointer-events: all;
 }
-
 .hp-card {
   background: #0a0a14;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -33,12 +33,10 @@
   font-family: 'DM Sans', sans-serif;
   color: #f0f0f8;
 }
-
 .hp-card.visible {
   opacity: 1;
   transform: translateY(0);
 }
-
 .hp-site-tag {
   display: inline-block;
   font-size: 11px;
@@ -52,7 +50,6 @@
   border-radius: 100px;
   margin-bottom: 32px;
 }
-
 .hp-number {
   font-family: 'Playfair Display', serif;
   font-size: clamp(72px, 15vw, 96px);
@@ -62,7 +59,6 @@
   color: #f87171;
   margin-bottom: 4px;
 }
-
 .hp-unit {
   font-size: 18px;
   font-weight: 500;
@@ -71,7 +67,6 @@
   letter-spacing: 4px;
   margin-bottom: 24px;
 }
-
 .hp-statement {
   font-size: 15px;
   color: #8888aa;
@@ -81,14 +76,12 @@
   margin-left: auto;
   margin-right: auto;
 }
-
 .hp-divider {
   width: 40px;
   height: 1px;
   background: rgba(255, 255, 255, 0.1);
   margin: 0 auto 24px;
 }
-
 .hp-question {
   font-family: 'Playfair Display', serif;
   font-size: 26px;
@@ -98,14 +91,12 @@
   margin-bottom: 16px;
   line-height: 1.3;
 }
-
 .hp-sub {
   font-size: 14px;
   color: #8888aa;
   line-height: 1.7;
   margin-bottom: 32px;
 }
-
 .hp-cta {
   width: 100%;
   background: linear-gradient(135deg, #a78bfa, #f472b6);
@@ -122,12 +113,10 @@
   margin-bottom: 14px;
   letter-spacing: -0.2px;
 }
-
 .hp-cta:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 50px rgba(167, 139, 250, 0.45);
 }
-
 .hp-skip {
   background: none;
   border: none;
@@ -139,16 +128,10 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-
 .hp-skip:hover {
   color: rgba(136, 136, 170, 0.8);
 }
-
 @media (max-width: 480px) {
-  .hp-card {
-    padding: 36px 24px 28px;
-  }
-  .hp-number {
-    font-size: 72px;
-  }
+  .hp-card { padding: 36px 24px 28px; }
+  .hp-number { font-size: 72px; }
 }
