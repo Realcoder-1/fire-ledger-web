@@ -237,3 +237,116 @@
   cursor: pointer;
 }
 .hp-link:hover { color: #a78bfa; }
+
+/* ── Google button ───────────────────────────────────── */
+.hp-google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #fff;
+  color: #1f1f1f;
+  border: none;
+  padding: 13px 24px;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.hp-google-btn:hover { background: #f5f5f5; transform: translateY(-1px); }
+
+/* ── Or divider ──────────────────────────────────────── */
+.hp-divider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.hp-divider-row::before,
+.hp-divider-row::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.hp-divider-row span {
+  font-size: 11px;
+  color: #55557a;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* ── Email fields ────────────────────────────────────── */
+.hp-email-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+  width: 100%;
+}
+.hp-email-input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #f0f0f8;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.hp-email-input:focus { border-color: rgba(167,139,250,0.6); }
+.hp-email-input::placeholder { color: rgba(255,255,255,0.2); }
+
+/* ── Auth mode links ─────────────────────────────────── */
+.hp-auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin: 10px 0 6px;
+}
+.hp-auth-link {
+  background: none;
+  border: none;
+  color: rgba(167,139,250,0.7);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+  padding: 0;
+}
+.hp-auth-link:hover { color: #a78bfa; }
+
+/* ── Success message ─────────────────────────────────── */
+.hp-auth-msg {
+  font-size: 12.5px;
+  color: #52c98a;
+  text-align: center;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* ── Fine print / links ──────────────────────────────── */
+.hp-signin-fine {
+  font-size: 11px;
+  color: rgba(136,136,170,0.45);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.hp-link {
+  color: rgba(167,139,250,0.55);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.hp-link:hover { color: #a78bfa; }

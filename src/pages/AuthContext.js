@@ -25,9 +25,8 @@ export function AuthProvider({ children }) {
         .maybeSingle();
 
       if (sub) {
-        const lifetime = sub.plan_type === 'lifetime';
         setHasSubscription(true);
-        setIsLifetime(lifetime);
+        setIsLifetime(sub.plan_type === 'lifetime');
       } else {
         setHasSubscription(false);
         setIsLifetime(false);
@@ -56,10 +55,27 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // ── Google OAuth ──────────────────────────────────────
   const signInWithGoogle = () => supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.origin + '/pricing' }
   });
+
+  // ── Email / Password ──────────────────────────────────
+  const signUpWithEmail = (email, password) =>
+    supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin + '/pricing' }
+    });
+
+  const signInWithEmail = (email, password) =>
+    supabase.auth.signInWithPassword({ email, password });
+
+  const resetPassword = (email) =>
+    supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password'
+    });
 
   const signOut = () => supabase.auth.signOut();
   const refreshSubscription = () => user && checkAccess(user);
@@ -67,9 +83,13 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, loading, hasSubscription, isLifetime, accessChecked,
-      // Keep isTrial as false always — no trial anymore
       isTrial: false, trialDaysLeft: 0,
-      signInWithGoogle, signOut, refreshSubscription
+      signInWithGoogle,
+      signUpWithEmail,
+      signInWithEmail,
+      resetPassword,
+      signOut,
+      refreshSubscription,
     }}>
       {children}
     </AuthContext.Provider>
