@@ -45,9 +45,7 @@ function AnimatedHeroTitle() {
 const POPUP_KEY = 'fl_hours_popup_seen';
 
 // Paddle price IDs
-const PRICE_LIFETIME = 'pri_01km5hzemdp93p7d4mgpky8qz0'; // $5 one-time
-const PRICE_MONTHLY  = 'pri_01kkk53619cxb49atjaykftcn7'; // $4.99/mo
-const PRICE_ANNUAL   = 'pri_01kkk544b2fntpj7s989ntee0x'; // $59.99/yr
+
 
 // ── Dashboard Nav Preview (animated tab switcher) ─────
 const PREVIEW_TABS = [
@@ -314,11 +312,7 @@ export default function Landing() {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const openCheckout = (priceId) => {
-    if (user) { navigate('/pricing'); return; }
-    if (!window.Paddle?.Checkout) { navigate('/pricing'); return; }
-    window.Paddle.Checkout.open({ items: [{ priceId }] });
-  };
+
 
   const FAQS = [
     {
@@ -388,7 +382,7 @@ export default function Landing() {
             Most people never calculate it. The ones who do retire a decade early.
           </p>
           <div className="hero-actions">
-            <button className="btn-primary" onClick={() => scrollTo('pricing')}>
+            <button className="btn-primary" onClick={() => navigate('/signup')}>
               Find my freedom date →
             </button>
             <button className="btn-ghost" onClick={() => scrollTo('preview')}>
@@ -622,8 +616,8 @@ export default function Landing() {
                 <li className="pricing-feature-dim">✗ Data does not save between sessions</li>
                 <li className="pricing-feature-dim">✗ No cloud sync</li>
               </ul>
-              <button className="btn-primary btn-full" onClick={() => openCheckout(PRICE_LIFETIME)}>
-                Get lifetime access — $5 →
+              <button className="btn-primary btn-full" onClick={() => navigate('/signup')}>
+                Get started →
               </button>
               <p className="pricing-subline">One payment · Use forever</p>
             </div>
@@ -650,8 +644,8 @@ export default function Landing() {
                 <li>✓ Full data export</li>
                 <li>✓ Cancel anytime</li>
               </ul>
-              <button className="btn-primary btn-full" onClick={() => openCheckout(PRICE_MONTHLY)}>
-                Start monthly — $4.99/mo →
+              <button className="btn-primary btn-full" onClick={() => navigate('/signup')}>
+                Get started →
               </button>
               <p className="pricing-subline">Cancel anytime · No lock-in</p>
             </div>
@@ -680,24 +674,15 @@ export default function Landing() {
                 <li>✓ Full data export</li>
                 <li>✓ 48-hour refund guarantee</li>
               </ul>
-              <button className="btn-primary btn-full" onClick={() => openCheckout(PRICE_ANNUAL)}>
-                Start annual — $59.99/yr →
+              <button className="btn-primary btn-full" onClick={() => navigate('/signup')}>
+                Get started →
               </button>
               <p className="pricing-subline">Best value · Cancel anytime</p>
             </div>
 
           </div>
 
-          <div className="payment-trust" style={{marginTop: 32, textAlign: 'center'}}>
-            <span className="payment-trust-label">Secure payments via Paddle</span>
-            <div className="payment-logos" style={{justifyContent: 'center'}}>
-              <span className="pay-logo">VISA</span>
-              <span className="pay-logo">MC</span>
-              <span className="pay-logo">AMEX</span>
-              <span className="pay-logo">PayPal</span>
-              <span className="pay-logo pay-logo-paddle">Paddle</span>
-            </div>
-          </div>
+
         </div>
       </section>
 
@@ -724,7 +709,7 @@ export default function Landing() {
       <section className="final-cta-section">
         <h2 className="final-cta-title">The question is simple.<br/>When can you stop working?</h2>
         <p className="final-cta-sub">Most people go their whole careers without ever calculating it. You now have a tool that answers it in five minutes — and keeps the answer updated every week.</p>
-        <button className="btn-primary" style={{fontSize:17,padding:'16px 40px'}} onClick={() => scrollTo('pricing')}>
+        <button className="btn-primary" style={{fontSize:17,padding:'16px 40px'}} onClick={() => navigate('/signup')}>
           Find my freedom date →
         </button>
         <p style={{fontSize:12,color:'#8888aa',marginTop:12}}>No credit card · No commitment · Just the truth about your timeline</p>
