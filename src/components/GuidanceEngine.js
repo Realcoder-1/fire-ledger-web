@@ -185,30 +185,7 @@ export function getRuleGuidance(snap) {
   return tips.sort((a, b) => a.priority - b.priority).slice(0, 4);
 }
 
-/**
- * Build the prompt for Claude API — rich context, professional tone.
- */
-export function buildClaudePrompt(snap) {
-  const { month, rates, fire, grade, currency } = snap;
-  const sym = { USD: '$', EUR: '€', GBP: '£', INR: '₹' }[currency] || '$';
 
-  return `You are a professional financial independence advisor. A user has shared their financial data. Provide 2-3 concise, specific, actionable insights. Be direct and data-driven — not generic. Do not give a preamble. Do not say "based on your data". Just give the insight.
-
-USER FINANCIAL SNAPSHOT:
-- Monthly income: ${sym}${month.income.toLocaleString()}
-- Monthly needs (rent, groceries, etc.): ${sym}${month.needs.toLocaleString()} (${rates.needs.toFixed(0)}% of income)
-- Monthly wants (dining, entertainment, etc.): ${sym}${month.wants.toLocaleString()} (${rates.wants.toFixed(0)}% of income)
-- Monthly savings/investments: ${sym}${month.savings.toLocaleString()} (${rates.savings.toFixed(1)}% savings rate)
-- Savings grade: ${grade}
-- Current savings/investments: ${sym}${fire.current.toLocaleString()}
-- Annual savings rate: ${sym}${fire.annualSavings.toLocaleString()}
-- FIRE number (target): ${sym}${fire.num.toLocaleString()}
-- Progress to FIRE: ${fire.progress.toFixed(1)}%
-- Years to financial independence: ${isFinite(fire.yearsToFire) ? fire.yearsToFire : 'not calculable at current rate'}
-- Top spending categories: ${topCategories.slice(0, 3).map(c => `${c.cat} (${sym}${c.amt.toFixed(0)}/mo)`).join(', ') || 'none logged'}
-
-Respond with exactly 2-3 short paragraphs. Each paragraph = one specific insight with a concrete number or action. Max 60 words per paragraph. Professional but plain language — like a sharp financial advisor, not a textbook. No bullet points. No headers.`;
-}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function fmtAmt(n, currency = 'USD') {
