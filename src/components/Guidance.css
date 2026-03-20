@@ -1,0 +1,309 @@
+/* ─── Guidance Panel — Insights Tab ──────────────────────────────────────── */
+
+.fl-guidance-panel {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 24px;
+  margin-top: 16px;
+}
+
+.fl-guidance-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.fl-guidance-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--t1);
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.fl-guidance-subtitle {
+  font-size: 12px;
+  color: var(--t3);
+  line-height: 1.5;
+}
+
+/* Deep analysis button */
+.fl-guidance-ai-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(167,139,250,0.1);
+  border: 1px solid rgba(167,139,250,0.25);
+  color: var(--purple-light);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.fl-guidance-ai-btn:hover:not(:disabled) {
+  background: rgba(167,139,250,0.18);
+  border-color: rgba(167,139,250,0.45);
+}
+.fl-guidance-ai-btn:disabled { opacity: 0.6; cursor: wait; }
+.fl-guidance-ai-btn.loading { opacity: 0.8; }
+
+.fl-guidance-spinner {
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid rgba(167,139,250,0.3);
+  border-top-color: var(--purple-light);
+  border-radius: 50%;
+  animation: flGuidanceSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes flGuidanceSpin { to { transform: rotate(360deg); } }
+
+/* Empty state */
+.fl-guidance-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 0;
+  color: var(--t3);
+  text-align: center;
+}
+.fl-guidance-empty-icon {
+  font-size: 28px;
+  color: rgba(167,139,250,0.3);
+}
+.fl-guidance-empty p {
+  font-size: 13px;
+  color: var(--t3);
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+/* Rule-based tips */
+.fl-guidance-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.fl-guidance-tip {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.fl-guidance-tip-top {
+  margin-bottom: 6px;
+}
+
+.fl-guidance-tip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  border: 1px solid;
+}
+
+.fl-guidance-tip-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t1);
+  margin-bottom: 6px;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+
+.fl-guidance-tip-body {
+  font-size: 13px;
+  color: var(--t2);
+  line-height: 1.65;
+}
+
+/* AI deep analysis section */
+.fl-guidance-ai-section {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+.fl-guidance-ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  color: var(--t3);
+  font-size: 13px;
+}
+
+.fl-guidance-ai-dots {
+  display: flex;
+  gap: 4px;
+}
+.fl-guidance-ai-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--purple-light);
+  opacity: 0.4;
+  animation: flGuidancePulse 1.2s ease-in-out infinite;
+}
+.fl-guidance-ai-dots span:nth-child(2) { animation-delay: 0.2s; }
+.fl-guidance-ai-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes flGuidancePulse { 0%,100%{opacity:0.2;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.1)} }
+
+.fl-guidance-ai-error {
+  font-size: 12px;
+  color: var(--t3);
+  padding: 12px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.fl-guidance-ai-result {
+  background: rgba(167,139,250,0.05);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.fl-guidance-ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.fl-guidance-ai-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--purple-light);
+}
+
+.fl-guidance-ai-disclaimer {
+  font-size: 10px;
+  color: var(--t3);
+  font-style: italic;
+}
+
+.fl-guidance-ai-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fl-guidance-ai-body p {
+  font-size: 13.5px;
+  color: var(--t2);
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* Prompt to run */
+.fl-guidance-ai-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  flex-wrap: wrap;
+}
+
+.fl-guidance-ai-prompt span {
+  font-size: 13px;
+  color: var(--t3);
+}
+
+.fl-guidance-ai-inline-btn {
+  background: none;
+  border: none;
+  color: var(--purple-light);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.fl-guidance-ai-inline-btn:hover { color: #c4b5fd; }
+
+/* Disclaimer */
+.fl-guidance-disclaimer {
+  font-size: 10.5px;
+  color: rgba(136,136,170,0.4);
+  line-height: 1.6;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+}
+
+/* ─── Home Tab Compact Card ───────────────────────────────────────────────── */
+
+.fl-guidance-home {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.fl-guidance-home-left {
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.fl-guidance-home-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.fl-guidance-home-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.fl-guidance-home-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  margin-bottom: 3px;
+}
+
+.fl-guidance-home-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--t1);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.fl-guidance-home-text {
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.6;
+}

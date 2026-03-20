@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import './AppDashboard.css';
+import { GuidanceInsightsPanel, GuidanceHomeWidget } from '../components/GuidancePanel';
+import '../components/Guidance.css';
 
 // ─── SVG Icon System — no emojis ─────────────────────────────────────────────
 const Icon = {
@@ -103,12 +105,10 @@ const fmtInput = v => { if(!v&&v!==0)return''; const n=v.toString().replace(/[^0
 function parseDateStr(raw) {
   if (!raw) return new Date().toISOString().split('T')[0];
   const s = raw.replace(/['"]/g,'').trim();
-  // Try native parse first (handles ISO, long formats)
   const native = new Date(s);
   if (!isNaN(native.getTime()) && s.length > 5) {
     return native.toISOString().split('T')[0];
   }
-  // DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY etc
   const m = s.match(/(\d{1,4})[/.-]([\d]{1,2})[/.-](\d{2,4})/);
   if (m) {
     let [,a,b,cc] = m;
@@ -117,7 +117,6 @@ function parseDateStr(raw) {
     if (parseInt(a) > 12) return `${year}-${b.padStart(2,'0')}-${a.padStart(2,'0')}`;
     return `${year}-${a.padStart(2,'0')}-${b.padStart(2,'0')}`;
   }
-  // Month name: Jan 15 2024 or 15 Jan 2024
   const months = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
   const ml = s.toLowerCase().match(/(\d{1,2})\s*([a-z]{3})[a-z]*\s*(\d{2,4})/);
   if (ml) { const y=ml[3].length===2?'20'+ml[3]:ml[3]; return `${y}-${String(months[ml[2]]||1).padStart(2,'0')}-${ml[1].padStart(2,'0')}`; }
@@ -128,7 +127,6 @@ function parseDateStr(raw) {
 
 function parseAmount(raw) {
   if (!raw) return 0;
-  // Remove currency symbols, spaces, commas — keep digits, dot, minus
   const clean = raw.toString().replace(/[^0-9.-]/g,'');
   return Math.abs(parseFloat(clean)) || 0;
 }
@@ -144,16 +142,13 @@ function detectType(desc, cat, rawType) {
   for (const [type, words] of Object.entries(typeMap)) {
     if (words.some(w => t.includes(w))) return type;
   }
-  // Fallback: positive amount in credit column = income, else need
   return 'need';
 }
 
 function smartParseCSV(text) {
-  // Handle both comma and semicolon delimiters, and tab-separated
   const rawLines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
   if (rawLines.length < 2) return { rows: [], error: 'File appears empty or has only one row.' };
 
-  // Detect delimiter
   const sample = rawLines[0];
   const delim = sample.includes('\t') ? '\t' : sample.includes(';') ? ';' : ',';
 
@@ -169,7 +164,6 @@ function smartParseCSV(text) {
     return cols;
   };
 
-  // Find header row — first row with 2+ alphabetic columns
   let headerIdx = 0;
   for (let i = 0; i < Math.min(8, rawLines.length); i++) {
     const cols = parseLine(rawLines[i]);
@@ -201,7 +195,6 @@ function smartParseCSV(text) {
 
     if (amtIdx !== -1) {
       const raw = get(amtIdx);
-      // Negative amounts = expense, positive = income
       const signed = parseFloat(raw.replace(/[^0-9.-]/g,''));
       amount = Math.abs(signed);
       if (!isNaN(signed) && signed > 0) type = 'income';
@@ -215,7 +208,6 @@ function smartParseCSV(text) {
 
     if (!amount || amount <= 0) return null;
 
-    // Refine type based on description
     const detectedType = detectType(rawDesc, rawCat, type==='income'?'income':'');
     if (type !== 'income') type = detectedType;
 
@@ -264,7 +256,6 @@ function ProjectionChart({ points, fireNum, sym, mcResult }) {
     </svg>
   );
 }
-
 
 // ─── Walkthrough Tour ─────────────────────────────────────────────────────────
 const TOUR_STEPS = [
@@ -367,7 +358,6 @@ function GuidePage() {
       </div>
 
       <div className="fl-guide-layout">
-        {/* Sidebar nav */}
         <nav className="fl-guide-nav">
           {sections.map((s,i)=>(
             <button key={i} className={`fl-guide-nav-item ${active===i?'active':''}`} onClick={()=>setActive(i)}>
@@ -378,7 +368,6 @@ function GuidePage() {
           ))}
         </nav>
 
-        {/* Content */}
         <div className="fl-guide-content">
           <div className="fl-guide-section-title">
             <span className="fl-guide-section-icon">{sections[active].icon}</span>
@@ -396,7 +385,6 @@ function GuidePage() {
             ))}
           </div>
 
-          {/* Quick reference card */}
           {active === 0 && (
             <div className="fl-guide-ref">
               <h4>Quick Reference</h4>
@@ -448,10 +436,8 @@ export default function AppDashboard() {
   const [tab,           setTab]         = useState('home');
   const [txs,           setTxs]         = useState([]);
   const [showAdd,       setShowAdd]     = useState(false);
-  // Trial discount banner state
-  // (no trial discount state — trial removed)
-  const [editTx,        setEditTx]      = useState(null);  // tx being edited
-  const [tourStep,      setTourStep]    = useState(-1);    // -1 = off
+  const [editTx,        setEditTx]      = useState(null);
+  const [tourStep,      setTourStep]    = useState(-1);
   const [showOnboard,   setShowOnboard] = useState(false);
   const [onboardStep,   setOnboardStep] = useState(0);
   const [fire,          setFire]        = useState({ annualExpenses:40000, annualSavings:20000, currentSavings:50000 });
@@ -477,11 +463,9 @@ export default function AppDashboard() {
   const [currentAge,    setCurrentAge]  = useState(30);
   const [retireAge,     setRetireAge]   = useState(65);
   const [swr,           setSwr]         = useState(4);
-  const [contribMode,   setContribMode] = useState('annual'); // annual | monthly
+  const [contribMode,   setContribMode] = useState('annual');
   const [contribs,      setContribs]    = useState(0);
-  // Net Worth Calculator
   const [nw, setNw] = useState({ houseValue:0, carValue:0, cashSavings:0, investments:0, otherAssets:0, creditCard:0, studentLoan:0, mortgage:0, personalLoan:0, otherLiabilities:0 });
-  // Compound Growth Calculator
   const [cg, setCg] = useState({ initial:0, years:10, growthRate:7, inflationRate:3, contribType:'annual', contribution:0, compounding:'annual' });
   const [cgResult, setCgResult] = useState(null);
   const [form, setForm] = useState({ amount:'', description:'', type:'need', category:'', date:new Date().toISOString().split('T')[0], recurring:false });
@@ -495,7 +479,6 @@ export default function AppDashboard() {
   const load = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
-    // Lifetime plan: local-only, no server reads
     if (isLifetime) {
       setShowOnboard(true);
       setLoading(false);
@@ -602,7 +585,6 @@ export default function AppDashboard() {
       reader.onload = ev => {
         const raw = ev.target.result || '';
         const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-        // Extract lines that look like bank transactions: have a date + amount
         const txLines = lines.filter(l =>
           /\d{1,2}[/-]\d{1,2}[/-]\d{2,4}/.test(l) && /\d+\.\d{2}/.test(l)
         );
@@ -783,20 +765,16 @@ export default function AppDashboard() {
               </div>
             </div>
           )}
-{!isLifetime && (
-  <a
-    href="/pricing"
-    className="fl-upgrade-btn"
-    title="Upgrade or manage your plan"
-  >
-    Manage plan →
-  </a>
-)}
-{isLifetime && (
-  <a href="/pricing" className="fl-upgrade-btn fl-upgrade-btn-session">
-    Upgrade to save data →
-  </a>
-)}
+          {/* ── Single upgrade button — no duplicates ── */}
+          {isLifetime ? (
+            <a href="/pricing" className="fl-upgrade-btn fl-upgrade-btn-session">
+              Upgrade to save data →
+            </a>
+          ) : (
+            <a href="/pricing" className="fl-upgrade-btn">
+              Manage plan →
+            </a>
+          )}
           <div className="fl-user-chip">
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
@@ -825,7 +803,6 @@ export default function AppDashboard() {
               </div>
             </div>
 
-            {/* LIFETIME SESSION NUDGE */}
             {isLifetime && (
               <div className="fl-lifetime-nudge">
                 <span>⚡ Session only — your data will clear when you close this tab.</span>
@@ -861,7 +838,7 @@ export default function AppDashboard() {
               {[
                 {label:'Income',  value:fmt(income),       sub:'This month',                                     color:'var(--green)', icon:<Icon.ArrowUp/>},
                 {label:'Spent',   value:fmt(needs+wants),  sub:`${income>0?(((needs+wants)/income)*100).toFixed(0):0}% of income`,  color:'var(--red)',   icon:<Icon.ArrowDown/>},
-                {label:'Saved', value:fmt(savings), sub:`${savRate}% savings rate`, color:'var(--gold)', icon:<Icon.ArrowRight/>},
+                {label:'Saved',   value:fmt(savings),      sub:`${savRate}% savings rate`,                       color:'var(--gold)', icon:<Icon.ArrowRight/>},
                 {label:'Grade',   value:grade,             sub:'Monthly savings score',                          color:gradeClr,       icon:<Icon.Star/>},
               ].map((m,i)=>(
                 <div key={i} className="fl-metric-card" style={{'--accent':m.color}}>
@@ -871,6 +848,8 @@ export default function AppDashboard() {
                 </div>
               ))}
             </div>
+
+            <GuidanceHomeWidget txs={mTxs} fire={fire} currency={currency} />
 
             <div className="fl-section-header"><h2 className="fl-section-title">Recent Transactions</h2><button className="fl-link-btn" onClick={()=>setTab('transactions')}>View all</button></div>
             <div className="fl-tx-list">
@@ -927,7 +906,8 @@ export default function AppDashboard() {
               <div><h1 className="fl-title">Insights</h1><p className="fl-subtitle">Financial patterns for {MONTHS[selMonth]} {selYear}</p></div>
               <div className="fl-month-nav"><button onClick={()=>navMonth(-1)}><Icon.ChevLeft/></button><span>{MONTHS[selMonth]} {selYear}</span><button onClick={()=>navMonth(1)} disabled={isCurr}><Icon.ChevRight/></button></div>
             </div>
-            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Scroll down for your savings grade and spending breakdown</span></div><div className="fl-insights-grid">
+            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Scroll down for your savings grade and spending breakdown</span></div>
+            <div className="fl-insights-grid">
               <div className="fl-insight-card fl-insight-wide">
                 <h3>Monthly Overview</h3>
                 <div className="fl-overview-bars">
@@ -969,6 +949,10 @@ export default function AppDashboard() {
                 {mTxs.filter(t=>t.type==='need'||t.type==='want').length===0&&<p className="fl-empty-sm">No expenses this month</p>}
               </div>
             </div>
+
+            {/* ── Guidance panel — outside and after fl-insights-grid ── */}
+            <GuidanceInsightsPanel txs={mTxs} fire={fire} currency={currency} />
+
           </div>
         )}
 
@@ -1162,7 +1146,8 @@ export default function AppDashboard() {
                 {[10,15,20,25,30,35,40].map(y=><option key={y} value={y}>{y} years</option>)}
               </select>
             </div>
-            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Scroll down to see your wealth trajectory chart</span></div><div className="fl-proj-card">
+            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Scroll down to see your wealth trajectory chart</span></div>
+            <div className="fl-proj-card">
               <div className="fl-proj-card-header">
                 <div><h3>Wealth Trajectory</h3><p>Deterministic projection at 7% annual return{mcResult?' with Monte Carlo probability bands':''}</p></div>
                 <div className="fl-proj-legend">
@@ -1231,7 +1216,8 @@ export default function AppDashboard() {
         {tab==='networth'&&(
           <div key="networth" className="fl-page">
             <div className="fl-page-top"><div><h1 className="fl-title">Net Worth</h1><p className="fl-subtitle">Assets minus liabilities — your real financial picture</p></div></div>
-            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Fill in your figures — net worth appears below</span></div><div className="fl-nw-layout">
+            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Fill in your figures — net worth appears below</span></div>
+            <div className="fl-nw-layout">
               <div className="fl-nw-col">
                 <div className="fl-nw-section fl-nw-assets">
                   <h3>Assets</h3>
@@ -1317,7 +1303,8 @@ export default function AppDashboard() {
         {tab==='compound'&&(
           <div key="compound" className="fl-page">
             <div className="fl-page-top"><div><h1 className="fl-title">Compound Growth</h1><p className="fl-subtitle">See how your money grows over time</p></div></div>
-            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Enter your numbers — results appear to the right</span></div><div className="fl-cg-layout">
+            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Enter your numbers — results appear to the right</span></div>
+            <div className="fl-cg-layout">
               <div className="fl-cg-inputs">
                 <h3>Your Numbers</h3>
                 <div className="fl-fire-field">
@@ -1386,10 +1373,10 @@ export default function AppDashboard() {
                     </div>
                     <div className="fl-fire-stat-grid" style={{marginTop:16}}>
                       {[
-                        {label:'Real Value',        value:fmt(cgResult.real),          hint:'Inflation-adjusted',                     color:'var(--green)'},
-                        {label:'Total Contributed', value:fmt(cgResult.totalContribs), hint:'Your actual money in',                   color:'var(--t1)'},
-                        {label:'Growth',            value:fmt(cgResult.growth),        hint:'Compound interest earned',               color:'var(--gold)'},
-                        {label:'Rule of 72',        value:`${cgResult.rule72} yrs`,    hint:'Years to double at this rate',           color:'var(--purple-light)'},
+                        {label:'Real Value',        value:fmt(cgResult.real),          hint:'Inflation-adjusted',           color:'var(--green)'},
+                        {label:'Total Contributed', value:fmt(cgResult.totalContribs), hint:'Your actual money in',         color:'var(--t1)'},
+                        {label:'Growth',            value:fmt(cgResult.growth),        hint:'Compound interest earned',     color:'var(--gold)'},
+                        {label:'Rule of 72',        value:`${cgResult.rule72} yrs`,    hint:'Years to double at this rate', color:'var(--purple-light)'},
                       ].map((s,i)=>(
                         <div key={i} className="fl-fire-stat">
                           <span className="fl-fire-stat-label">{s.label}</span>
