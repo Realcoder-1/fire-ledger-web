@@ -25,8 +25,6 @@ export function buildSnapshot(txs, fire, currency = 'USD') {
   const mNeeds   = sum(thisMonth, 'need');
   const mWants   = sum(thisMonth, 'want');
   const mSavings = sum(thisMonth, 'saving');
-  const mSpend   = mNeeds + mWants;
-
   const savRate  = mIncome > 0 ? (mSavings / mIncome) * 100 : 0;
   const needsPct = mIncome > 0 ? (mNeeds / mIncome) * 100 : 0;
   const wantsPct = mIncome > 0 ? (mWants / mIncome) * 100 : 0;
@@ -72,7 +70,7 @@ export function buildSnapshot(txs, fire, currency = 'USD') {
 
   return {
     currency,
-    month: { income: mIncome, needs: mNeeds, wants: mWants, savings: mSavings, spend: mSpend },
+    month: { income: mIncome, needs: mNeeds, wants: mWants, savings: mSavings, spend: mNeeds + mWants },
     rates: { savings: savRate, needs: needsPct, wants: wantsPct },
     topCategories,
     wantImpact,
@@ -98,7 +96,7 @@ export function buildSnapshot(txs, fire, currency = 'USD') {
 export function getRuleGuidance(snap) {
   if (!snap.hasData) return [];
   const tips = [];
-  const { rates, month, fire, wantImpact, grade, topCategories } = snap;
+  const { rates, month, fire, wantImpact, grade } = snap;
 
   // ── Critical: Savings rate too low ──────────────────────────────────
   if (rates.savings < 10 && month.income > 0) {
