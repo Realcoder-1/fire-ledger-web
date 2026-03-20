@@ -794,3 +794,156 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
   .fl-disc-banner { flex-direction: column; align-items: flex-start; }
   .fl-disc-banner-right { width: 100%; justify-content: flex-start; }
 }
+
+/* ── HOURS REMAINING ROW ─────────────────────────────── */
+.fl-fire-hours-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: rgba(248,113,113,0.07);
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: 8px;
+}
+.fl-fire-hours-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 800;
+  color: #f87171;
+  letter-spacing: -1px;
+  white-space: nowrap;
+}
+.fl-fire-hours-label {
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.4;
+}
+
+/* ── PROGRESS LABEL SIZE FIX ─────────────────────────── */
+.fl-fire-progress-label {
+  font-size: 13px !important;
+  color: var(--t2);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.3px;
+}
+
+/* ── MOBILE LAYOUT ───────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Shell & sidebar */
+  .fl-shell { flex-direction: column; height: auto; min-height: 100vh; }
+  .fl-sidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: 10px 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: var(--bg2);
+    overflow-x: auto;
+    gap: 4px;
+  }
+  .fl-brand { display: none; }
+  .fl-nav {
+    flex-direction: row;
+    gap: 2px;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .fl-nav::-webkit-scrollbar { display: none; }
+  .fl-nav-item {
+    flex-direction: column;
+    padding: 7px 10px;
+    gap: 3px;
+    font-size: 10px;
+    min-width: 56px;
+    border-radius: 8px;
+  }
+  .fl-nav-item span:last-of-type { display: none; }
+  .fl-nav-icon { width: auto; }
+  .fl-nav-indicator { top: auto; bottom: 0; left: 50%; right: auto; transform: translateX(-50%); width: 16px; height: 3px; border-radius: 3px 3px 0 0; }
+  .fl-sidebar-footer { display: none; }
+
+  /* Main content */
+  .fl-main { overflow-y: auto; }
+  .fl-page { padding: 16px 16px 80px; }
+  .fl-page-top { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .fl-title { font-size: 22px; }
+
+  /* Fire hero */
+  .fl-fire-hero { flex-direction: column; padding: 18px; gap: 16px; }
+  .fl-fire-hero-right { width: 90px; height: 90px; margin: 0 auto; }
+  .fl-fire-years { font-size: 40px; }
+
+  /* Metrics grid */
+  .fl-metrics { grid-template-columns: 1fr 1fr; }
+  .fl-metric-value { font-size: 18px; }
+
+  /* FAB */
+  .fl-add-fab { font-size: 13px; padding: 9px 14px; }
+  .fl-month-nav { font-size: 12px; padding: 5px 10px; }
+
+  /* Modals */
+  .fl-modal { width: 100%; max-width: 100%; border-radius: 20px 20px 0 0; position: fixed; bottom: 0; left: 0; right: 0; max-height: 90vh; }
+  .fl-overlay { align-items: flex-end; padding: 0; }
+
+  /* Discount banner */
+  .fl-disc-banner { padding: 12px; }
+  .fl-disc-title { font-size: 13px; }
+  .fl-disc-banner-right { flex-wrap: wrap; gap: 8px; }
+  .fl-disc-cta { padding: 8px 14px; font-size: 12px; }
+
+  /* Insights */
+  .fl-insights-grid { grid-template-columns: 1fr; }
+  .fl-insight-wide { grid-column: 1; }
+
+  /* FIRE calc */
+  .fl-fire-layout { grid-template-columns: 1fr; }
+  .fl-fire-stat-grid { grid-template-columns: 1fr 1fr; }
+  .fl-fire-compact { grid-template-columns: 1fr; }
+
+  /* Projections */
+  .fl-proj-stats { grid-template-columns: 1fr 1fr; }
+  .fl-mc-result { flex-direction: column; }
+
+  /* Net worth */
+  .fl-nw-layout { grid-template-columns: 1fr; }
+  .fl-nw-result-stats { grid-template-columns: 1fr 1fr; }
+
+  /* Compound */
+  .fl-cg-layout { grid-template-columns: 1fr; }
+
+  /* Settings */
+  .fl-settings-grid { grid-template-columns: 1fr; }
+  .fl-export-grid { grid-template-columns: 1fr; }
+
+  /* Guide */
+  .fl-guide-layout { grid-template-columns: 1fr; }
+  .fl-guide-nav { flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  .fl-guide-nav-item { white-space: nowrap; }
+  .fl-guide-nav-bar { display: none; }
+
+  /* Toast */
+  .fl-toast { max-width: calc(100vw - 32px); text-align: center; white-space: normal; }
+
+  /* Scroll gradient */
+  .fl-main::after { left: 0; }
+}
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .fl-sidebar { width: 72px; }
+  .fl-nav-item span:not(.fl-nav-icon) { display: none; }
+  .fl-brand-name { display: none; }
+  .fl-user-info { display: none; }
+  .fl-metrics { grid-template-columns: 1fr 1fr; }
+  .fl-fire-hero { flex-direction: column; gap: 16px; }
+  .fl-fire-layout { grid-template-columns: 1fr; }
+  .fl-insights-grid { grid-template-columns: 1fr; }
+  .fl-insight-wide { grid-column: 1; }
+  .fl-settings-grid { grid-template-columns: 1fr; }
+  .fl-export-grid { grid-template-columns: 1fr; }
+  .fl-main::after { left: 72px; }
+}

@@ -636,3 +636,23 @@
   transform: translateY(14px) skewX(3deg);
   filter: blur(6px);
 }
+
+/* ── FEATURE SVG ICONS ────────────────────────────────── */
+.feature-icon-svg {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(167,139,250,0.1);
+  border: 1px solid rgba(167,139,250,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a78bfa;
+  margin-bottom: 14px;
+  transition: all 0.2s;
+}
+.feature-card:hover .feature-icon-svg {
+  background: rgba(167,139,250,0.18);
+  border-color: rgba(167,139,250,0.4);
+  transform: translateY(-2px);
+}

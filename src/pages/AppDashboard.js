@@ -835,8 +835,14 @@ export default function AppDashboard() {
                 <div className="fl-fire-label">Financial Independence · {CURRENCIES[currency].symbol} {currency}</div>
                 <div className="fl-fire-years">{fireCalc.years===Infinity?'—':fireCalc.years}<span className="fl-fire-years-unit">{fireCalc.years!==Infinity?' years away':''}</span></div>
                 <div className="fl-fire-date">Projected freedom: <strong>{fireDate}</strong></div>
+                {isFinite(fireCalc.years)&&fireCalc.years>0&&(
+                  <div className="fl-fire-hours-row">
+                    <span className="fl-fire-hours-num">{Math.round(fireCalc.years*52*40).toLocaleString()}</span>
+                    <span className="fl-fire-hours-label">working hours until you never have to work again</span>
+                  </div>
+                )}
                 <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{width:`${fireCalc.progress}%`}}/></div>
-                <div className="fl-fire-progress-label">{fireCalc.progress.toFixed(1)}% complete · {fmt(fire.currentSavings)} of {fmt(fireCalc.fireNum)}</div>
+                <div className="fl-fire-progress-label">{fireCalc.progress.toFixed(1)}% of the way there &nbsp;·&nbsp; {fmt(fire.currentSavings)} of {fmt(fireCalc.fireNum)}</div>
               </div>
               <div className="fl-fire-hero-right">
                 <svg viewBox="0 0 140 140" className="fl-fire-ring">
@@ -1105,7 +1111,7 @@ export default function AppDashboard() {
                     {label:'FIRE Number',    value:fmt(displayNum),                                    hint:fireMode==='lean'?'75% of expenses × 25':fireMode==='fat'?'150% of expenses × 25':'25× annual expenses', color:'var(--gold)'},
                     {label:'Years Away',     value:adjFireCalc.years===Infinity?'—':adjFireCalc.years, hint:`At 7% return, ${inflation}% inflation`,                                                                  color:adjFireCalc.years<=10?'var(--green)':adjFireCalc.years<=20?'var(--gold)':'var(--red)'},
                     {label:'Freedom Date',   value:fireDate,                                           hint:'Inflation-adjusted projection',                                                                          color:'var(--purple-light)'},
-                    {label:'Gap Remaining',  value:fmt(Math.max(0,displayNum-fire.currentSavings)),    hint:'Still needed',                                                                                          color:'var(--purple-light)'},
+                    {label:'Hours Left',     value:isFinite(adjFireCalc.years)&&adjFireCalc.years>0?Math.round(adjFireCalc.years*52*40).toLocaleString():'—', hint:'Working hours until freedom',                   color:'var(--red)'},
                     {label:'Annual Income',  value:fmt(fireMode==='lean'?leanIncome:fireMode==='fat'?fatIncome:annualIncome), hint:`At ${swr}% withdrawal rate`,                                                    color:'var(--green)'},
                     {label:'Monthly Income', value:fmt((fireMode==='lean'?leanIncome:fireMode==='fat'?fatIncome:annualIncome)/12), hint:'Per month in retirement',                                                   color:'var(--green)'},
                   ].map((s,i)=>(

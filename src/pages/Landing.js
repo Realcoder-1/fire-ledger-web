@@ -331,7 +331,7 @@ export default function Landing() {
 
   useEffect(() => {
     if (!localStorage.getItem(POPUP_KEY)) {
-      const t = setTimeout(() => setShowPopup(true), 3500);
+      const t = setTimeout(() => setShowPopup(true), 800);
       return () => clearTimeout(t);
     }
   }, []);
@@ -591,14 +591,21 @@ export default function Landing() {
           <h2 className="section-title">Six tools.<br/>One freedom date.</h2>
           <div className="features-grid">
             {[
-              { num:'01', title:'Freedom Date Calculator',   desc:'Your exact financial independence date — updated in real time as income, spending, and savings change. Four modes: Standard, Lean, Fat, and Coast FIRE.' },
-              { num:'02', title:'Needs vs Wants Tracker',    desc:'Categorise every transaction. See which spending is building wealth and which is costing you years — broken down month by month with a savings grade.' },
-              { num:'03', title:'Monte Carlo Simulation',    desc:'500 market scenarios stress-tested against your plan. Know the probability your portfolio holds under real-world conditions before it matters.' },
-              { num:'04', title:'Net Worth Tracker',         desc:'Assets minus liabilities, auto-updated when you import bank data. Tracks your real financial position and how far you are from your FIRE number.' },
-              { num:'05', title:'Financial Guidance System', desc:'After every transaction batch, the app analyses patterns and tells you what is costing you years — in plain language, with specific numbers.' },
-              { num:'06', title:'Smart Bank Import',         desc:'Upload any bank statement CSV. Auto-detects column formats, date styles, debit/credit splits. No reformatting. Net worth updates automatically.' },
+              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="9" stroke="currentColor" strokeWidth="1.6"/><path d="M11 6v5l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="11" cy="11" r="1.5" fill="currentColor"/></svg>,
+                num:'01', title:'Freedom Date Calculator',   desc:'Your exact independence date — updated in real time. Standard, Lean, Fat, and Coast FIRE modes. The one number that changes how you see every purchase.' },
+              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h10M3 16h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M17 13l-2.5 2.5L17 18M14.5 15.5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                num:'02', title:'Needs vs Wants Tracker',    desc:'Categorise every transaction. See which spending builds wealth and which costs you years — broken down monthly with a savings grade.' },
+              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 17L7.5 11l4 3L16 7l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 17h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="19" cy="6" r="2" stroke="currentColor" strokeWidth="1.4"/></svg>,
+                num:'03', title:'Monte Carlo Simulation',    desc:'500 market scenarios stress-tested against your plan. Know the probability your portfolio survives before it matters.' },
+              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="13" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M3 9h16" stroke="currentColor" strokeWidth="1.6"/><circle cx="15.5" cy="13.5" r="1.2" fill="currentColor"/><path d="M7 5V3M15 5V3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+                num:'04', title:'Net Worth Tracker',         desc:'Assets minus liabilities, auto-updated on import. Tracks your real financial position and your FIRE number proximity in one view.' },
+              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.6"/><path d="M11 7v4.5l2.5 2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 2.5L11 5l4-2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                num:'05', title:'Financial Guidance System', desc:'After every transaction batch, the app analyses your patterns and tells you what is costing you years — in plain language, with exact numbers.' },
+              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3v11M7 10l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 15v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+                num:'06', title:'Smart Bank Import',         desc:'Upload any bank CSV. Auto-detects columns, date formats, debit/credit splits. No reformatting. Net worth syncs automatically on import.' },
             ].map((f,i) => (
               <div key={i} className="feature-card">
+                <div className="feature-icon-svg">{f.icon}</div>
                 <div className="feature-num">{f.num}</div>
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
