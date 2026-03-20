@@ -417,21 +417,21 @@ export default function Landing() {
             <span>✓ Cancel monthly anytime</span>
           </div>
           <div className="hero-stat-strip">
-            <div className="hero-stat-item">
-              <span className="hero-stat-num">90,000</span>
-              <span className="hero-stat-label">avg lifetime work hours</span>
-            </div>
-            <div className="hero-stat-div" />
-            <div className="hero-stat-item">
-              <span className="hero-stat-num">25×</span>
-              <span className="hero-stat-label">your expenses = FIRE number</span>
-            </div>
-            <div className="hero-stat-div" />
-            <div className="hero-stat-item">
-              <span className="hero-stat-num">$5</span>
-              <span className="hero-stat-label">to know your number</span>
-            </div>
-          </div>
+  <div className="hero-stat-item">
+    <span className="hero-stat-num">$5</span>
+    <span className="hero-stat-label">see when you never have to work again</span>
+  </div>
+  <div className="hero-stat-div" />
+  <div className="hero-stat-item">
+    <span className="hero-stat-num">90,000</span>
+    <span className="hero-stat-label">avg lifetime work hours — how many are yours?</span>
+  </div>
+  <div className="hero-stat-div" />
+  <div className="hero-stat-item">
+    <span className="hero-stat-num">25×</span>
+    <span className="hero-stat-label">your annual expenses = your FIRE number</span>
+  </div>
+</div>
           <SmartScrollHint text="Scroll to see the dashboard" />
         </div>
         <div className="hero-mockup">

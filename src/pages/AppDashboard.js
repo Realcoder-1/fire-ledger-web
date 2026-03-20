@@ -783,6 +783,20 @@ export default function AppDashboard() {
               </div>
             </div>
           )}
+{!isLifetime && (
+  <a
+    href="/pricing"
+    className="fl-upgrade-btn"
+    title="Upgrade or manage your plan"
+  >
+    Manage plan →
+  </a>
+)}
+{isLifetime && (
+  <a href="/pricing" className="fl-upgrade-btn fl-upgrade-btn-session">
+    Upgrade to save data →
+  </a>
+)}
           <div className="fl-user-chip">
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
