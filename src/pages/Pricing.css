@@ -107,90 +107,191 @@
 .p-cta-arrow { font-size: 20px; }
 .p-guarantee { font-size: 13px; color: var(--text2); text-align: center; }
 
-/* ── Add these to the bottom of your existing Pricing.css ── */
-
-.p-coupon {
-  margin: 0 0 16px;
+/* ── 3-PLAN GRID ─────────────────────────────────────── */
+.p-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+  margin: 28px auto 0;
 }
-
-.p-coupon-row {
+.p-plan-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 18px;
+  padding: 28px 24px;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  transition: border-color 0.2s;
+  text-align: left;
 }
-
-.p-coupon-input {
-  flex: 1;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: #f0f4ff;
-  padding: 10px 14px;
-  border-radius: 9px;
-  font-family: inherit;
-  font-size: 13px;
-  transition: border-color 0.15s;
-  outline: none;
+.p-plan-card:hover { border-color: rgba(255,255,255,0.15); }
+.p-plan-featured {
+  border-color: rgba(167,139,250,0.45);
+  background: rgba(167,139,250,0.05);
+  box-shadow: 0 0 40px rgba(167,139,250,0.1);
 }
-
-.p-coupon-input::placeholder {
-  color: rgba(255,255,255,0.3);
-}
-
-.p-coupon-input:focus {
-  border-color: rgba(167,139,250,0.6);
-}
-
-.p-coupon-btn {
-  background: rgba(167,139,250,0.15);
-  border: 1px solid rgba(167,139,250,0.4);
-  color: #a78bfa;
-  padding: 10px 18px;
-  border-radius: 9px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
+.p-plan-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #a78bfa, #f472b6);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 14px;
+  border-radius: 100px;
   white-space: nowrap;
 }
-
-.p-coupon-btn:hover {
-  background: rgba(167,139,250,0.25);
+.p-plan-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #55557a;
+  margin-bottom: 10px;
 }
-
-.p-coupon-applied {
+.p-plan-price {
   display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.p-plan-equiv {
+  font-size: 12px;
+  color: #34d399;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.p-plan-storage {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(82,201,138,0.08);
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 100px;
+  margin-bottom: 10px;
+  width: fit-content;
+}
+.p-storage-session {
+  background: rgba(251,191,36,0.1);
+  border: 1px solid rgba(251,191,36,0.25);
+  color: #fbbf24;
+}
+.p-storage-cloud {
+  background: rgba(82,201,138,0.1);
   border: 1px solid rgba(82,201,138,0.25);
-  border-radius: 9px;
-  padding: 10px 14px;
-  font-size: 12.5px;
   color: #52c98a;
 }
-
-.p-coupon-check {
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.p-coupon-applied span:nth-child(2) {
+.p-plan-note {
+  font-size: 12.5px;
+  color: #8888aa;
+  line-height: 1.6;
+  margin-bottom: 18px;
   flex: 1;
-  line-height: 1.4;
 }
-
-.p-coupon-remove {
-  background: none;
-  border: none;
-  color: rgba(82,201,138,0.6);
-  font-size: 12px;
+.p-plan-features {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.p-plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #c0c0d8;
+}
+.p-cross { color: #55557a !important; }
+.p-plan-btn {
+  width: 100%;
+  background: rgba(167,139,250,0.12);
+  border: 1px solid rgba(167,139,250,0.35);
+  color: #a78bfa;
+  padding: 13px 16px;
+  border-radius: 11px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  transition: color 0.15s;
-  flex-shrink: 0;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.p-plan-btn:hover:not(:disabled) {
+  background: rgba(167,139,250,0.2);
+  transform: translateY(-1px);
+}
+.p-plan-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.p-plan-btn.loading { opacity: 0.7; cursor: wait; }
+.p-plan-btn-featured {
+  background: linear-gradient(135deg, #a78bfa, #f472b6);
+  border: none;
+  color: white;
+  box-shadow: 0 0 24px rgba(167,139,250,0.35);
+}
+.p-plan-btn-featured:hover:not(:disabled) {
+  box-shadow: 0 0 36px rgba(167,139,250,0.5);
+}
+.p-plan-sub {
+  font-size: 11px;
+  color: #55557a;
+  text-align: center;
 }
 
-.p-coupon-remove:hover {
-  color: #e05c5c;
+/* Error banner */
+.p-error-banner {
+  background: rgba(224,92,92,0.1);
+  border: 1px solid rgba(224,92,92,0.3);
+  color: #f87171;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  max-width: 600px;
+}
+
+/* Coupon section */
+.p-coupon-section {
+  max-width: 420px;
+  width: 100%;
+  margin: 24px auto 8px;
+}
+.p-coupon-label {
+  font-size: 12px;
+  color: #55557a;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+/* Pay logos */
+.p-pay-logos {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.pay-logo {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  padding: 4px 10px;
+  border-radius: 5px;
+  color: #8888aa;
+}
+.pay-logo-paddle { color: #a78bfa; border-color: rgba(167,139,250,0.25); background: rgba(167,139,250,0.06); }
+
+@media (max-width: 760px) {
+  .p-plans-grid { grid-template-columns: 1fr; max-width: 400px; }
+  .p-plan-featured { order: -1; }
 }

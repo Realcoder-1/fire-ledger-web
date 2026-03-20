@@ -783,3 +783,34 @@
   .pricing-grid-3 { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
   .pricing-card-annual { order: -1; }
 }
+
+/* ── HERO CAPTION BLOCK (replaces stats) ─────────────── */
+.hero-caption-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+  padding: 20px 0 0;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.hero-caption-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hero-caption-label {
+  font-size: 13px;
+  color: #55557a;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.hero-caption-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #f0f0f8;
+  letter-spacing: -0.3px;
+}
+.hero-caption-red   { color: #f87171; }
+.hero-caption-purple { color: #a78bfa; }

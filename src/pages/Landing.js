@@ -402,12 +402,19 @@ export default function Landing() {
             <span>·</span>
             <span>✓ Cancel monthly anytime</span>
           </div>
-          <div className="hero-stats">
-            <div className="stat"><span className="stat-num">90,000</span><span className="stat-label">Avg lifetime work hours</span></div>
-            <div className="stat-div" />
-            <div className="stat"><span className="stat-num">25×</span><span className="stat-label">Your FIRE number</span></div>
-            <div className="stat-div" />
-            <div className="stat"><span className="stat-num">4%</span><span className="stat-label">Safe withdrawal rate</span></div>
+          <div className="hero-caption-block">
+            <div className="hero-caption-line">
+              <span className="hero-caption-label">The average person</span>
+              <span className="hero-caption-value">works 90,000 hours</span>
+            </div>
+            <div className="hero-caption-line">
+              <span className="hero-caption-label">Without a plan, you will</span>
+              <span className="hero-caption-value hero-caption-red">work until you die.</span>
+            </div>
+            <div className="hero-caption-line">
+              <span className="hero-caption-label">With one, you could stop</span>
+              <span className="hero-caption-value hero-caption-purple">a decade early.</span>
+            </div>
           </div>
           <SmartScrollHint text="Scroll to see the dashboard" />
         </div>
