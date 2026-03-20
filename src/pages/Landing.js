@@ -296,7 +296,7 @@ function SmartScrollHint({ text }) {
 
 // ── Main Landing ───────────────────────────────────────
 export default function Landing() {
-  const { user, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [showPopup,   setShowPopup]   = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
