@@ -42,49 +42,12 @@ function AnimatedHeroTitle() {
 }
 
 // ── Constants ──────────────────────────────────────────
-const POPUP_KEY   = 'fl_hours_popup_seen';
-const TIMER_KEY   = 'fl_urgency_expires';
-const TRIAL_MINS  = 60;
+const POPUP_KEY = 'fl_hours_popup_seen';
 
-// ── Urgency Timer ──────────────────────────────────────
-function UrgencyTimer({ onExpire, onTick }) {
-  const [timeLeft, setTimeLeft] = useState(null);
-  useEffect(() => {
-    let expiry = localStorage.getItem(TIMER_KEY);
-    if (!expiry) { expiry = Date.now() + TRIAL_MINS * 60 * 1000; localStorage.setItem(TIMER_KEY, expiry); }
-    const tick = () => {
-      const left = Math.max(0, parseInt(expiry) - Date.now());
-      setTimeLeft(left);
-      if (onTick) onTick(left);
-      if (left === 0 && onExpire) onExpire();
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [onExpire, onTick]);
-
-  if (timeLeft === null) return null;
-  const mins = Math.floor(timeLeft / 60000);
-  const secs = Math.floor((timeLeft % 60000) / 1000);
-  const expired = timeLeft === 0;
-  const urgent = mins < 5 && !expired;
-
-  return (
-    <div className={`urgency-bar ${expired ? 'expired' : ''} ${urgent ? 'urgent' : ''}`}>
-      <span className="urgency-dot" />
-      {expired
-        ? <span>Your launch price has expired — <strong>standard pricing now applies</strong></span>
-        : <span>
-            50% launch discount expires in{' '}
-            <strong className="urgency-countdown">
-              {String(mins).padStart(2,'0')}:{String(secs).padStart(2,'0')}
-            </strong>
-            {' '}— <a href="#pricing" className="urgency-link">claim your discount →</a>
-          </span>
-      }
-    </div>
-  );
-}
+// Paddle price IDs
+const PRICE_LIFETIME = 'pri_01km5hzemdp93p7d4mgpky8qz0'; // $5 one-time
+const PRICE_MONTHLY  = 'pri_01kkk53619cxb49atjaykftcn7'; // $4.99/mo
+const PRICE_ANNUAL   = 'pri_01kkk544b2fntpj7s989ntee0x'; // $59.99/yr
 
 // ── Dashboard Nav Preview (animated tab switcher) ─────
 const PREVIEW_TABS = [
@@ -322,12 +285,11 @@ function SmartScrollHint({ text }) {
 
 // ── Main Landing ───────────────────────────────────────
 export default function Landing() {
-  const { signInWithGoogle, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [showPopup,    setShowPopup]    = useState(false);
-  const [navScrolled,  setNavScrolled]  = useState(false);
-  const [openFaq,      setOpenFaq]      = useState(null);
-  const [timerExpired, setTimerExpired] = useState(false);
+  const [showPopup,   setShowPopup]   = useState(false);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [openFaq,     setOpenFaq]     = useState(null);
 
   useEffect(() => {
     if (!localStorage.getItem(POPUP_KEY)) {
@@ -345,11 +307,18 @@ export default function Landing() {
   const handlePopupClose = () => {
     localStorage.setItem(POPUP_KEY, '1');
     setShowPopup(false);
-    // Sign-in is handled inside the popup itself — just close here
   };
 
-  const handleStart = () => { if (user) navigate('/app'); else signInWithGoogle(); };
-  const scrollTo = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const openCheckout = (priceId) => {
+    if (user) { navigate('/pricing'); return; }
+    if (!window.Paddle?.Checkout) { navigate('/pricing'); return; }
+    window.Paddle.Checkout.open({ items: [{ priceId }] });
+  };
 
   const FAQS = [
     {
@@ -357,8 +326,8 @@ export default function Landing() {
       a: 'Most people spend their entire careers with no clear answer to one question: when can I stop working? Generic calculators give vague estimates. Spreadsheets take hours to set up. FIRE Ledger gives you a precise date based on your actual numbers — and updates it in real time as you track your income, spending, and savings each week.'
     },
     {
-      q: 'Is the 7-day trial really free? No credit card?',
-      a: 'Correct — no credit card required. Sign in with Google, you have full access to every feature for 7 days. After that, it\'s $4.99/month or $59.99/year. If you subscribe during the trial window, you\'ll pay $2.49/month or $29.99/year — 50% off, locked in permanently while you stay subscribed.'
+      q: 'What are the different plans?',
+      a: 'Three plans. Lifetime ($5 once) — full access to every feature, but no data is stored between sessions. Each time you open the tool, you start fresh. Perfect for running the numbers and knowing your FIRE date. Monthly ($4.99/mo) and Annual ($59.99/yr) — your transactions, settings, and history are saved to the cloud and sync across devices.'
     },
     {
       q: 'How is my freedom date calculated?',
@@ -389,7 +358,6 @@ export default function Landing() {
   return (
     <div className="landing">
       {showPopup && <HoursPopup onClose={handlePopupClose} />}
-      <UrgencyTimer onExpire={() => setTimerExpired(true)} />
 
       {/* NAV */}
       <nav className={`nav ${navScrolled ? 'nav-scrolled' : ''}`}>
@@ -401,8 +369,8 @@ export default function Landing() {
           <button className="nav-link" onClick={() => scrollTo('pricing')}>Pricing</button>
           <button className="nav-link" onClick={() => scrollTo('faq')}>FAQ</button>
         </div>
-        <button className="nav-cta" onClick={handleStart}>
-          {timerExpired ? 'Get Started →' : 'Start Free →'}
+        <button className="nav-cta" onClick={() => scrollTo('pricing')}>
+          See Plans →
         </button>
       </nav>
 
@@ -413,26 +381,26 @@ export default function Landing() {
           <div className="grid-overlay" />
         </div>
         <div className="hero-content">
-          <div className="hero-badge">7-Day Free Trial · No Credit Card Required</div>
+          <div className="hero-badge">From $5 once · No subscription required</div>
           <AnimatedHeroTitle />
           <p className="hero-sub">
             Unless you know this number.<br />
             Most people never calculate it. The ones who do retire a decade early.
           </p>
           <div className="hero-actions">
-            <button className="btn-primary" onClick={handleStart}>
-              Find my freedom date — free →
+            <button className="btn-primary" onClick={() => scrollTo('pricing')}>
+              Find my freedom date →
             </button>
             <button className="btn-ghost" onClick={() => scrollTo('preview')}>
               See the dashboard
             </button>
           </div>
           <div className="hero-trust">
-            <span>✓ 7 days free</span>
+            <span>✓ From $5 once</span>
             <span>·</span>
-            <span>✓ No credit card</span>
+            <span>✓ No subscription needed</span>
             <span>·</span>
-            <span>✓ Cancel anytime</span>
+            <span>✓ Cancel monthly anytime</span>
           </div>
           <div className="hero-stats">
             <div className="stat"><span className="stat-num">90,000</span><span className="stat-label">Avg lifetime work hours</span></div>
@@ -617,67 +585,110 @@ export default function Landing() {
 
       {/* PRICING */}
       <section className="pricing" id="pricing">
-        <div className="pricing-inner">
+        <div className="pricing-inner pricing-inner-wide">
           <span className="section-eyebrow">Pricing</span>
-          <h2 className="section-title">One plan.<br/>Everything included.</h2>
-          {!timerExpired && (
-            <div className="pricing-urgency-note">
-              Launch pricing active — 50% off while the timer above is running
-            </div>
-          )}
-          <div className="single-pricing">
-            <div className="pricing-card featured">
-              {!timerExpired && <div className="pricing-badge">50% off · Trial period only</div>}
-              <div className="pricing-tier">FIRE Ledger Pro</div>
+          <h2 className="section-title">Three plans.<br/>One tool. Your number.</h2>
+          <p className="section-sub">Start with $5 and know your FIRE date today. Upgrade when you're ready to track ongoing.</p>
 
-              <div className="pricing-options">
-                <div className="price-option">
-                  {!timerExpired && <span className="price-was">$9.99</span>}
-                  <span className="price-amount">$4.99</span>
-                  <span className="price-period">/ month</span>
-                </div>
-                <div className="price-divider">or</div>
-                <div className="price-option">
-                  {!timerExpired && <span className="price-was">$119.99</span>}
-                  <span className="price-amount">$59.99</span>
-                  <span className="price-period">/ year</span>
-                  <span className="price-save">Best value</span>
-                </div>
+          <div className="pricing-grid-3">
+
+            {/* LIFETIME */}
+            <div className="pricing-card pricing-card-lifetime">
+              <div className="pricing-badge-new">Lowest barrier</div>
+              <div className="pricing-tier">Lifetime Access</div>
+              <div className="pricing-price-row">
+                <span className="price-amount">$5</span>
+                <span className="price-period"> once</span>
               </div>
-
-              {timerExpired && (
-                <div className="price-standard-note">Standard pricing — trial window has closed</div>
-              )}
-
-              <ul className="pricing-features">
-                <li>✓ Your exact freedom date — updated in real time</li>
-                <li>✓ FIRE, Lean, Fat &amp; Coast FIRE calculators</li>
-                <li>✓ Monte Carlo simulation — 500 scenarios</li>
-                <li>✓ Net Worth tracker with auto-import sync</li>
-                <li>✓ Financial guidance after every transaction</li>
-                <li>✓ Smart bank statement import (any CSV format)</li>
-                <li>✓ Full data export — no lock-in ever</li>
-                <li>✓ 48-hour money back guarantee</li>
-              </ul>
-
-              <button className="btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={handleStart}>
-                {timerExpired ? 'Get started →' : 'Start free — 7 days, no card →'}
-              </button>
-
-              <p className="pricing-subline">
-                Less than the price of a coffee per week · Cancel anytime
+              <div className="pricing-storage-tag pricing-storage-session">
+                ⚡ Session only — no data stored
+              </div>
+              <p className="pricing-storage-note">
+                Every time you open the tool, you start fresh. Perfect for running the numbers and knowing your FIRE date. No account required.
               </p>
+              <ul className="pricing-features">
+                <li>✓ Full FIRE calculator</li>
+                <li>✓ FIRE, Lean, Fat &amp; Coast modes</li>
+                <li>✓ Monte Carlo simulation</li>
+                <li>✓ Net Worth &amp; Compound Growth</li>
+                <li>✓ All insights &amp; projections</li>
+                <li className="pricing-feature-dim">✗ Data does not save between sessions</li>
+                <li className="pricing-feature-dim">✗ No cloud sync</li>
+              </ul>
+              <button className="btn-primary btn-full" onClick={() => openCheckout(PRICE_LIFETIME)}>
+                Get lifetime access — $5 →
+              </button>
+              <p className="pricing-subline">One payment · Use forever</p>
+            </div>
 
-              <div className="payment-trust">
-                <span className="payment-trust-label">Secure payments via Paddle</span>
-                <div className="payment-logos">
-                  <span className="pay-logo">VISA</span>
-                  <span className="pay-logo">MC</span>
-                  <span className="pay-logo">AMEX</span>
-                  <span className="pay-logo">PayPal</span>
-                  <span className="pay-logo pay-logo-paddle">Paddle</span>
-                </div>
+            {/* MONTHLY */}
+            <div className="pricing-card pricing-card-monthly">
+              <div className="pricing-tier">Monthly</div>
+              <div className="pricing-price-row">
+                <span className="price-amount">$4.99</span>
+                <span className="price-period"> / month</span>
               </div>
+              <div className="pricing-storage-tag pricing-storage-cloud">
+                ☁ Data saved to cloud
+              </div>
+              <p className="pricing-storage-note">
+                Transactions, settings, and history saved permanently. Pick up exactly where you left off every session.
+              </p>
+              <ul className="pricing-features">
+                <li>✓ Everything in Lifetime</li>
+                <li>✓ Cloud data sync</li>
+                <li>✓ Transaction history saved</li>
+                <li>✓ FIRE settings preserved</li>
+                <li>✓ Smart CSV bank import</li>
+                <li>✓ Full data export</li>
+                <li>✓ Cancel anytime</li>
+              </ul>
+              <button className="btn-primary btn-full" onClick={() => openCheckout(PRICE_MONTHLY)}>
+                Start monthly — $4.99/mo →
+              </button>
+              <p className="pricing-subline">Cancel anytime · No lock-in</p>
+            </div>
+
+            {/* ANNUAL */}
+            <div className="pricing-card pricing-card-annual featured">
+              <div className="pricing-badge-new pricing-badge-best">Best value</div>
+              <div className="pricing-tier">Annual</div>
+              <div className="pricing-price-row">
+                <span className="price-amount">$59.99</span>
+                <span className="price-period"> / year</span>
+              </div>
+              <div className="pricing-equiv">Just $5/month · Save 16%</div>
+              <div className="pricing-storage-tag pricing-storage-cloud">
+                ☁ Data saved to cloud
+              </div>
+              <p className="pricing-storage-note">
+                Everything in Monthly, billed once a year. Best for people tracking their FIRE journey long-term.
+              </p>
+              <ul className="pricing-features">
+                <li>✓ Everything in Monthly</li>
+                <li>✓ Cloud data sync</li>
+                <li>✓ Transaction history saved</li>
+                <li>✓ FIRE settings preserved</li>
+                <li>✓ Smart CSV bank import</li>
+                <li>✓ Full data export</li>
+                <li>✓ 48-hour refund guarantee</li>
+              </ul>
+              <button className="btn-primary btn-full" onClick={() => openCheckout(PRICE_ANNUAL)}>
+                Start annual — $59.99/yr →
+              </button>
+              <p className="pricing-subline">Best value · Cancel anytime</p>
+            </div>
+
+          </div>
+
+          <div className="payment-trust" style={{marginTop: 32, textAlign: 'center'}}>
+            <span className="payment-trust-label">Secure payments via Paddle</span>
+            <div className="payment-logos" style={{justifyContent: 'center'}}>
+              <span className="pay-logo">VISA</span>
+              <span className="pay-logo">MC</span>
+              <span className="pay-logo">AMEX</span>
+              <span className="pay-logo">PayPal</span>
+              <span className="pay-logo pay-logo-paddle">Paddle</span>
             </div>
           </div>
         </div>
@@ -706,8 +717,8 @@ export default function Landing() {
       <section className="final-cta-section">
         <h2 className="final-cta-title">The question is simple.<br/>When can you stop working?</h2>
         <p className="final-cta-sub">Most people go their whole careers without ever calculating it. You now have a tool that answers it in five minutes — and keeps the answer updated every week.</p>
-        <button className="btn-primary" style={{fontSize:17,padding:'16px 40px'}} onClick={handleStart}>
-          Find my number — free for 7 days →
+        <button className="btn-primary" style={{fontSize:17,padding:'16px 40px'}} onClick={() => scrollTo('pricing')}>
+          Find my freedom date →
         </button>
         <p style={{fontSize:12,color:'#8888aa',marginTop:12}}>No credit card · No commitment · Just the truth about your timeline</p>
       </section>

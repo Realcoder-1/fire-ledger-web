@@ -3,46 +3,40 @@ import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
 
-const TRIAL_DAYS = 7;
-
 export function AuthProvider({ children }) {
   const [user,            setUser]            = useState(null);
   const [loading,         setLoading]         = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
-  const [isTrial,         setIsTrial]         = useState(false);
-  const [trialDaysLeft,   setTrialDaysLeft]   = useState(0);
+  const [isLifetime,      setIsLifetime]      = useState(false);
   const [accessChecked,   setAccessChecked]   = useState(false);
 
   const checkAccess = async (currentUser) => {
-    console.log('checkAccess called, user:', currentUser?.email ?? 'null');
     try {
       if (!currentUser) {
         setHasSubscription(false);
-        setIsTrial(false);
+        setIsLifetime(false);
         return;
       }
-      const { data: sub, error } = await supabase
+      const { data: sub } = await supabase
         .from('subscriptions')
-        .select('status')
+        .select('status, plan_type')
         .eq('user_id', currentUser.id)
         .in('status', ['active', 'trialing'])
         .maybeSingle();
-      console.log('sub result:', sub, 'error:', error);
+
       if (sub) {
-        setHasSubscription(true); setIsTrial(false); setTrialDaysLeft(0); return;
-      }
-      const daysLeft = Math.max(0, Math.ceil(TRIAL_DAYS - (new Date() - new Date(currentUser.created_at)) / 86400000));
-      console.log('daysLeft:', daysLeft);
-      if (daysLeft > 0) {
-        setHasSubscription(true); setIsTrial(true); setTrialDaysLeft(daysLeft);
+        const lifetime = sub.plan_type === 'lifetime';
+        setHasSubscription(true);
+        setIsLifetime(lifetime);
       } else {
-        setHasSubscription(false); setIsTrial(false); setTrialDaysLeft(0);
+        setHasSubscription(false);
+        setIsLifetime(false);
       }
     } catch (e) {
-      console.error('checkAccess threw:', e);
-      setHasSubscription(false); setIsTrial(false);
+      console.error('checkAccess error:', e);
+      setHasSubscription(false);
+      setIsLifetime(false);
     } finally {
-      console.log('setting accessChecked true');
       setAccessChecked(true);
     }
   };
@@ -64,7 +58,7 @@ export function AuthProvider({ children }) {
 
   const signInWithGoogle = () => supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/app' }
+    options: { redirectTo: window.location.origin + '/pricing' }
   });
 
   const signOut = () => supabase.auth.signOut();
@@ -72,7 +66,9 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, loading, hasSubscription, isTrial, trialDaysLeft, accessChecked,
+      user, loading, hasSubscription, isLifetime, accessChecked,
+      // Keep isTrial as false always — no trial anymore
+      isTrial: false, trialDaysLeft: 0,
       signInWithGoogle, signOut, refreshSubscription
     }}>
       {children}

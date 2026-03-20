@@ -947,3 +947,27 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
   .fl-export-grid { grid-template-columns: 1fr; }
   .fl-main::after { left: 72px; }
 }
+
+/* ── LIFETIME SESSION NUDGE ──────────────────────────── */
+.fl-lifetime-nudge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(251,191,36,0.07);
+  border: 1px solid rgba(251,191,36,0.22);
+  border-radius: 10px;
+  padding: 11px 16px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: #8888aa;
+  flex-wrap: wrap;
+}
+.fl-lifetime-upgrade {
+  color: #a78bfa;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.fl-lifetime-upgrade:hover { opacity: 0.8; }

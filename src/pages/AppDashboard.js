@@ -443,15 +443,13 @@ function GuidePage() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
-  const { user, signOut, isTrial, trialDaysLeft } = useAuth();
+  const { user, signOut, isLifetime } = useAuth();
 
   const [tab,           setTab]         = useState('home');
   const [txs,           setTxs]         = useState([]);
   const [showAdd,       setShowAdd]     = useState(false);
   // Trial discount banner state
-  const [discTimeLeft,     setDiscTimeLeft]     = useState(null);
-  const [discDismissed,    setDiscDismissed]    = useState(() => !!localStorage.getItem('fl_disc_dismissed'));
-  const [discCopied,       setDiscCopied]       = useState(false);
+  // (no trial discount state — trial removed)
   const [editTx,        setEditTx]      = useState(null);  // tx being edited
   const [tourStep,      setTourStep]    = useState(-1);    // -1 = off
   const [showOnboard,   setShowOnboard] = useState(false);
@@ -497,6 +495,12 @@ export default function AppDashboard() {
   const load = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
+    // Lifetime plan: local-only, no server reads
+    if (isLifetime) {
+      setShowOnboard(true);
+      setLoading(false);
+      return;
+    }
     const [txRes, setRes] = await Promise.all([
       supabase.from('transactions').select('*').eq('user_id',userId).order('date',{ascending:false}),
       supabase.from('user_settings').select('*').eq('user_id',userId).single(),
@@ -508,27 +512,9 @@ export default function AppDashboard() {
       if (setRes.data.currency)          setCurrency(setRes.data.currency);
     } else { setShowOnboard(true); }
     setLoading(false);
-  }, [userId]);
+  }, [userId, isLifetime]);
 
   useEffect(() => { load(); }, [load]);
-
-  // ── Trial discount 1-hour countdown ────────────────────────────────────────
-  useEffect(() => {
-    if (!isTrial) return;
-    const DISC_KEY = 'fl_trial_disc_expires';
-    let expiry = localStorage.getItem(DISC_KEY);
-    if (!expiry) {
-      expiry = Date.now() + 60 * 60 * 1000; // 1 hour from first dashboard open
-      localStorage.setItem(DISC_KEY, expiry);
-    }
-    const tick = () => {
-      const left = Math.max(0, parseInt(expiry) - Date.now());
-      setDiscTimeLeft(left);
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [isTrial]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const p = calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).progress;
@@ -544,21 +530,30 @@ export default function AppDashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAdd,form]);
 
-  const saveSettings = async (fs,cc,cur) =>
-    supabase.from('user_settings').upsert({ user_id:userId, fire_settings:fs||fire, custom_categories:cc||cats, currency:cur||currency, updated_at:new Date().toISOString() },{ onConflict:'user_id' });
+  const saveSettings = async (fs, cc, cur) => {
+    if (isLifetime) return;
+    supabase.from('user_settings').upsert({ user_id:userId, fire_settings:fs||fire, custom_categories:cc||cats, currency:cur||currency, updated_at:new Date().toISOString() }, { onConflict:'user_id' });
+  };
 
   const addTx = async () => {
-    if (!form.amount||!form.description) return;
-    const tx={user_id:userId,amount:parseFloat(form.amount),description:form.description,type:form.type,category:form.category,date:form.date,recurring:form.recurring};
-    const{data}=await supabase.from('transactions').insert(tx).select().single();
-    if(data){setTxs(p=>[data,...p]);showToast(`${TYPE_LABEL[form.type]} logged`);}
-    setForm({amount:'',description:'',type:'need',category:'',date:new Date().toISOString().split('T')[0],recurring:false});
-    setRawAmt('');setShowAdd(false);
+    if (!form.amount || !form.description) return;
+    const base = { amount:parseFloat(form.amount), description:form.description, type:form.type, category:form.category, date:form.date, recurring:form.recurring };
+    if (isLifetime) {
+      const tx = { ...base, id: Date.now() };
+      setTxs(p => [tx, ...p]);
+      showToast(`${TYPE_LABEL[form.type]} logged (session only)`);
+    } else {
+      const { data } = await supabase.from('transactions').insert({ ...base, user_id:userId }).select().single();
+      if (data) { setTxs(p => [data, ...p]); showToast(`${TYPE_LABEL[form.type]} logged`); }
+    }
+    setForm({ amount:'', description:'', type:'need', category:'', date:new Date().toISOString().split('T')[0], recurring:false });
+    setRawAmt(''); setShowAdd(false);
   };
 
   const deleteTx = async id => {
-    await supabase.from('transactions').delete().eq('id',id);
-    setTxs(p=>p.filter(t=>t.id!==id)); showToast('Deleted','error');
+    if (!isLifetime) await supabase.from('transactions').delete().eq('id', id);
+    setTxs(p => p.filter(t => t.id !== id));
+    showToast('Deleted', 'error');
   };
 
   const openEdit = (tx) => {
@@ -571,8 +566,13 @@ export default function AppDashboard() {
   const saveEdit = async () => {
     if (!form.amount || !form.description) return;
     const updates = { amount: parseFloat(form.amount), description: form.description, type: form.type, category: form.category, date: form.date, recurring: form.recurring };
-    const { data } = await supabase.from('transactions').update(updates).eq('id', editTx.id).select().single();
-    if (data) { setTxs(p => p.map(t => t.id === editTx.id ? data : t)); showToast('Transaction updated'); }
+    if (isLifetime) {
+      setTxs(p => p.map(t => t.id === editTx.id ? { ...t, ...updates } : t));
+      showToast('Transaction updated (session only)');
+    } else {
+      const { data } = await supabase.from('transactions').update(updates).eq('id', editTx.id).select().single();
+      if (data) { setTxs(p => p.map(t => t.id === editTx.id ? data : t)); showToast('Transaction updated'); }
+    }
     setEditTx(null); setShowAdd(false);
     setForm({ amount:'', description:'', type:'need', category:'', date: new Date().toISOString().split('T')[0], recurring:false });
     setRawAmt('');
@@ -628,9 +628,15 @@ export default function AppDashboard() {
   };
 
   const confirmImport = async () => {
-    const{data}=await supabase.from('transactions').insert(importAll.map(t=>({...t,user_id:userId}))).select();
-    if(data){setTxs(p=>[...data,...p]);showToast(`${data.length} transactions imported`);}
-    setImportModal(false);setImportPrev([]);setImportAll([]);
+    if (isLifetime) {
+      const rows = importAll.map((t, i) => ({ ...t, id: Date.now() + i }));
+      setTxs(p => [...rows, ...p]);
+      showToast(`${rows.length} transactions imported (session only)`);
+    } else {
+      const { data } = await supabase.from('transactions').insert(importAll.map(t => ({ ...t, user_id:userId }))).select();
+      if (data) { setTxs(p => [...data, ...p]); showToast(`${data.length} transactions imported`); }
+    }
+    setImportModal(false); setImportPrev([]); setImportAll([]);
   };
 
   const exportCSV = () => {
@@ -765,14 +771,14 @@ export default function AppDashboard() {
           ))}
         </nav>
         <div className="fl-sidebar-footer">
-          {isTrial && (
-            <div className="fl-trial-banner">
-              <div className="fl-trial-days">
-                <span className="fl-trial-num">{trialDaysLeft}</span>
-                <span className="fl-trial-label">day{trialDaysLeft!==1?'s':''} left</span>
+          {isLifetime && (
+            <div className="fl-trial-banner" style={{borderColor:'rgba(251,191,36,0.25)'}}>
+              <div className="fl-trial-days" style={{background:'rgba(251,191,36,0.12)'}}>
+                <span className="fl-trial-num" style={{color:'#fbbf24',fontSize:16}}>⚡</span>
+                <span className="fl-trial-label">Local</span>
               </div>
               <div className="fl-trial-info">
-                <span>Free trial</span>
+                <span>Session only</span>
                 <a href="/pricing" className="fl-trial-upgrade">Upgrade →</a>
               </div>
             </div>
@@ -805,28 +811,11 @@ export default function AppDashboard() {
               </div>
             </div>
 
-            {/* TRIAL DISCOUNT BANNER */}
-            {isTrial && discTimeLeft !== null && discTimeLeft > 0 && !discDismissed && (
-              <div className="fl-disc-banner">
-                <div className="fl-disc-banner-left">
-                  <div className="fl-disc-countdown">
-                    <span className="fl-disc-label">Offer expires</span>
-                    <span className="fl-disc-time">
-                      {String(Math.floor(discTimeLeft/60000)).padStart(2,'0')}:{String(Math.floor((discTimeLeft%60000)/1000)).padStart(2,'0')}
-                    </span>
-                  </div>
-                  <div className="fl-disc-content">
-                    <span className="fl-disc-title">🎉 50% off — trial launch offer</span>
-                    <span className="fl-disc-sub">Copy code and use at checkout. Valid this hour only.</span>
-                  </div>
-                </div>
-                <div className="fl-disc-banner-right">
-                  <button className="fl-disc-code" onClick={()=>{navigator.clipboard.writeText('TRIALWELCOME');setDiscCopied(true);setTimeout(()=>setDiscCopied(false),2000);}}>
-                    {discCopied ? '✓ Copied!' : 'TRIALWELCOME'}
-                  </button>
-                  <a href="/pricing" className="fl-disc-cta">Claim 50% off →</a>
-                  <button className="fl-disc-close" onClick={()=>{setDiscDismissed(true);localStorage.setItem('fl_disc_dismissed','1');}}><Icon.X/></button>
-                </div>
+            {/* LIFETIME SESSION NUDGE */}
+            {isLifetime && (
+              <div className="fl-lifetime-nudge">
+                <span>⚡ Session only — your data will clear when you close this tab.</span>
+                <a href="/pricing" className="fl-lifetime-upgrade">Save data permanently →</a>
               </div>
             )}
 
@@ -1442,7 +1431,7 @@ export default function AppDashboard() {
                 <h3 style={{marginTop:24,marginBottom:16}}>Account</h3>
                 <div className="fl-account-row">
                   <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-                  <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>{isTrial ? `Trial · ${trialDaysLeft} day${trialDaysLeft!==1?'s':''} left` : 'Pro · Active'}</div></div>
+                  <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>{isLifetime ? 'Lifetime · Session only' : 'Pro · Cloud sync active'}</div></div>
                 </div>
                 <button className="fl-btn-ghost fl-btn-icon" style={{width:'100%',marginTop:16}} onClick={exportExcel}><Icon.Export/>Download report</button>
                 <button className="fl-btn-danger fl-btn-icon" style={{width:'100%',marginTop:10}} onClick={signOut}><Icon.LogOut/>Sign out</button>
