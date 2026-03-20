@@ -62,32 +62,43 @@ function DashboardPreview() {
   const screens = {
     dashboard: (
       <div className="preview-screen">
+        {/* Hours left — the pain stat */}
+        <div className="prev-hours-banner">
+          <span className="prev-hours-icon">⏱</span>
+          <div className="prev-hours-body">
+            <span className="prev-hours-num">62,400</span>
+            <span className="prev-hours-label">working hours left before retirement age</span>
+          </div>
+          <span className="prev-hours-badge">30 yrs away</span>
+        </div>
+        {/* FIRE progress hero */}
         <div className="prev-hero-card">
           <div className="prev-hero-left">
             <div className="prev-label">Financial Independence</div>
-            <div className="prev-years">12<span className="prev-years-unit"> years away</span></div>
-            <div className="prev-date">Projected freedom: <strong>Mar 2038</strong></div>
-            <div className="prev-progress-bar"><div className="prev-progress-fill" style={{width:'40%'}} /></div>
-            <div className="prev-progress-label">40% complete · $50k of $1,000k</div>
+            <div className="prev-years" style={{color:'#f87171'}}>30<span className="prev-years-unit"> years away</span></div>
+            <div className="prev-date">Projected freedom: <strong style={{color:'#f87171'}}>Mar 2056</strong></div>
+            <div className="prev-progress-bar"><div className="prev-progress-fill" style={{width:'12%', background:'linear-gradient(90deg,#f87171,#e05c5c)'}} /></div>
+            <div className="prev-progress-label" style={{color:'#f87171'}}>12% complete · $14k of $1,000k</div>
           </div>
           <div className="prev-ring-wrap">
             <svg viewBox="0 0 100 100" className="prev-ring">
               <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8"/>
-              <circle cx="50" cy="50" r="38" fill="none" stroke="url(#rg1)" strokeWidth="8"
-                strokeDasharray="239" strokeDashoffset="143" strokeLinecap="round" transform="rotate(-90 50 50)"/>
-              <defs><linearGradient id="rg1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/>
+              <circle cx="50" cy="50" r="38" fill="none" stroke="url(#rg-pain)" strokeWidth="8"
+                strokeDasharray="239" strokeDashoffset="210" strokeLinecap="round" transform="rotate(-90 50 50)"/>
+              <defs><linearGradient id="rg-pain" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f87171"/><stop offset="100%" stopColor="#e05c5c"/>
               </linearGradient></defs>
             </svg>
-            <div className="prev-ring-center"><span className="prev-ring-pct">40%</span><span className="prev-ring-sub">to FIRE</span></div>
+            <div className="prev-ring-center"><span className="prev-ring-pct" style={{color:'#f87171'}}>12%</span><span className="prev-ring-sub">to FIRE</span></div>
           </div>
         </div>
+        {/* Metrics */}
         <div className="prev-metrics">
           {[
-            {label:'Income', val:'$5.2k', color:'#52c98a'},
-            {label:'Spent',  val:'$2.1k', color:'#e05c5c'},
-            {label:'Saved',  val:'$1.4k', color:'#5b9cf6'},
-            {label:'Grade',  val:'A',     color:'#52c98a'},
+            {label:'Savings Rate', val:'8%',      color:'#f87171'},
+            {label:'FIRE Gap',     val:'$986k',   color:'#f87171'},
+            {label:'Saved',        val:'$14,200', color:'#fbbf24'},
+            {label:'Grade',        val:'D',       color:'#f87171'},
           ].map(m=>(
             <div key={m.label} className="prev-metric">
               <div className="prev-metric-label">{m.label}</div>
@@ -95,12 +106,13 @@ function DashboardPreview() {
             </div>
           ))}
         </div>
+        {/* Transactions */}
         <div className="prev-tx-list">
           {[
-            {desc:'Salary',    amt:'+$5,200', c:'#52c98a'},
-            {desc:'Rent',      amt:'-$1,400', c:'#e05c5c'},
-            {desc:'Groceries', amt:'-$340',   c:'#e05c5c'},
-            {desc:'Index Fund',amt:'+$1,400', c:'#5b9cf6'},
+            {desc:'Salary',         amt:'+$4,800', c:'#52c98a'},
+            {desc:'Rent',           amt:'-$1,800', c:'#e05c5c'},
+            {desc:'Dining Out',     amt:'-$620',   c:'#e05c5c'},
+            {desc:'Subscriptions',  amt:'-$184',   c:'#e05c5c'},
           ].map((t,i)=>(
             <div key={i} className="prev-tx">
               <span className="prev-tx-dot" style={{background:t.c}}/>
@@ -109,9 +121,10 @@ function DashboardPreview() {
             </div>
           ))}
         </div>
-        <div className="prev-guidance">
-          <div className="prev-guidance-icon">↑</div>
-          <div className="prev-guidance-text">Your wants spending is <strong style={{color:'#e05c5c'}}>12% above</strong> your FIRE target. Reducing by $200/mo saves <strong style={{color:'#52c98a'}}>2.3 years</strong>.</div>
+        {/* Guidance — pain */}
+        <div className="prev-guidance" style={{borderColor:'rgba(248,113,113,0.3)', background:'rgba(248,113,113,0.06)'}}>
+          <div className="prev-guidance-icon" style={{background:'rgba(248,113,113,0.2)',color:'#f87171'}}>!</div>
+          <div className="prev-guidance-text">Your dining out spending alone is costing you <strong style={{color:'#f87171'}}>4.2 years</strong> of your life. At this savings rate you retire at <strong style={{color:'#f87171'}}>age 65.</strong></div>
         </div>
       </div>
     ),
@@ -121,9 +134,9 @@ function DashboardPreview() {
           <div className="prev-fire-inputs">
             <div className="prev-section-label">Your Freedom Numbers</div>
             {[
-              {label:'Annual Expenses', val:'$40,000'},
-              {label:'Annual Savings',  val:'$20,000'},
-              {label:'Current Savings', val:'$50,000'},
+              {label:'Annual Expenses', val:'$48,000'},
+              {label:'Annual Savings',  val:'$4,800'},
+              {label:'Current Savings', val:'$14,200'},
             ].map(f=>(
               <div key={f.label} className="prev-field">
                 <div className="prev-field-label">{f.label}</div>
@@ -136,19 +149,19 @@ function DashboardPreview() {
               <span className="prev-slider-val">+$500/mo</span>
               <div className="prev-slider-track"><div className="prev-slider-thumb" style={{left:'25%'}}/></div>
             </div>
-            <div className="prev-whatif-result">Saves <strong style={{color:'#52c98a'}}>3.2 years</strong> — retire in <strong style={{color:'#a78bfa'}}>8.8 years</strong></div>
+            <div className="prev-whatif-result">Saves <strong style={{color:'#52c98a'}}>8.1 years</strong> — retire in <strong style={{color:'#a78bfa'}}>21.9 years</strong></div>
           </div>
           <div className="prev-fire-results">
             <div className="prev-stat-grid">
               {[
-                {label:'Freedom Number',val:'$1,000,000',color:'#fbbf24'},
-                {label:'Years Away',    val:'12 yrs',    color:'#e05c5c'},
-                {label:'Freedom Date',  val:'Mar 2038',  color:'#a78bfa'},
-                {label:'Gap Left',      val:'$950k',     color:'#5b9cf6'},
+                {label:'Freedom Number', val:'$1,200,000', color:'#fbbf24'},
+                {label:'Years Away',     val:'30 yrs',     color:'#f87171'},
+                {label:'Freedom Date',   val:'Mar 2056',   color:'#f87171'},
+                {label:'Hours Left',     val:'62,400',     color:'#f87171'},
               ].map(s=>(
                 <div key={s.label} className="prev-stat">
                   <div className="prev-stat-label">{s.label}</div>
-                  <div className="prev-stat-val" style={{color:s.color}}>{s.val}</div>
+                  <div className="prev-stat-val" style={{color:s.color, fontSize: s.label==='Freedom Number'?12:15}}>{s.val}</div>
                 </div>
               ))}
             </div>
@@ -160,10 +173,10 @@ function DashboardPreview() {
       <div className="preview-screen">
         <div className="prev-section-label" style={{marginBottom:10}}>March 2026 · Needs vs Wants vs Savings</div>
         {[
-          {label:'Income', val:5200, color:'#52c98a', pct:100},
-          {label:'Needs',  val:1580, color:'#e05c5c', pct:30},
-          {label:'Wants',  val:520,  color:'#e0825c', pct:10},
-          {label:'Savings',val:1400, color:'#5b9cf6', pct:27},
+          {label:'Income',  val:4800, color:'#52c98a', pct:100},
+          {label:'Needs',   val:2600, color:'#e05c5c', pct:54},
+          {label:'Wants',   val:1400, color:'#e0825c', pct:29},
+          {label:'Savings', val:400,  color:'#f87171', pct:8},
         ].map(b=>(
           <div key={b.label} className="prev-bar-row">
             <span className="prev-bar-label">{b.label}</span>
@@ -175,12 +188,12 @@ function DashboardPreview() {
         ))}
         <div className="prev-grade-row">
           <div className="prev-grade-label">Savings Grade</div>
-          <div className="prev-grade" style={{color:'#52c98a'}}>A</div>
-          <div className="prev-grade-sub">27% savings rate</div>
+          <div className="prev-grade" style={{color:'#f87171'}}>D</div>
+          <div className="prev-grade-sub">8% savings rate · 30 yrs to FIRE</div>
         </div>
-        <div className="prev-guidance" style={{marginTop:8}}>
-          <div className="prev-guidance-icon">↑</div>
-          <div className="prev-guidance-text">Dining out accounts for 38% of your Wants budget. Cutting in half adds <strong style={{color:'#52c98a'}}>$98/mo</strong> to savings.</div>
+        <div className="prev-guidance" style={{marginTop:8,borderColor:'rgba(248,113,113,0.3)',background:'rgba(248,113,113,0.06)'}}>
+          <div className="prev-guidance-icon" style={{background:'rgba(248,113,113,0.2)',color:'#f87171'}}>!</div>
+          <div className="prev-guidance-text">Wants spending is <strong style={{color:'#f87171'}}>29% of income</strong>. Cutting to 20% moves your freedom date to <strong style={{color:'#52c98a'}}>2048</strong>.</div>
         </div>
       </div>
     ),
@@ -194,20 +207,20 @@ function DashboardPreview() {
               <stop offset="100%" stopColor="#a78bfa" stopOpacity="0"/>
             </linearGradient>
           </defs>
-          <line x1="40" y1="40" x2="390" y2="40" stroke="#fbbf24" strokeWidth="1" strokeDasharray="5 4" opacity="0.5"/>
-          <text x="393" y="44" fontSize="7" fill="#fbbf24" opacity="0.7">FIRE</text>
-          <path d="M40,120 L90,110 L140,95 L190,78 L230,60 L270,42 L310,25 L360,12 L390,8 L390,130 L40,130 Z" fill="url(#pg2)"/>
-          <path d="M40,120 L90,110 L140,95 L190,78 L230,60 L270,42 L310,25 L360,12 L390,8" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round"/>
-          <circle cx="270" cy="42" r="4" fill="#52c98a" opacity="0.9"/>
-          <line x1="270" y1="10" x2="270" y2="130" stroke="#52c98a" strokeWidth="1" strokeDasharray="3 4" opacity="0.3"/>
-          <text x="270" y="8" textAnchor="middle" fontSize="7" fill="#52c98a">Free</text>
+          <line x1="40" y1="25" x2="390" y2="25" stroke="#fbbf24" strokeWidth="1" strokeDasharray="5 4" opacity="0.5"/>
+          <text x="393" y="29" fontSize="7" fill="#fbbf24" opacity="0.7">FIRE</text>
+          <path d="M40,128 L90,122 L140,114 L190,104 L230,90 L270,72 L310,50 L360,30 L390,22 L390,130 L40,130 Z" fill="url(#pg2)"/>
+          <path d="M40,128 L90,122 L140,114 L190,104 L230,90 L270,72 L310,50 L360,30 L390,22" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round"/>
+          <circle cx="360" cy="30" r="4" fill="#52c98a" opacity="0.9"/>
+          <line x1="360" y1="10" x2="360" y2="130" stroke="#52c98a" strokeWidth="1" strokeDasharray="3 4" opacity="0.3"/>
+          <text x="360" y="8" textAnchor="middle" fontSize="7" fill="#52c98a">Free</text>
           {[0,5,10,15,20,25,30,35].map((y,i)=>(
             <text key={y} x={40+i*50} y="138" textAnchor="middle" fontSize="7" fill="rgba(255,255,255,0.25)">Yr{y}</text>
           ))}
         </svg>
         <div className="prev-mc-result">
-          <div className="prev-mc-pct" style={{color:'#52c98a'}}>78%</div>
-          <div className="prev-mc-label">success rate across 500 market simulations</div>
+          <div className="prev-mc-pct" style={{color:'#fbbf24'}}>54%</div>
+          <div className="prev-mc-label">success rate — <strong style={{color:'#f87171'}}>46% of scenarios you run out of money</strong></div>
         </div>
       </div>
     ),
@@ -217,18 +230,18 @@ function DashboardPreview() {
         <div className="prev-nw-grid">
           <div className="prev-nw-card" style={{borderColor:'rgba(82,201,138,0.3)'}}>
             <div className="prev-nw-label">Total Assets</div>
-            <div className="prev-nw-val" style={{color:'#52c98a'}}>$85,400</div>
+            <div className="prev-nw-val" style={{color:'#52c98a'}}>$29,200</div>
             <div className="prev-nw-breakdown">
-              {[{l:'Investments',v:'$50,000'},{l:'Cash',v:'$12,400'},{l:'Property',v:'$23,000'}].map(r=>(
+              {[{l:'Savings',v:'$14,200'},{l:'401k',v:'$8,000'},{l:'Car',v:'$7,000'}].map(r=>(
                 <div key={r.l} className="prev-nw-row"><span>{r.l}</span><span style={{color:'#52c98a'}}>{r.v}</span></div>
               ))}
             </div>
           </div>
           <div className="prev-nw-card" style={{borderColor:'rgba(224,92,92,0.3)'}}>
             <div className="prev-nw-label">Total Liabilities</div>
-            <div className="prev-nw-val" style={{color:'#e05c5c'}}>$22,000</div>
+            <div className="prev-nw-val" style={{color:'#e05c5c'}}>$47,000</div>
             <div className="prev-nw-breakdown">
-              {[{l:'Student Loan',v:'$15,000'},{l:'Credit Card',v:'$2,000'},{l:'Car Loan',v:'$5,000'}].map(r=>(
+              {[{l:'Student Loan',v:'$28,000'},{l:'Credit Card',v:'$4,000'},{l:'Car Loan',v:'$15,000'}].map(r=>(
                 <div key={r.l} className="prev-nw-row"><span>{r.l}</span><span style={{color:'#e05c5c'}}>{r.v}</span></div>
               ))}
             </div>
@@ -236,11 +249,11 @@ function DashboardPreview() {
         </div>
         <div className="prev-nw-total">
           <span>Net Worth</span>
-          <span className="prev-nw-total-val">$63,400</span>
+          <span className="prev-nw-total-val" style={{color:'#f87171'}}>-$17,800</span>
         </div>
         <div className="prev-nw-bar-wrap">
-          <div className="prev-nw-bar-fill" style={{width:'26%', background:'rgba(167,139,250,0.4)'}}/>
-          <div className="prev-nw-bar-text">26% of your $240,000 FIRE number</div>
+          <div className="prev-nw-bar-fill" style={{width:'2%', background:'rgba(248,113,113,0.5)'}}/>
+          <div className="prev-nw-bar-text" style={{color:'#f87171'}}>Negative net worth · $1,217,800 from FIRE</div>
         </div>
       </div>
     ),
@@ -357,10 +370,11 @@ export default function Landing() {
       <nav className={`nav ${navScrolled ? 'nav-scrolled' : ''}`}>
         <div className="nav-logo">FIRE<span>Ledger</span></div>
         <div className="nav-links">
+          <button className="nav-link" onClick={() => window.scrollTo({top:0,behavior:'smooth'})}>Home</button>
           <button className="nav-link" onClick={() => scrollTo('preview')}>Preview</button>
           <button className="nav-link" onClick={() => scrollTo('story')}>Our Story</button>
           <button className="nav-link" onClick={() => scrollTo('features')}>Features</button>
-          <button className="nav-link" onClick={() => scrollTo('pricing')}>Pricing</button>
+          <button className="nav-link" onClick={() => scrollTo('pricing')}>Freedom Price</button>
           <button className="nav-link" onClick={() => scrollTo('faq')}>FAQ</button>
         </div>
         <button className="nav-cta" onClick={() => scrollTo('pricing')}>
@@ -381,7 +395,10 @@ export default function Landing() {
         </div>
         <div className="hero-content">
           <div className="hero-badge">From $5 once · No subscription required</div>
-          <AnimatedHeroTitle />
+          <h1 className="hero-title">
+            You will work<br />
+            <span className="hero-accent">until you die.</span>
+          </h1>
           <p className="hero-sub">
             Unless you know this number.<br />
             Most people never calculate it. The ones who do retire a decade early.
@@ -543,7 +560,6 @@ export default function Landing() {
               <div className="story-quote-avatar">F</div>
               <div>
                 <div className="story-quote-name">Founder, FIRE Ledger</div>
-                <div className="story-quote-role">Built it to answer the question for myself</div>
               </div>
             </div>
           </div>
