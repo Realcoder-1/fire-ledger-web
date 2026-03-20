@@ -46,13 +46,6 @@ const POPUP_KEY   = 'fl_hours_popup_seen';
 const TIMER_KEY   = 'fl_urgency_expires';
 const TRIAL_MINS  = 60;
 
-// Paddle price IDs
-const PRICES = {
-  trial:    { monthly: 'pri_01kkk53619cxb49atjaykftcn7', annual: 'pri_01kkk544b2fntpj7s989ntee0x' },
-  standard: { monthly: 'pri_01kkk53619cxb49atjaykftcn7', annual: 'pri_01kkk544b2fntpj7s989ntee0x' },
-};
-const DISCOUNT_CODE = 'dsc_01km3qwg22qqd90612kd8peq6m'; // 50% off during trial
-
 // ── Urgency Timer ──────────────────────────────────────
 function UrgencyTimer({ onExpire, onTick }) {
   const [timeLeft, setTimeLeft] = useState(null);

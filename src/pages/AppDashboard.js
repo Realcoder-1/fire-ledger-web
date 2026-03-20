@@ -449,8 +449,6 @@ export default function AppDashboard() {
   const [txs,           setTxs]         = useState([]);
   const [showAdd,       setShowAdd]     = useState(false);
   // Trial discount banner state
-  const DISC_KEY = 'fl_trial_disc_expires';
-  const DISC_SHOWN_KEY = 'fl_trial_disc_shown';
   const [discTimeLeft,     setDiscTimeLeft]     = useState(null);
   const [discDismissed,    setDiscDismissed]    = useState(() => !!localStorage.getItem('fl_disc_dismissed'));
   const [discCopied,       setDiscCopied]       = useState(false);
