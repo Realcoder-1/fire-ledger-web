@@ -373,3 +373,43 @@
   margin-top: 20px;
   margin-bottom: 12px;
 }
+
+/* ── PAYMENT BUTTONS (shared card style, add buttons) ─── */
+.pricing-pay-btn {
+  width: 100%;
+  background: rgba(167,139,250,0.12);
+  border: 1px solid rgba(167,139,250,0.35);
+  color: #a78bfa;
+  padding: 13px 16px;
+  border-radius: 11px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  text-align: center;
+  display: block;
+}
+.pricing-pay-btn:hover:not(:disabled) {
+  background: rgba(167,139,250,0.22);
+  transform: translateY(-1px);
+}
+.pricing-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.pricing-pay-btn.loading  { opacity: 0.7; cursor: wait; }
+.pricing-pay-btn-featured {
+  background: linear-gradient(135deg, #a78bfa, #f472b6);
+  border: none;
+  color: white;
+  box-shadow: 0 0 24px rgba(167,139,250,0.35);
+}
+.pricing-pay-btn-featured:hover:not(:disabled) {
+  box-shadow: 0 0 36px rgba(167,139,250,0.5);
+}
+.pricing-pay-sub {
+  font-size: 11px;
+  color: #55557a;
+  text-align: center;
+  margin: 0;
+}

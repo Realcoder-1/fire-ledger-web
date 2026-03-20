@@ -971,3 +971,84 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
   transition: opacity 0.15s;
 }
 .fl-lifetime-upgrade:hover { opacity: 0.8; }
+
+/* ── LIFETIME UPGRADE CARD (settings) ────────────────── */
+.fl-upgrade-card {
+  background: rgba(167,139,250,0.06);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 14px;
+}
+.fl-upgrade-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.fl-upgrade-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--t1);
+}
+.fl-upgrade-card-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--purple-light);
+  background: rgba(167,139,250,0.12);
+  border: 1px solid rgba(167,139,250,0.25);
+  padding: 2px 8px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.fl-upgrade-card-body {
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.fl-upgrade-card-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.fl-upgrade-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 9px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.fl-upgrade-option:hover {
+  border-color: rgba(167,139,250,0.4);
+  background: rgba(167,139,250,0.06);
+}
+.fl-upgrade-option-featured {
+  border-color: rgba(167,139,250,0.3);
+  background: rgba(167,139,250,0.07);
+}
+.fl-upgrade-option-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--purple-light);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.fl-upgrade-option-price span {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--t2);
+  letter-spacing: 0;
+}
+.fl-upgrade-option-label {
+  font-size: 10px;
+  color: var(--t2);
+  font-weight: 500;
+}

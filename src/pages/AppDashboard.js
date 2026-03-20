@@ -1433,6 +1433,27 @@ export default function AppDashboard() {
                   <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
                   <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>{isLifetime ? 'Lifetime · Session only' : 'Pro · Cloud sync active'}</div></div>
                 </div>
+                {isLifetime && (
+                  <div className="fl-upgrade-card">
+                    <div className="fl-upgrade-card-top">
+                      <span className="fl-upgrade-card-title">Upgrade to cloud sync</span>
+                      <span className="fl-upgrade-card-badge">Save your data</span>
+                    </div>
+                    <p className="fl-upgrade-card-body">
+                      Your data clears every session on the Lifetime plan. Upgrade to Monthly or Annual to save everything permanently — transactions, settings, and history.
+                    </p>
+                    <div className="fl-upgrade-card-options">
+                      <a href="/pricing" className="fl-upgrade-option">
+                        <span className="fl-upgrade-option-price">$4.99<span>/mo</span></span>
+                        <span className="fl-upgrade-option-label">Monthly</span>
+                      </a>
+                      <a href="/pricing" className="fl-upgrade-option fl-upgrade-option-featured">
+                        <span className="fl-upgrade-option-price">$59.99<span>/yr</span></span>
+                        <span className="fl-upgrade-option-label">Annual · Best value</span>
+                      </a>
+                    </div>
+                  </div>
+                )}
                 <button className="fl-btn-ghost fl-btn-icon" style={{width:'100%',marginTop:16}} onClick={exportExcel}><Icon.Export/>Download report</button>
                 <button className="fl-btn-danger fl-btn-icon" style={{width:'100%',marginTop:10}} onClick={signOut}><Icon.LogOut/>Sign out</button>
               </div>
