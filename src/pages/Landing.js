@@ -1,9 +1,45 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-
+import { useNavigate } from 'react-router-dom';
 import HoursPopup from '../components/HoursPopup';
 import ScrollHint from '../components/ScrollHint';
 import './Landing.css';
+
+// ── Animated cycling caption (AnyInterview-style) ──────
+const HERO_CAPTIONS = [
+  { line1: 'You will work until',   accent: 'you die.'           },
+  { line1: 'Most people never',     accent: 'run the numbers.'   },
+  { line1: 'Your freedom date is',  accent: 'calculable.'        },
+  { line1: 'Every dollar you spend', accent: 'costs you years.'  },
+  { line1: 'The ones who track it', accent: 'retire early.'      },
+];
+
+function AnimatedHeroTitle() {
+  const [idx, setIdx]       = useState(0);
+  const [phase, setPhase]   = useState('visible'); // visible | fadeout | fadein
+  const timerRef            = useRef(null);
+
+  useEffect(() => {
+    // Stay visible 3.5s, then fade out 400ms, swap, fade in 400ms
+    timerRef.current = setTimeout(() => {
+      setPhase('fadeout');
+      setTimeout(() => {
+        setIdx(i => (i + 1) % HERO_CAPTIONS.length);
+        setPhase('fadein');
+        setTimeout(() => setPhase('visible'), 400);
+      }, 400);
+    }, 3500);
+    return () => clearTimeout(timerRef.current);
+  }, [idx]);
+
+  const c = HERO_CAPTIONS[idx];
+  return (
+    <h1 className={`hero-title hero-title-anim hero-title-${phase}`}>
+      {c.line1}<br />
+      <span className="hero-accent">{c.accent}</span>
+    </h1>
+  );
+}
 
 // ── Constants ──────────────────────────────────────────
 const POPUP_KEY   = 'fl_hours_popup_seen';
@@ -15,7 +51,7 @@ const PRICES = {
   trial:    { monthly: 'pri_01kkk53619cxb49atjaykftcn7', annual: 'pri_01kkk544b2fntpj7s989ntee0x' },
   standard: { monthly: 'pri_01kkk53619cxb49atjaykftcn7', annual: 'pri_01kkk544b2fntpj7s989ntee0x' },
 };
-const DISCOUNT_CODE = 'TRIALWELCOME'; // 50% off during trial
+const DISCOUNT_CODE = 'dsc_01km3qwg22qqd90612kd8peq6m'; // 50% off during trial
 
 // ── Urgency Timer ──────────────────────────────────────
 function UrgencyTimer({ onExpire, onTick }) {
@@ -294,6 +330,7 @@ function SmartScrollHint({ text }) {
 // ── Main Landing ───────────────────────────────────────
 export default function Landing() {
   const { signInWithGoogle, user } = useAuth();
+  const navigate = useNavigate();
   const [showPopup,    setShowPopup]    = useState(false);
   const [navScrolled,  setNavScrolled]  = useState(false);
   const [openFaq,      setOpenFaq]      = useState(null);
@@ -318,46 +355,7 @@ export default function Landing() {
     // Sign-in is handled inside the popup itself — just close here
   };
 
-  const handleStart = () => {
-  if (!user) {
-    signInWithGoogle();
-    return;
-  }
-
-  openCheckout(); // 🔥 THIS is the connection
-};
-const openCheckout = () => {
-  if (!window.Paddle || !window.Paddle.Checkout) {
-    console.error('Paddle not loaded properly');
-    return;
-  }
-
-  const expiryRaw = localStorage.getItem(TIMER_KEY);
-  const expiry = expiryRaw ? parseInt(expiryRaw, 10) : null;
-
-  const isValid = expiry && Date.now() < expiry;
-
-  console.log('Checkout debug:', {
-    expiry,
-    now: Date.now(),
-    isValid,
-    discount: isValid ? DISCOUNT_CODE : null
-  });
-
-  const checkoutConfig = {
-    items: [{ priceId: PRICES.trial.monthly }]
-  };
-
-  // Apply discount ONLY if timer valid
-  if (isValid) {
-    checkoutConfig.discount_code = DISCOUNT_CODE;
-
-    // Fallback (some Paddle setups prefer ID)
-    checkoutConfig.discountId = 'dsc_01km3qwg22qqd90612kd8peq6m';
-  }
-
-  window.Paddle.Checkout.open(checkoutConfig);
-};
+  const handleStart = () => { if (user) navigate('/app'); else signInWithGoogle(); };
   const scrollTo = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
 
   const FAQS = [
@@ -423,10 +421,7 @@ const openCheckout = () => {
         </div>
         <div className="hero-content">
           <div className="hero-badge">7-Day Free Trial · No Credit Card Required</div>
-          <h1 className="hero-title">
-            You will work until<br />
-            <span className="hero-accent">you die.</span>
-          </h1>
+          <AnimatedHeroTitle />
           <p className="hero-sub">
             Unless you know this number.<br />
             Most people never calculate it. The ones who do retire a decade early.

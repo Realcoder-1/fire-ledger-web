@@ -64,7 +64,7 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
 
 .fl-add-fab { display:flex; align-items:center; gap:7px; background:linear-gradient(135deg,var(--purple-light),var(--purple-dark)); color:white; border:none; padding:10px 18px; border-radius:9px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; box-shadow:0 3px 14px var(--purple-glow); }
 .fl-add-fab:hover { transform:translateY(-1px); box-shadow:0 5px 20px rgba(124,58,237,0.4); }
-.fl-btn-primary { background: linear-gradient(135deg, var(--purple), var(--pink)); color:white; border:none; padding:10px 20px; border-radius:9px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 10px var(--purple-glow); }
+.fl-btn-primary { background:linear-gradient(135deg,var(--purple-light),var(--purple-dark)); color:white; border:none; padding:10px 20px; border-radius:9px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 10px var(--purple-glow); }
 .fl-btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 18px rgba(124,58,237,0.4); }
 .fl-btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
 .fl-btn-ghost { background:none; border:1px solid var(--border2); color:var(--t2); padding:10px 18px; border-radius:9px; font-family:'Inter',sans-serif; font-size:13px; cursor:pointer; transition:all 0.15s; }
@@ -656,119 +656,141 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
 .fl-trial-upgrade:hover { color:#c4b5fd; }
 .fl-sidebar-divider { height:1px; background:var(--border); margin-bottom:10px; }
 
-/* ── PASTE THESE ADDITIONS AT THE BOTTOM OF YOUR AppDashboard.css ── */
-
-/* Hours left metric in hero */
-.fl-fire-hours {
+/* ── TRIAL DISCOUNT BANNER ───────────────────────────── */
+.fl-disc-banner {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  color: var(--red);
-  font-weight: 600;
-  margin-bottom: 12px;
-  font-family: 'JetBrains Mono', monospace;
-}
-.fl-fire-hours strong { font-size: 15px; }
-
-/* Guidance panel */
-.fl-guidance-panel {
-  background: var(--bg2);
-  border: 1px solid var(--border2);
-  border-radius: var(--r);
-  padding: 16px 18px;
-  margin-bottom: 18px;
-  box-shadow: var(--shadow);
-}
-.fl-guidance-header {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(167,139,250,0.1), rgba(244,114,182,0.07));
+  border: 1px solid rgba(167,139,250,0.35);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
 }
-.fl-guidance-title {
+.fl-disc-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(244,114,182,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+.fl-disc-banner-left {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+.fl-disc-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0,0,0,0.35);
+  border-radius: 8px;
+  padding: 8px 13px;
+  min-width: 68px;
+  flex-shrink: 0;
+}
+.fl-disc-label {
+  font-size: 9px;
+  color: var(--t2);
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: var(--purple-light);
-}
-.fl-guidance-dismiss {
-  background: none;
-  border: none;
-  color: var(--t3);
-  cursor: pointer;
-  padding: 2px;
-  transition: color 0.15s;
-  display: flex;
-  align-items: center;
-}
-.fl-guidance-dismiss:hover { color: var(--t2); }
-.fl-guidance-tip {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid;
-  margin-bottom: 8px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--t1);
-}
-.fl-guidance-tip:last-child { margin-bottom: 0; }
-.fl-guidance-tip-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
-.fl-guidance-tip-text { flex: 1; }
-
-/* Inactivity banner */
-.fl-inactivity-banner {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--bg2);
-  border: 1px solid rgba(251,191,36,0.35);
-  border-radius: 100px;
-  padding: 11px 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--t1);
-  z-index: 1500;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  margin-bottom: 3px;
   white-space: nowrap;
-  animation: toastIn 0.25s ease;
 }
-.fl-inactivity-banner > span:first-child { color: var(--gold); display: flex; align-items: center; }
-.fl-inactivity-log {
-  background: none;
-  border: none;
+.fl-disc-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 800;
   color: var(--gold);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.fl-disc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.fl-disc-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t1);
+  white-space: nowrap;
+}
+.fl-disc-sub {
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.4;
+}
+.fl-disc-banner-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.fl-disc-code {
+  background: rgba(167,139,250,0.12);
+  border: 1.5px dashed rgba(167,139,250,0.55);
+  color: var(--purple-light);
+  font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 700;
+  padding: 9px 14px;
+  border-radius: 8px;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  padding: 0;
-  margin-left: 4px;
-  transition: opacity 0.15s;
+  letter-spacing: 1.5px;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
-.fl-inactivity-log:hover { opacity: 0.75; }
-.fl-inactivity-close {
+.fl-disc-code:hover {
+  background: rgba(167,139,250,0.22);
+  border-color: rgba(167,139,250,0.8);
+}
+.fl-disc-cta {
+  background: linear-gradient(135deg, var(--purple-light), var(--purple-dark));
+  color: white;
+  text-decoration: none;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 2px 12px var(--purple-glow);
+}
+.fl-disc-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+.fl-disc-close {
   background: none;
   border: none;
   color: var(--t3);
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 0 0 0 8px;
+  padding: 4px;
   transition: color 0.15s;
+  flex-shrink: 0;
 }
-.fl-inactivity-close:hover { color: var(--t2); }
+.fl-disc-close:hover { color: var(--t2); }
 
-/* Hours stat in FIRE calc */
-.fl-fire-stat-value[data-hours] { font-size: 16px !important; }
+/* ── TOUR NAV GLOW ────────────────────────────────────── */
+.fl-nav-item.fl-nav-tour-glow {
+  box-shadow: 0 0 0 2px var(--purple-light), 0 0 18px rgba(167,139,250,0.45);
+  border-radius: 9px;
+  animation: tourGlowPulse 1.6s ease-in-out infinite;
+}
+@keyframes tourGlowPulse {
+  0%,100% { box-shadow: 0 0 0 2px var(--purple-light), 0 0 18px rgba(167,139,250,0.4); }
+  50%      { box-shadow: 0 0 0 2px var(--purple-light), 0 0 32px rgba(167,139,250,0.75); }
+}
+
+@media (max-width: 860px) {
+  .fl-disc-banner { flex-direction: column; align-items: flex-start; }
+  .fl-disc-banner-right { width: 100%; justify-content: flex-start; }
+}

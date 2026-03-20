@@ -611,3 +611,28 @@
   .footer-top { grid-template-columns: 1fr 1fr; gap: 24px; padding: 0 24px; }
   .features-grid { grid-template-columns: 1fr; }
 }
+
+/* ── ANIMATED WORD ────────────────────────────────────── */
+.hero-anim-word {
+  display: inline-block;
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-style: italic;
+  transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease;
+  will-change: opacity, transform;
+}
+.hero-anim-visible {
+  opacity: 1;
+  transform: translateY(0) skewX(0deg);
+  filter: blur(0px);
+}
+.hero-anim-exit {
+  opacity: 0;
+  transform: translateY(-12px) skewX(-4deg);
+  filter: blur(4px);
+}
+.hero-anim-enter {
+  opacity: 0;
+  transform: translateY(14px) skewX(3deg);
+  filter: blur(6px);
+}
