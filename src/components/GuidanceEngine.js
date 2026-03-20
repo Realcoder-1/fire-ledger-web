@@ -17,11 +17,7 @@ export function buildSnapshot(txs, fire, currency = 'USD') {
     const d = new Date(t.date);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
-  const last3Months = txs.filter(t => {
-    const d = new Date(t.date);
-    const cutoff = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-    return d >= cutoff;
-  });
+
 
   const sum = (arr, type) => arr.filter(t => t.type === type).reduce((s, t) => s + t.amount, 0);
 
@@ -193,7 +189,7 @@ export function getRuleGuidance(snap) {
  * Build the prompt for Claude API — rich context, professional tone.
  */
 export function buildClaudePrompt(snap) {
-  const { month, rates, fire, topCategories, grade, currency } = snap;
+  const { month, rates, fire, grade, currency } = snap;
   const sym = { USD: '$', EUR: '€', GBP: '£', INR: '₹' }[currency] || '$';
 
   return `You are a professional financial independence advisor. A user has shared their financial data. Provide 2-3 concise, specific, actionable insights. Be direct and data-driven — not generic. Do not give a preamble. Do not say "based on your data". Just give the insight.

@@ -14,7 +14,6 @@ export default function Pricing() {
   const [paddleError, setPaddleError] = useState(false);
   const [couponInput, setCouponInput] = useState('');
   const [coupon,      setCoupon]      = useState('');
-  const [couponMsg,   setCouponMsg]   = useState('');
   const [couponValid, setCouponValid] = useState(false);
   const [activePlan,  setActivePlan]  = useState(null);
 
@@ -55,13 +54,11 @@ export default function Pricing() {
     if (!code) return;
     setCoupon(code);
     setCouponValid(true);
-    setCouponMsg(`Code "${code}" applied — discount will be reflected at checkout.`);
   };
 
   const removeCode = () => {
     setCoupon('');
     setCouponInput('');
-    setCouponMsg('');
     setCouponValid(false);
   };
 
