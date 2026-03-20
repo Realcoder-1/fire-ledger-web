@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+.signin-page {
+  min-height: 100vh;
+  background: #08080f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+}
+.signin-bg { position: absolute; inset: 0; pointer-events: none; }
+.signin-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.12;
+}
+.signin-orb1 { width: 500px; height: 500px; background: #a78bfa; top: -150px; left: -150px; }
+.signin-orb2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+
+.signin-card {
+  background: #0e0e1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 48px 44px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+}
+
+.signin-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #f0f0f8;
+  margin-bottom: 32px;
+}
+.signin-logo span { color: #a78bfa; }
+
+.signin-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: #f0f0f8;
+  margin-bottom: 10px;
+}
+
+.signin-sub {
+  font-size: 14px;
+  color: #8888aa;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.signin-google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #fff;
+  color: #1f1f1f;
+  border: none;
+  padding: 15px 24px;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.signin-google-btn:hover {
+  background: #f5f5f5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+}
+
+.signin-fine {
+  font-size: 12px;
+  color: rgba(136,136,170,0.5);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.signin-fine a {
+  color: rgba(167,139,250,0.6);
+  text-decoration: underline;
+}
+.signin-fine a:hover { color: #a78bfa; }
+
+.signin-back {
+  background: none;
+  border: none;
+  color: #55557a;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.signin-back:hover { color: #8888aa; }

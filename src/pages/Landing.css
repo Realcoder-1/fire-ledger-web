@@ -383,9 +383,9 @@
 .urgency-bar.urgent .urgency-countdown { color: #e05c5c; }
 .urgency-link { color: #a78bfa; text-decoration: underline; cursor: pointer; }
 
-/* Push content below fixed urgency bar + nav */
-.nav { top: 40px; }
-.hero { padding-top: 160px; }
+/* Nav sits at top — no urgency bar offset */
+.nav { top: 0; }
+.hero { padding-top: 120px; }
 
 /* ── NAV ADDITIONS ────────────────────────────────── */
 .nav-scrolled { background: rgba(8,8,15,0.95); box-shadow: 0 1px 0 rgba(255,255,255,0.05); }
@@ -604,7 +604,7 @@
 
 @media (max-width: 768px) {
   .urgency-bar { font-size: 11px; padding: 8px 12px; }
-  .nav { top: 38px; }
+  .nav { top: 0; }
   .nav-links { display: none; }
   .hero { padding: 100px 24px 60px; }
   .preview-section, .before-after-section, .story-section, .features, .pricing, .faq-section, .final-cta-section { padding: 60px 24px; }
@@ -878,4 +878,39 @@
   gap: 2px;
   flex: 1;
   justify-content: center;
+}
+
+/* ── HERO STAT STRIP (replaces caption block) ────────── */
+.hero-stat-strip {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 0 0;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.hero-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.hero-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #f0f0f8;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.hero-stat-label {
+  font-size: 11px;
+  color: #55557a;
+  font-weight: 400;
+}
+.hero-stat-div {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,0.08);
+  flex-shrink: 0;
 }

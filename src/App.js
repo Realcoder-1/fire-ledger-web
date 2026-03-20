@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Landing from './pages/Landing';
-import SignUp from './pages/SignUp';
+import SignIn from './pages/SignIn';
 import AppDashboard from './pages/AppDashboard';
 import Pricing from './pages/Pricing';
 import Terms from './pages/Terms';
@@ -15,7 +15,7 @@ function ProtectedRoute({ children }) {
       Loading...
     </div>
   );
-  if (!user) return <Navigate to="/signup" />;
+  if (!user) return <Navigate to="/signin" />;
   if (!hasSubscription) return <Navigate to="/pricing" />;
   return children;
 }
@@ -25,7 +25,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/"        element={user && hasSubscription ? <Navigate to="/app" /> : <Landing />} />
-      <Route path="/signup"  element={user ? <Navigate to="/pricing" /> : <SignUp />} />
+      <Route path="/signin"  element={user ? (hasSubscription ? <Navigate to="/app" /> : <Navigate to="/pricing" />) : <SignIn />} />
       <Route path="/pricing" element={hasSubscription ? <Navigate to="/app" /> : <Pricing />} />
       <Route path="/app"     element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
       <Route path="/terms"   element={<Terms />} />

@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
   // ── Google OAuth ──────────────────────────────────────
   const signInWithGoogle = () => supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/pricing' }
+    options: { redirectTo: window.location.origin + '/app' }
   });
 
   // ── Email / Password ──────────────────────────────────

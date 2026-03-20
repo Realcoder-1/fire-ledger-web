@@ -28,7 +28,7 @@ function AnimatedHeroTitle() {
         setPhase('fadein');
         setTimeout(() => setPhase('visible'), 400);
       }, 400);
-    }, 4500);
+    }, 2000);
     return () => clearTimeout(timerRef.current);
   }, [idx]);
 
@@ -376,12 +376,13 @@ export default function Landing() {
           <button className="nav-link" onClick={() => scrollTo('features')}>Features</button>
           <button className="nav-link" onClick={() => scrollTo('pricing')}>Freedom Price</button>
           <button className="nav-link" onClick={() => scrollTo('faq')}>FAQ</button>
+          <button className="nav-link" onClick={() => scrollTo('contact')}>Contact</button>
         </div>
         <button className="nav-cta" onClick={() => scrollTo('pricing')}>
           See Plans →
         </button>
         {!user && (
-          <button className="nav-signin" onClick={signInWithGoogle}>
+          <button className="nav-signin" onClick={() => navigate('/signin')}>
             Sign in
           </button>
         )}
@@ -394,7 +395,7 @@ export default function Landing() {
           <div className="grid-overlay" />
         </div>
         <div className="hero-content">
-          <div className="hero-badge">From $5 once · No subscription required</div>
+          <div className="hero-badge">The question nobody asks — until it's too late.</div>
           <AnimatedHeroTitle />
           <p className="hero-sub">
             Unless you know this number.<br />
@@ -415,18 +416,20 @@ export default function Landing() {
             <span>·</span>
             <span>✓ Cancel monthly anytime</span>
           </div>
-          <div className="hero-caption-block">
-            <div className="hero-caption-line">
-              <span className="hero-caption-label">The average person</span>
-              <span className="hero-caption-value">works 90,000 hours</span>
+          <div className="hero-stat-strip">
+            <div className="hero-stat-item">
+              <span className="hero-stat-num">90,000</span>
+              <span className="hero-stat-label">avg lifetime work hours</span>
             </div>
-            <div className="hero-caption-line">
-              <span className="hero-caption-label">Without a plan, you will</span>
-              <span className="hero-caption-value hero-caption-red">work until you die.</span>
+            <div className="hero-stat-div" />
+            <div className="hero-stat-item">
+              <span className="hero-stat-num">25×</span>
+              <span className="hero-stat-label">your expenses = FIRE number</span>
             </div>
-            <div className="hero-caption-line">
-              <span className="hero-caption-label">With one, you could stop</span>
-              <span className="hero-caption-value hero-caption-purple">a decade early.</span>
+            <div className="hero-stat-div" />
+            <div className="hero-stat-item">
+              <span className="hero-stat-num">$5</span>
+              <span className="hero-stat-label">to know your number</span>
             </div>
           </div>
           <SmartScrollHint text="Scroll to see the dashboard" />
@@ -734,7 +737,7 @@ export default function Landing() {
             <a href="/terms">Terms of Service</a>
             <a href="/refund">Refund Policy</a>
           </div>
-          <div className="footer-links-col">
+          <div className="footer-links-col" id="contact">
             <div className="footer-col-title">Contact</div>
             <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a>
             <a href="https://instagram.com/fireledger.app" target="_blank" rel="noreferrer">Instagram → @fireledger.app</a>
