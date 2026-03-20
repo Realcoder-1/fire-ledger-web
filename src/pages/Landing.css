@@ -914,3 +914,97 @@
   background: rgba(255,255,255,0.08);
   flex-shrink: 0;
 }
+
+/* ── PAIN MOCKUP CARD ─────────────────────────────────── */
+.mockup-card-pain {
+  background: #0e0e1a;
+  border: 1px solid rgba(248,113,113,0.25);
+  box-shadow: 0 0 40px rgba(248,113,113,0.08), 0 40px 80px rgba(0,0,0,0.5);
+}
+.mockup-pain-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.mockup-pain-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #55557a;
+  text-transform: uppercase;
+}
+.mockup-pain-alert {
+  font-size: 10px;
+  font-weight: 700;
+  color: #f87171;
+  background: rgba(248,113,113,0.12);
+  border: 1px solid rgba(248,113,113,0.25);
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+.mockup-hours-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.mockup-hours-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 900;
+  color: #f87171;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+.mockup-hours-label {
+  font-size: 11px;
+  color: #8888aa;
+  margin-top: 4px;
+  text-align: center;
+}
+.mockup-pain-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 12px;
+  background: rgba(248,113,113,0.05);
+  border: 1px solid rgba(248,113,113,0.12);
+  border-radius: 10px;
+}
+.mockup-pain-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+.mockup-pain-stat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.mockup-pain-stat-label {
+  font-size: 9px;
+  color: #55557a;
+  text-align: center;
+}
+.mockup-pain-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+.mockup-pain-tip {
+  font-size: 12px;
+  color: #8888aa;
+  line-height: 1.6;
+  padding: 10px 12px;
+  background: rgba(248,113,113,0.05);
+  border: 1px solid rgba(248,113,113,0.15);
+  border-radius: 8px;
+}

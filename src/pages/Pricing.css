@@ -295,3 +295,81 @@
   .p-plans-grid { grid-template-columns: 1fr; max-width: 400px; }
   .p-plan-featured { order: -1; }
 }
+
+/* ── PRICING PAGE POLISH ─────────────────────────────── */
+.pricing-hero h1 {
+  font-size: clamp(32px, 5vw, 52px);
+  margin-bottom: 10px;
+}
+.pricing-hero > p {
+  color: #8888aa;
+  margin-bottom: 0;
+}
+.p-plans-grid {
+  margin-top: 36px;
+}
+.p-plan-card {
+  padding: 32px 26px 28px;
+}
+/* Make features list tighter */
+.p-plan-features {
+  gap: 7px;
+  margin-bottom: 22px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+/* Coupon field polish */
+.p-coupon-section {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 18px 20px;
+  max-width: 460px;
+}
+.p-coupon-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #55557a;
+  text-align: left;
+  margin-bottom: 10px;
+}
+.p-coupon-row {
+  display: flex;
+  gap: 8px;
+}
+.p-coupon-input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #f0f0f8;
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.p-coupon-input:focus { border-color: rgba(167,139,250,0.5); }
+.p-coupon-input::placeholder { color: #3a3a5a; }
+.p-coupon-btn {
+  background: rgba(167,139,250,0.15);
+  border: 1px solid rgba(167,139,250,0.3);
+  color: #a78bfa;
+  padding: 11px 18px;
+  border-radius: 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.p-coupon-btn:hover { background: rgba(167,139,250,0.25); }
+.p-guarantee {
+  font-size: 13px;
+  color: #8888aa;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}

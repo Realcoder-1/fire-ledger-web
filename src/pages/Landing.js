@@ -435,37 +435,53 @@ export default function Landing() {
           <SmartScrollHint text="Scroll to see the dashboard" />
         </div>
         <div className="hero-mockup">
-          <div className="mockup-card">
-            <div className="mockup-header">
-              <span className="mockup-label">FIRE Progress</span>
-              <span className="mockup-years">12.4 yrs away</span>
+          <div className="mockup-card mockup-card-pain">
+            {/* Pain header */}
+            <div className="mockup-pain-header">
+              <span className="mockup-pain-label">YOUR REALITY RIGHT NOW</span>
+              <span className="mockup-pain-alert">⚠ Off track</span>
             </div>
+            {/* Hours left — the visceral stat */}
+            <div className="mockup-hours-wrap">
+              <span className="mockup-hours-num">62,400</span>
+              <span className="mockup-hours-label">working hours left in your life</span>
+            </div>
+            {/* Ring — showing bad progress */}
             <div className="mockup-ring-wrap">
               <svg viewBox="0 0 120 120" className="mockup-ring">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10"/>
-                <circle cx="60" cy="60" r="50" fill="none" stroke="url(#fireGrad)" strokeWidth="10"
-                  strokeDasharray="314" strokeDashoffset="188" strokeLinecap="round" transform="rotate(-90 60 60)"/>
-                <defs><linearGradient id="fireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="url(#painGrad)" strokeWidth="10"
+                  strokeDasharray="314" strokeDashoffset="276" strokeLinecap="round" transform="rotate(-90 60 60)"/>
+                <defs><linearGradient id="painGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#f87171"/><stop offset="100%" stopColor="#e05c5c"/>
                 </linearGradient></defs>
               </svg>
               <div className="mockup-ring-text">
-                <span className="mockup-pct">40%</span>
+                <span className="mockup-pct" style={{color:'#f87171'}}>12%</span>
                 <span className="mockup-pct-label">to FIRE</span>
               </div>
             </div>
-            <div className="mockup-transactions">
-              {[
-                {label:'Salary',    amt:'+$5,200', type:'income'},
-                {label:'Rent',      amt:'-$1,400', type:'need'  },
-                {label:'Groceries', amt:'-$180',   type:'need'  },
-                {label:'Index Fund',amt:'+$1,400', type:'saving'},
-              ].map((t,i) => (
-                <div key={i} className="mockup-tx">
-                  <span className="mockup-tx-label">{t.label}</span>
-                  <span className={`mockup-tx-amt ${t.type}`}>{t.amt}</span>
-                </div>
-              ))}
+            {/* Pain stats */}
+            <div className="mockup-pain-stats">
+              <div className="mockup-pain-stat">
+                <span className="mockup-pain-stat-val" style={{color:'#f87171'}}>30 yrs</span>
+                <span className="mockup-pain-stat-label">until you're free</span>
+              </div>
+              <div className="mockup-pain-divider"/>
+              <div className="mockup-pain-stat">
+                <span className="mockup-pain-stat-val" style={{color:'#f87171'}}>D</span>
+                <span className="mockup-pain-stat-label">savings grade</span>
+              </div>
+              <div className="mockup-pain-divider"/>
+              <div className="mockup-pain-stat">
+                <span className="mockup-pain-stat-val" style={{color:'#fbbf24'}}>$986k</span>
+                <span className="mockup-pain-stat-label">FIRE gap</span>
+              </div>
+            </div>
+            {/* Pain guidance */}
+            <div className="mockup-pain-tip">
+              <span style={{color:'#f87171', fontWeight:700}}>!</span>
+              &nbsp;Dining out alone costs you <strong style={{color:'#f87171'}}>4.2 years</strong> of your life. At this rate you retire at <strong style={{color:'#f87171'}}>age 65.</strong>
             </div>
           </div>
         </div>
