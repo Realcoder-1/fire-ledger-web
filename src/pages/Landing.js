@@ -7,11 +7,11 @@ import './Landing.css';
 
 // ── Animated cycling caption (AnyInterview-style) ──────
 const HERO_CAPTIONS = [
-  { line1: 'You will work until',   accent: 'you die.'           },
-  { line1: 'Most people never',     accent: 'run the numbers.'   },
-  { line1: 'Your freedom date is',  accent: 'calculable.'        },
-  { line1: 'Every dollar you spend', accent: 'costs you years.'  },
-  { line1: 'The ones who track it', accent: 'retire early.'      },
+  { line1: 'You will work',          accent: 'until you die.'          },
+  { line1: 'Is this',                accent: 'what you want?'          },
+  { line1: 'Break',                  accent: 'the cycle.'              },
+  { line1: 'Find out when you can',  accent: 'stop working.'           },
+  { line1: 'Your freedom date',      accent: 'is calculable.'          },
 ];
 
 function AnimatedHeroTitle() {
@@ -28,7 +28,7 @@ function AnimatedHeroTitle() {
         setPhase('fadein');
         setTimeout(() => setPhase('visible'), 400);
       }, 400);
-    }, 3500);
+    }, 4500);
     return () => clearTimeout(timerRef.current);
   }, [idx]);
 
@@ -395,10 +395,7 @@ export default function Landing() {
         </div>
         <div className="hero-content">
           <div className="hero-badge">From $5 once · No subscription required</div>
-          <h1 className="hero-title">
-            You will work<br />
-            <span className="hero-accent">until you die.</span>
-          </h1>
+          <AnimatedHeroTitle />
           <p className="hero-sub">
             Unless you know this number.<br />
             Most people never calculate it. The ones who do retire a decade early.
