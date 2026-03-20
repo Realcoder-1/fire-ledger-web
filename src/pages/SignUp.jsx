@@ -44,8 +44,14 @@ export default function SignUp() {
         else setMsg('Check your email for a password reset link.');
       } else if (mode === 'signup') {
         const { error: err } = await signUpWithEmail(email, password);
-        if (err) setError(err.message);
-        else setMsg('Account created! Check your email to confirm, then sign in.');
+        if (err) {
+          setError(err.message);
+        } else {
+          // immediately sign in — skip confirmation entirely
+          const { error: signInErr } = await signInWithEmail(email, password);
+          if (signInErr) setError(signInErr.message);
+          // useEffect catches user and redirects to /pricing
+        }
       } else {
         const { error: err } = await signInWithEmail(email, password);
         if (err) setError(err.message);

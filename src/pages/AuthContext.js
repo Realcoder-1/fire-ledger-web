@@ -63,11 +63,14 @@ export function AuthProvider({ children }) {
 
   // ── Email / Password ──────────────────────────────────
   const signUpWithEmail = (email, password) =>
-    supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: window.location.origin + '/pricing' }
-    });
+  supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: undefined,
+      data: {}
+    }
+  });
 
   const signInWithEmail = (email, password) =>
     supabase.auth.signInWithPassword({ email, password });
