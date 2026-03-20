@@ -283,7 +283,7 @@ function SmartScrollHint({ text }) {
 
 // ── Main Landing ───────────────────────────────────────
 export default function Landing() {
-  const { user } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [showPopup,   setShowPopup]   = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
@@ -366,6 +366,11 @@ export default function Landing() {
         <button className="nav-cta" onClick={() => scrollTo('pricing')}>
           See Plans →
         </button>
+        {!user && (
+          <button className="nav-signin" onClick={signInWithGoogle}>
+            Sign in
+          </button>
+        )}
       </nav>
 
       {/* HERO */}
@@ -616,10 +621,6 @@ export default function Landing() {
                 <li className="pricing-feature-dim">✗ Data does not save between sessions</li>
                 <li className="pricing-feature-dim">✗ No cloud sync</li>
               </ul>
-              <button className="btn-primary btn-full" onClick={() => navigate('/signup')}>
-                Get started →
-              </button>
-              <p className="pricing-subline">One payment · Use forever</p>
             </div>
 
             {/* MONTHLY */}
@@ -644,10 +645,6 @@ export default function Landing() {
                 <li>✓ Full data export</li>
                 <li>✓ Cancel anytime</li>
               </ul>
-              <button className="btn-primary btn-full" onClick={() => navigate('/signup')}>
-                Get started →
-              </button>
-              <p className="pricing-subline">Cancel anytime · No lock-in</p>
             </div>
 
             {/* ANNUAL */}
@@ -674,10 +671,6 @@ export default function Landing() {
                 <li>✓ Full data export</li>
                 <li>✓ 48-hour refund guarantee</li>
               </ul>
-              <button className="btn-primary btn-full" onClick={() => navigate('/signup')}>
-                Get started →
-              </button>
-              <p className="pricing-subline">Best value · Cancel anytime</p>
             </div>
 
           </div>

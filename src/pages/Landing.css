@@ -814,3 +814,22 @@
 }
 .hero-caption-red   { color: #f87171; }
 .hero-caption-purple { color: #a78bfa; }
+
+/* ── NAV SIGN IN BUTTON ───────────────────────────────── */
+.nav-signin {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #8888aa;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.nav-signin:hover {
+  border-color: rgba(255,255,255,0.3);
+  color: #f0f0f8;
+}
