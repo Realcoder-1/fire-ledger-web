@@ -230,8 +230,10 @@ export default function Pricing() {
             </div>
           ) : (
             <div className="p-coupon-applied">
-              <span className="p-coupon-check">✓</span>
-              <span>{couponMsg}</span>
+              <div className="p-coupon-applied-left">
+                <span className="p-coupon-check">✓</span>
+                <span className="p-coupon-applied-text">Code "{coupon}" applied — discount reflected at checkout.</span>
+              </div>
               <button className="p-coupon-remove" onClick={removeCode}>Remove</button>
             </div>
           )}

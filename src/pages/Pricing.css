@@ -306,8 +306,14 @@
 .p-coupon-applied {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
-  flex-wrap: wrap;
+}
+.p-coupon-applied-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 .p-coupon-check {
   color: #52c98a;
@@ -315,11 +321,12 @@
   font-size: 14px;
   flex-shrink: 0;
 }
-.p-coupon-applied span:nth-child(2) {
-  flex: 1;
+.p-coupon-applied-text {
   font-size: 13px;
   color: #52c98a;
-  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .p-coupon-remove {
   background: none;
@@ -332,6 +339,7 @@
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .p-coupon-remove:hover { color: #f87171; border-color: rgba(248,113,113,0.3); }
 
