@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 
 // ── Animated cycling caption (AnyInterview-style) ──────
 const HERO_CAPTIONS = [
-  { line1: 'You will work',          accent: 'until you die.'          },
+  { line1: 'You will work until',          accent: 'you die.'          },
   { line1: 'Is this',                accent: 'what you want?'          },
   { line1: 'Break',                  accent: 'the cycle.'              },
   { line1: 'Find out when you can',  accent: 'stop working.'           },
