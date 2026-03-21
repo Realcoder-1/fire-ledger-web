@@ -1008,3 +1008,14 @@
   border: 1px solid rgba(248,113,113,0.15);
   border-radius: 8px;
 }
+
+.hero-bg,
+.orb,
+.grid-overlay {
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+}

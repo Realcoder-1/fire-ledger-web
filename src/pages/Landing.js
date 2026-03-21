@@ -402,7 +402,13 @@ export default function Landing() {
             Most people never calculate it. The ones who do retire a decade early.
           </p>
           <div className="hero-actions">
-            <button className="btn-primary" onClick={() => navigate('/signup')}>
+            <button
+  className="btn-primary"
+  onClick={() => {
+    console.log('clicked');
+    navigate('/signup');
+  }}
+>
               Find my freedom date →
             </button>
             <button className="btn-ghost" onClick={() => scrollTo('preview')}>

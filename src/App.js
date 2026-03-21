@@ -7,6 +7,7 @@ import Pricing from './pages/Pricing';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import Refund from './pages/Refund';
+import SignUp from './pages/SignUp';
 
 function ProtectedRoute({ children }) {
   const { user, loading, hasSubscription } = useAuth();
@@ -24,6 +25,7 @@ function AppRoutes() {
   const { user, hasSubscription } = useAuth();
   return (
     <Routes>
+<Route path="/signup" element={<SignUp />} />
       <Route path="/"        element={user && hasSubscription ? <Navigate to="/app" /> : <Landing />} />
       <Route path="/signin"  element={user ? (hasSubscription ? <Navigate to="/app" /> : <Navigate to="/pricing" />) : <SignIn />} />
       <Route path="/pricing" element={hasSubscription ? <Navigate to="/app" /> : <Pricing />} />
