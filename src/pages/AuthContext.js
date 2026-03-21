@@ -12,31 +12,19 @@ export function AuthProvider({ children }) {
 
   const checkAccess = async (currentUser) => {
     try {
-      if (!currentUser) {
-        setHasSubscription(false);
-        setIsLifetime(false);
-        return;
-      }
+      if (!currentUser) { setHasSubscription(false); setIsLifetime(false); return; }
       const { data: sub } = await supabase
         .from('subscriptions')
         .select('status, plan_type')
         .eq('user_id', currentUser.id)
         .in('status', ['active', 'trialing'])
         .maybeSingle();
-      if (sub) {
-        setHasSubscription(true);
-        setIsLifetime(sub.plan_type === 'lifetime');
-      } else {
-        setHasSubscription(false);
-        setIsLifetime(false);
-      }
+      if (sub) { setHasSubscription(true); setIsLifetime(sub.plan_type === 'lifetime'); }
+      else { setHasSubscription(false); setIsLifetime(false); }
     } catch (e) {
       console.error('checkAccess error:', e);
-      setHasSubscription(false);
-      setIsLifetime(false);
-    } finally {
-      setAccessChecked(true);
-    }
+      setHasSubscription(false); setIsLifetime(false);
+    } finally { setAccessChecked(true); }
   };
 
   useEffect(() => {
@@ -57,35 +45,28 @@ export function AuthProvider({ children }) {
     options: { redirectTo: window.location.origin + '/app' }
   });
 
+  const signInWithEmail = (email, password) =>
+    supabase.auth.signInWithPassword({ email, password });
+
+  const signUpWithEmail = (email, password) =>
+    supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + '/app' } });
+
+  const resetPassword = (email) =>
+    supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' });
+
   const signOut = () => supabase.auth.signOut();
   const refreshSubscription = () => user && checkAccess(user);
 
-  const signInWithEmail = (email, password) =>
-  supabase.auth.signInWithPassword({ email, password });
+  return (
+    <AuthContext.Provider value={{
+      user, loading, hasSubscription, isLifetime, accessChecked,
+      isTrial: false, trialDaysLeft: 0,
+      signInWithGoogle, signInWithEmail, signUpWithEmail,
+      resetPassword, signOut, refreshSubscription,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-const signUpWithEmail = (email, password) =>
-  supabase.auth.signUp({ email, password });
-
-const resetPassword = (email) =>
-  supabase.auth.resetPasswordForEmail(email);
-
-const signOut = () => supabase.auth.signOut();
-
-return (
-  <AuthContext.Provider
-    value={{
-      user,
-      loading,
-      hasSubscription,
-      isLifetime,
-      accessChecked,
-      signInWithGoogle,
-      signInWithEmail,
-      signUpWithEmail,
-      resetPassword,
-      signOut,
-    }}
-  >
-    {children}
-  </AuthContext.Provider>
-);
+export const useAuth = () => useContext(AuthContext);
