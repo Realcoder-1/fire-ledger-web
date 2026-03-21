@@ -960,8 +960,8 @@ export default function AppDashboard() {
                 {isFinite(activeModeYears) && activeModeYears > 0 && (
                   <div className="fl-fire-hours-row">
                     <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
-{' '}
-<span className="fl-fire-hours-label">working hours until you never have to work again</span>
+                    {' '}
+                    <span className="fl-fire-hours-label">working hours until you never have to work again</span>
                   </div>
                 )}
                 <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{ width: `${activeModeProgress}%` }} /></div>
@@ -1022,11 +1022,11 @@ export default function AppDashboard() {
                 <div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div>
                 <div className="fl-fire-mode-tabs">
                   {[
-                   { id: 'standard', label: 'FIRE' },
-{ id: 'lean', label: 'Lean FIRE' },
-{ id: 'barista', label: 'Barista FIRE', icon: <Icon.Coffee /> },
-{ id: 'coast', label: 'Coast FIRE' },
-{ id: 'fat', label: 'Fat FIRE' },
+                    { id: 'standard', label: 'FIRE' },
+                    { id: 'lean', label: 'Lean FIRE' },
+                    { id: 'barista', label: 'Barista FIRE', icon: <Icon.Coffee /> },
+                    { id: 'coast', label: 'Coast FIRE' },
+                    { id: 'fat', label: 'Fat FIRE' },
                   ].map(m => (
                     <button key={m.id} className={`fl-fire-mode-btn ${fireMode === m.id ? 'active' : ''}`} onClick={() => { setFireMode(m.id); saveSettings(null, null, null, null, null, m.id); }}>
                       {m.icon && <span style={{ marginRight: 4 }}>{m.icon}</span>}{m.label}
@@ -1200,16 +1200,16 @@ export default function AppDashboard() {
                   {/* Working hours remaining */}
                   {isFinite(activeModeYears) && activeModeYears > 0 && (
                     <div className="fl-hours-callout">
-  <span className="fl-hours-callout-num">{workingHoursLeft.toLocaleString()}</span>
-  {' '}
-  <span className="fl-hours-callout-label">working hours until you never have to work again</span>
-</div>
+                      <span className="fl-hours-callout-num">{workingHoursLeft.toLocaleString()}</span>
+                      {' '}
+                      <span className="fl-hours-callout-label">working hours until you never have to work again</span>
+                    </div>
                   )}
 
                   {inflation > 0 && adjFireCalc.years !== fireCalc.years && (
                     <div className="fl-inflation-note">
-  ⚠ Inflation-adjusted: adds <strong style={{margin:'0 4px'}}>{adjFireCalc.years - fireCalc.years} years</strong> vs nominal projection
-</div>
+                      ⚠ Inflation-adjusted: adds <strong style={{ margin: '0 4px' }}>{adjFireCalc.years - fireCalc.years} years</strong> vs nominal projection
+                    </div>
                   )}
                 </div>
               </div>
@@ -1584,7 +1584,7 @@ export default function AppDashboard() {
                     </div>
                   </div>
                 ))}{/* ── Delete all data ── */}
-                <div className="fl-danger-zone" style={{marginTop: 24}}>
+                <div className="fl-danger-zone" style={{ marginTop: 24 }}>
                   <h3 style={{ color: 'var(--red)', marginBottom: 8 }}>Danger Zone</h3>
                   <p style={{ fontSize: 13, color: 'var(--t2)', marginBottom: 12 }}>Permanently delete all your transactions and settings. This cannot be undone.</p>
                   <button className="fl-btn-danger fl-btn-icon" style={{ width: '100%' }} onClick={() => setDeleteConfirm(true)}>
@@ -1592,69 +1592,69 @@ export default function AppDashboard() {
                   </button>
                 </div>
               </div>
+            </div>
+            <div className="fl-settings-card">
+              <h3>Currency</h3>
+              <div className="fl-curr-settings-grid">
+                {Object.entries(CURRENCIES).map(([code, c]) => (
+                  <button key={code} className={`fl-curr-settings-btn ${currency === code ? 'active' : ''}`} onClick={() => { setCurrency(code); saveSettings(null, null, code); showToast(`Currency set to ${code}`); }}>
+                    <span style={{ fontWeight: 700, fontSize: 18 }}>{c.symbol}</span>
+                    <span style={{ fontWeight: 700, fontSize: 13 }}>{code}</span>
+                    <span style={{ fontSize: 11, color: 'var(--t2)' }}>{c.name}</span>
+                  </button>
+                ))}
               </div>
-              <div className="fl-settings-card">
-                <h3>Currency</h3>
-                <div className="fl-curr-settings-grid">
-                  {Object.entries(CURRENCIES).map(([code, c]) => (
-                    <button key={code} className={`fl-curr-settings-btn ${currency === code ? 'active' : ''}`} onClick={() => { setCurrency(code); saveSettings(null, null, code); showToast(`Currency set to ${code}`); }}>
-                      <span style={{ fontWeight: 700, fontSize: 18 }}>{c.symbol}</span>
-                      <span style={{ fontWeight: 700, fontSize: 13 }}>{code}</span>
-                      <span style={{ fontSize: 11, color: 'var(--t2)' }}>{c.name}</span>
-                    </button>
-                  ))}
-                </div>
 
-                <h3 style={{ marginTop: 24, marginBottom: 12 }}>Age</h3>
-                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-                  <div className="fl-fire-field" style={{ flex: 1, marginBottom: 0 }}>
-                    <label>Current Age</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">yr</span>
-                      <input className="fl-fire-input" type="number" placeholder="30" value={currentAge || ''} onChange={e => setCurrentAge(parseInt(e.target.value) || 0)} />
-                    </div>
-                  </div>
-                  <div className="fl-fire-field" style={{ flex: 1, marginBottom: 0 }}>
-                    <label>Retirement Age Goal</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">yr</span>
-                      <input className="fl-fire-input" type="number" placeholder="45" value={retireAge || ''} onChange={e => setRetireAge(parseInt(e.target.value) || 0)} />
-                    </div>
+              <h3 style={{ marginTop: 24, marginBottom: 12 }}>Age</h3>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                <div className="fl-fire-field" style={{ flex: 1, marginBottom: 0 }}>
+                  <label>Current Age</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">yr</span>
+                    <input className="fl-fire-input" type="number" placeholder="30" value={currentAge || ''} onChange={e => setCurrentAge(parseInt(e.target.value) || 0)} />
                   </div>
                 </div>
-                <button className="fl-btn-ghost" style={{ width: '100%', marginBottom: 16 }} onClick={() => { saveSettings(null, null, null, currentAge, retireAge, null); showToast('Age settings saved'); }}>Save age settings</button>
-
-                <h3 style={{ marginTop: 8, marginBottom: 16 }}>Account</h3>
-                <div className="fl-account-row">
-                  <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-                  <div><div style={{ fontWeight: 600, fontSize: 14 }}>{user?.email}</div><div style={{ fontSize: 12, color: 'var(--t2)', marginTop: 2 }}>{isLifetime ? 'Lifetime · Session only' : 'Pro · Cloud sync active'}</div></div>
+                <div className="fl-fire-field" style={{ flex: 1, marginBottom: 0 }}>
+                  <label>Retirement Age Goal</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">yr</span>
+                    <input className="fl-fire-input" type="number" placeholder="45" value={retireAge || ''} onChange={e => setRetireAge(parseInt(e.target.value) || 0)} />
+                  </div>
                 </div>
-                {isLifetime && (
-                  <div className="fl-upgrade-card">
-                    <div className="fl-upgrade-card-top">
-                      <span className="fl-upgrade-card-title">Upgrade to cloud sync</span>
-                      <span className="fl-upgrade-card-badge">Save your data</span>
-                    </div>
-                    <p className="fl-upgrade-card-body">
-                      Your data clears every session on the Lifetime plan. Upgrade to Monthly or Annual to save everything permanently — transactions, settings, and history.
-                    </p>
-                    <div className="fl-upgrade-card-options">
-                      <a href="/pricing" className="fl-upgrade-option">
-                        <span className="fl-upgrade-option-price">$4.99<span>/mo</span></span>
-                        <span className="fl-upgrade-option-label">Monthly</span>
-                      </a>
-                      <a href="/pricing" className="fl-upgrade-option fl-upgrade-option-featured">
-                        <span className="fl-upgrade-option-price">$59.99<span>/yr</span></span>
-                        <span className="fl-upgrade-option-label">Annual · Best value</span>
-                      </a>
-                    </div>
+              </div>
+              <button className="fl-btn-ghost" style={{ width: '100%', marginBottom: 16 }} onClick={() => { saveSettings(null, null, null, currentAge, retireAge, null); showToast('Age settings saved'); }}>Save age settings</button>
+
+              <h3 style={{ marginTop: 8, marginBottom: 16 }}>Account</h3>
+              <div className="fl-account-row">
+                <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
+                <div><div style={{ fontWeight: 600, fontSize: 14 }}>{user?.email}</div><div style={{ fontSize: 12, color: 'var(--t2)', marginTop: 2 }}>{isLifetime ? 'Lifetime · Session only' : 'Pro · Cloud sync active'}</div></div>
+              </div>
+              {isLifetime && (
+                <div className="fl-upgrade-card">
+                  <div className="fl-upgrade-card-top">
+                    <span className="fl-upgrade-card-title">Upgrade to cloud sync</span>
+                    <span className="fl-upgrade-card-badge">Save your data</span>
+                  </div>
+                  <p className="fl-upgrade-card-body">
+                    Your data clears every session on the Lifetime plan. Upgrade to Monthly or Annual to save everything permanently — transactions, settings, and history.
+                  </p>
+                  <div className="fl-upgrade-card-options">
+                    <a href="/pricing" className="fl-upgrade-option">
+                      <span className="fl-upgrade-option-price">$4.99<span>/mo</span></span>
+                      <span className="fl-upgrade-option-label">Monthly</span>
+                    </a>
+                    <a href="/pricing" className="fl-upgrade-option fl-upgrade-option-featured">
+                      <span className="fl-upgrade-option-price">$59.99<span>/yr</span></span>
+                      <span className="fl-upgrade-option-label">Annual · Best value</span>
+                    </a>
+
                   </div>
                 )}
-                <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 16 }} onClick={exportExcel}><Icon.Export />Download report</button>
-                <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 10 }} onClick={signOut}><Icon.LogOut />Sign out</button>
+                  <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 16 }} onClick={exportExcel}><Icon.Export />Download report</button>
+                  <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 10 }} onClick={signOut}><Icon.LogOut />Sign out</button>
 
-                
-              </div>
+
+                </div>
             </div>
           </div>
         )}
