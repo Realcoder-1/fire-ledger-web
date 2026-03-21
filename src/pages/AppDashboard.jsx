@@ -1133,14 +1133,20 @@ export default function AppDashboard() {
                     ))}
                   </div>
 
-                  {fireMode === 'barista' && [
-                    { label: 'Barista FIRE Number', value: fmt(fireCalc.fireNum * 0.5), hint: '50% of full FIRE number', color: 'var(--gold)' },
-                    { label: 'Current Progress', value: $(Math.min((fire.currentSavings / (fireCalc.fireNum * 0.5)) * 100, 100).toFixed(1)} %, hint:'Toward Barista FIRE', color:'var(--purple-light)'},
-                  {label:'Gap Remaining',       value:fmt(Math.max(0,fireCalc.fireNum0.5-fire.currentSavings)), hint:'Still needed', color:'var(--red)'},
-                  {label:'Part-time Income Needed', value:fmt(fire.annualExpenses * 0.5 / 12), hint:'Per month from work', color:'var(--green)'},
-                  {label:'Annual Income (portfolio)', value:fmt(fireCalc.fireNum0.5*(swr/100)), hint:At ${swr}% withdrawal, color:'var(--green)'},
-                  {label:'Freedom Date',        value:fireDate, hint:'Full FIRE date for reference', color:'var(--purple-light)'},
-].map((s,i)=>(
+{fireMode === 'barista' && [
+  { label: 'Barista FIRE Number',      value: fmt(fireCalc.fireNum * 0.5),                                                hint: '50% of full FIRE number',        color: 'var(--gold)' },
+  { label: 'Current Progress',         value: `${Math.min((fire.currentSavings / (fireCalc.fireNum * 0.5)) * 100, 100).toFixed(1)}%`, hint: 'Toward Barista FIRE',  color: 'var(--purple-light)' },
+  { label: 'Gap Remaining',            value: fmt(Math.max(0, fireCalc.fireNum * 0.5 - fire.currentSavings)),             hint: 'Still needed',                   color: 'var(--red)' },
+  { label: 'Part-time Income Needed',  value: fmt(fire.annualExpenses * 0.5 / 12),                                       hint: 'Per month from work',             color: 'var(--green)' },
+  { label: 'Annual Income (portfolio)',value: fmt(fireCalc.fireNum * 0.5 * (swr / 100)),                                 hint: `At ${swr}% withdrawal`,          color: 'var(--green)' },
+  { label: 'Freedom Date',             value: fireDate,                                                                   hint: 'Full FIRE date for reference',   color: 'var(--purple-light)' },
+].map((s, i) => (
+  <div key={i} className="fl-fire-stat">
+    <span className="fl-fire-stat-label">{s.label}</span>
+    <span className="fl-fire-stat-value" style={{ color: s.color, fontSize: 22 }}>{s.value}</span>
+    <span className="fl-fire-stat-hint">{s.hint}</span>
+  </div>
+))}.map((s,i)=>(
                   <div key={i} className="fl-fire-stat">
                     <span className="fl-fire-stat-label">{s.label}</span>
                     <span className="fl-fire-stat-value" style={{ color: s.color, fontSize: 22 }}>{s.value}</span>
