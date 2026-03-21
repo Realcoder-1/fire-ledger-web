@@ -49,7 +49,7 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
 .fl-nav-item.active { background:var(--purple-subtle); color:var(--t1); font-weight:600; }
 .fl-nav-icon { font-size:15px; width:20px; text-align:center; }
 .fl-nav-indicator { position:absolute; right:0; top:50%; transform:translateY(-50%); width:3px; height:18px; background:linear-gradient(var(--purple-light),var(--purple-dark)); border-radius:3px 0 0 3px; }
-.fl-sidebar-footer { display:flex; align-items:center; gap:8px; padding:10px 12px; border-top:1px solid var(--border); margin-top:8px; }
+.fl-sidebar-footer { display:flex; align-items:center; gap:12px; padding:10px 12px; border-top:1px solid var(--border); margin-top:8px; }
 .fl-user-chip { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
 .fl-avatar { width:30px; height:30px; border-radius:50%; flex-shrink:0; background:linear-gradient(135deg,var(--purple-light),var(--purple-dark)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:white; }
 .fl-user-info { display:flex; flex-direction:column; min-width:0; }
@@ -1316,4 +1316,64 @@ white-space: nowrap;
   background: rgba(220,38,38,0.08);
   border: 1px solid rgba(220,38,38,0.2);
   color: var(--red);
+}
+[data-theme="light"] .fl-fire-hero {
+  background: linear-gradient(135deg, #f0ebff 0%, #e8e0ff 100%);
+  border: 1px solid rgba(124,58,237,0.15);
+}
+
+[data-theme="light"] .fl-fire-years {
+  color: #0f0f13;
+}
+
+[data-theme="light"] .fl-fire-date {
+  color: #555560;
+}
+
+[data-theme="light"] .fl-fire-progress-label {
+  color: #555560;
+}
+
+[data-theme="light"] .fl-fire-label {
+  color: #555560;
+}
+
+[data-theme="light"] .fl-title,
+[data-theme="light"] .fl-subtitle {
+  color: #0f0f13;
+}
+
+[data-theme="light"] .fl-nav-item {
+  color: #555560;
+}
+
+[data-theme="light"] .fl-brand-name {
+  color: #0f0f13;
+}
+[data-theme="light"] .fl-fire-ring circle:first-child {
+  stroke: rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .fl-ring-center .fl-ring-pct {
+  color: #0f0f13;
+}
+
+[data-theme="light"] .fl-ring-center .fl-ring-sub {
+  color: #555560;
+}
+[data-theme="light"] .fl-sidebar {
+  background: #ffffff;
+  border-right: 1px solid rgba(0,0,0,0.08);
+}
+
+.fl-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.fl-curr-wrap {
+  display: flex;
+  align-items: center;
 }
