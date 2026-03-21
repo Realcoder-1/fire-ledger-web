@@ -11,10 +11,9 @@ export default function Landing() {
   const [email, setEmail] = useState('');
   const [emailDone, setEmailDone] = useState(false);
 
-  const handleStart = () => {
-    if (user) navigate('/app');
-    else signInWithGoogle();
-  };
+ const handleStart = () => {
+  navigate('/signup');
+};
 
   const handleEmailSubmit = (e) => {
     e.preventDefault();
