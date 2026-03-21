@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import HoursPopup from '../components/HoursPopup';
 import ScrollHint from '../components/ScrollHint';
 import './Landing.css';
-import { supabase } from '../supabaseClient'; // adjust path if needed
+import { supabase } from '../lib/supabase';
 
 // ── Animated cycling caption (AnyInterview-style) ──────
 const HERO_CAPTIONS = [
