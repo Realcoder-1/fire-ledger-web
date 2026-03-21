@@ -941,7 +941,7 @@ export default function AppDashboard() {
                   )}
                 </div>
                 <div className="fl-fire-years">
-                  {activeModeYears === Infinity || activeModeYears === 0 && fireMode === 'coast' && coastReached ? '—' : activeModeYears}
+                  {(activeModeYears === Infinity || (activeModeYears === 0 && fireMode === 'coast' && coastReached)) ? '—' : activeModeYears}
                   <span className="fl-fire-years-unit">
                     {fireMode === 'coast' && coastReached ? ' coast reached' : activeModeYears !== Infinity ? ' years away' : ''}
                   </span>
