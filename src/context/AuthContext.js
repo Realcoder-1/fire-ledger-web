@@ -4,10 +4,8 @@ import { supabase } from '../lib/supabase';
 const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
-const signInWithEmail = (email, password) =>
   supabase.auth.signInWithPassword({ email, password });
 
-const signUpWithEmail = (email, password) =>
   supabase.auth.signUp({ email, password });
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
