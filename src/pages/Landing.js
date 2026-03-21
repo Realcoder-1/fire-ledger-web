@@ -303,6 +303,7 @@ export default function Landing() {
   const [navScrolled, setNavScrolled] = useState(false);
   const [openFaq,     setOpenFaq]     = useState(null);
   const [email, setEmail] = useState('');
+const [waitlistMessage, setWaitlistMessage] = useState('');
 
   useEffect(() => {
     if (!localStorage.getItem(POPUP_KEY)) {
@@ -756,7 +757,11 @@ export default function Landing() {
   <button
     className="btn-primary"
     onClick={async () => {
-      if (!email) return alert('Enter email');
+      if (!email) {
+        setWaitlistMessage('Enter your email');
+        setTimeout(() => setWaitlistMessage(''), 5000);
+        return;
+      }
 
       const { error } = await supabase
         .from('waitlist')
@@ -764,17 +769,26 @@ export default function Landing() {
 
       if (error) {
         console.error(error);
-        alert('Something went wrong');
+        setWaitlistMessage('Something went wrong');
       } else {
-        alert('You’re on the list');
+        setWaitlistMessage('You are on your way to early retirement');
         setEmail('');
       }
+
+      // Clear message after 5s
+      setTimeout(() => setWaitlistMessage(''), 5000);
     }}
   >
     Join waitlist →
   </button>
-</div>
-        <p style={{fontSize:12,color:'#8888aa',marginTop:12}}>No credit card · No commitment · Just the truth about your timeline</p>
+
+  {/* Inline message */}
+  {waitlistMessage && (
+    <div style={{ marginTop: 8, fontSize: 14, color: '#52c98a' }}>
+      {waitlistMessage}
+    </div>
+  )}
+</div>        <p style={{fontSize:12,color:'#8888aa',marginTop:12}}>No credit card · No commitment · Just the truth about your timeline</p>
       </section>
 
       {/* FOOTER + CONTACT */}
