@@ -534,7 +534,7 @@ useEffect(() => {
 
   const saveSettings = async (fs, cc, cur, age, retire, fm) => {
     if (isLifetime) return;
-    await supabase.from('user_settings').upsert({
+    const { error } = await supabase.from('user_settings').upsert({
       user_id: userId,
       fire_settings: fs || fire,
       custom_categories: cc || cats,
@@ -544,6 +544,7 @@ useEffect(() => {
       fire_mode: fm !== undefined ? fm : fireMode,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
+    if (error) console.error('saveSettings error:', error);
   };
 
   const addTx = async () => {
