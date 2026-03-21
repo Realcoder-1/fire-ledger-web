@@ -62,7 +62,8 @@ export function AuthProvider({ children }) {
   });
 
   // ── Email / Password ──────────────────────────────────
-  const signUpWithEmail = (email, password) =>
+  // eslint-disable-next-line no-unused-vars
+const signUpWithEmail = (email, password) =>
   supabase.auth.signUp({
     email,
     password,
@@ -70,8 +71,8 @@ export function AuthProvider({ children }) {
       emailRedirectTo: window.location.origin + '/app'
     }
   });
-
-  const signInWithEmail = (email, password) =>
+ // eslint-disable-next-line no-unused-vars
+const signInWithEmail = (email, password) =>
     supabase.auth.signInWithPassword({ email, password });
 
   const resetPassword = (email) =>
