@@ -83,7 +83,7 @@ export function AuthProvider({ children }) {
   const refreshSubscription = () => user && checkAccess(user);
 
   return (
-    <AuthContext.Provider value={{ user, loading, hasSubscription, signInWithGoogle, signOut, refreshSubscription, signInWithEmail, signUpWithEmail }}>
+<AuthContext.Provider value={{ user, loading, hasSubscription, isLifetime, accessChecked, signInWithGoogle, signOut, refreshSubscription, signInWithEmail, signUpWithEmail, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
