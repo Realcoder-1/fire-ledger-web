@@ -61,4 +61,10 @@ export function AuthProvider({ children }) {
   const refreshSubscription = () => user && checkAccess(user);
 
   return (
-    <AuthCon
+    <AuthContext.Provider value={{ user, loading, hasSubscription, isLifetime, accessChecked, signInWithGoogle, signOut, refreshSubscription }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export const useAuth = () => useContext(AuthContext);
