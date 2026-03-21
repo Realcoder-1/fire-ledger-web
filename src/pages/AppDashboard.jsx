@@ -445,7 +445,7 @@ function GuidePage() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
-  const { user, signOut, isTrial, trialDaysLeft, isLifetime } = useAuth();
+  const { user, signOut, isTrial, trialDaysLeft } = useAuth();
 
   const [tab,           setTab]         = useState('home');
   const [txs,           setTxs]         = useState([]);
