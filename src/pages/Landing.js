@@ -740,9 +740,22 @@ export default function Landing() {
       <section className="final-cta-section">
         <h2 className="final-cta-title">The question is simple.<br/>When can you stop working?</h2>
         <p className="final-cta-sub">Most people go their whole careers without ever calculating it. You now have a tool that answers it in five minutes — and keeps the answer updated every week.</p>
-        <button className="btn-primary" style={{fontSize:17,padding:'16px 40px'}} onClick={() => navigate('/signup')}>
-          Find my freedom date →
-        </button>
+        <div className="email-capture">
+  <input
+    type="email"
+    placeholder="Enter your email"
+    className="email-input"
+  />
+  <button
+    className="btn-primary"
+    onClick={() => {
+      // TODO: connect to backend / email service
+      alert('Subscribed');
+    }}
+  >
+    Join waitlist →
+  </button>
+</div>
         <p style={{fontSize:12,color:'#8888aa',marginTop:12}}>No credit card · No commitment · Just the truth about your timeline</p>
       </section>
 

@@ -1019,3 +1019,30 @@
   position: relative;
   z-index: 10;
 }
+
+.email-capture {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.email-input {
+  padding: 14px 16px;
+  font-size: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  min-width: 260px;
+  outline: none;
+}
+
+.email-input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.email-input:focus {
+  border-color: #a78bfa;
+}
