@@ -1168,7 +1168,7 @@ export default function AppDashboard() {
                         { label: 'Coast FIRE Number', value: fmt(coastAmt), hint: 'Needed now to coast', color: 'var(--gold)' },
                         { label: 'Current Savings', value: fmt(fire.currentSavings), hint: 'What you have today', color: coastReached ? 'var(--green)' : 'var(--t1)' },
                         { label: 'Gap to Coast', value: coastReached ? 'Reached ✓' : fmt(Math.max(0, coastAmt - fire.currentSavings)), hint: coastReached ? 'Stop contributing — compound does the rest' : 'Still needed', color: coastReached ? 'var(--green)' : 'var(--red)' },
-             hint: `You'd be ${coastReached ? currentAge : displayAgeAtFIRE} when you stop working`,
+                        { label: 'Age at Freedom', value: coastReached ? currentAge : displayAgeAtFIRE, hint: `You'd be ${coastReached ? currentAge : displayAgeAtFIRE} when you stop working`,
                         { label: 'Annual Income', value: fmt(modeIncome), hint: `At ${swr}% withdrawal`, color: 'var(--green)' },
                         { label: 'Monthly Income', value: fmt(modeIncome / 12), hint: 'Per month in retirement', color: 'var(--green)' },
                       ] : fireMode === 'barista' ? [
