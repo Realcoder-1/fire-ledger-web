@@ -744,19 +744,7 @@ export default function AppDashboard() {
             </button>
           ))}
         </nav>
-        <div className="fl-sidebar-footer">
-          {isTrial && (
-            <div className="fl-trial-banner">
-              <div className="fl-trial-days">
-                <span className="fl-trial-num">{trialDaysLeft}</span>
-                <span className="fl-trial-label">day{trialDaysLeft!==1?'s':''} left</span>
-              </div>
-              <div className="fl-trial-info">
-                <span>Free trial</span>
-                <a href="/pricing" className="fl-trial-upgrade">Upgrade →</a>
-              </div>
-            </div>
-          )}
+                 )}
           <div className="fl-user-chip">
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
