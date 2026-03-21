@@ -1,48 +1,19 @@
-﻿import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-
-const AuthContext = createContext({});
-
-export function AuthProvider({ children }) {
-  const [user,            setUser]            = useState(null);
-  const [loading,         setLoading]         = useState(true);
-  const [hasSubscription, setHasSubscription] = useState(false);
-  const [isLifetime,      setIsLifetime]      = useState(false);
-  const [accessChecked,   setAccessChecked]   = useState(false);
-
-  const checkAccess = async (currentUser) => {
-    try {
-      if (!currentUser) { setHasSubscription(false); setIsLifetime(false); return; }
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('status, plan_type')
-        .eq('user_id', currentUser.id)
-        .in('status', ['active', 'trialing'])
-        .maybeSingle();
-      if (sub) { setHasSubscription(true); setIsLifetime(sub.plan_type === 'lifetime');
-
-@"
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
-  const [user,            setUser]            = useState(null);
-  const [loading,         setLoading]         = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
-  const [isLifetime,      setIsLifetime]      = useState(false);
-  const [accessChecked,   setAccessChecked]   = useState(false);
+  const [isLifetime, setIsLifetime] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
 
   const checkAccess = async (currentUser) => {
     try {
       if (!currentUser) { setHasSubscription(false); setIsLifetime(false); return; }
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('status, plan_type')
-        .eq('user_id', currentUser.id)
-        .in('status', ['active', 'trialing'])
-        .maybeSingle();
+      const { data: sub } = await supabase.from('subscriptions').select('status, plan_type').eq('user_id', currentUser.id).in('status', ['active', 'trialing']).maybeSingle();
       if (sub) { setHasSubscription(true); setIsLifetime(sub.plan_type === 'lifetime'); }
       else { setHasSubscription(false); setIsLifetime(false); }
     } catch (e) {
@@ -64,30 +35,15 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = () => supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin + '/app' }
-  });
-
-  const signInWithEmail = (email, password) =>
-    supabase.auth.signInWithPassword({ email, password });
-
-  const signUpWithEmail = (email, password) =>
-    supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + '/app' } });
-
-  const resetPassword = (email) =>
-    supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' });
-
+  const signInWithGoogle = () => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/app' } });
+  const signInWithEmail = (email, password) => supabase.auth.signInWithPassword({ email, password });
+  const signUpWithEmail = (email, password) => supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + '/app' } });
+  const resetPassword = (email) => supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' });
   const signOut = () => supabase.auth.signOut();
   const refreshSubscription = () => user && checkAccess(user);
 
   return (
-    <AuthContext.Provider value={{
-      user, loading, hasSubscription, isLifetime, accessChecked,
-      isTrial: false, trialDaysLeft: 0,
-      signInWithGoogle, signInWithEmail, signUpWithEmail,
-      resetPassword, signOut, refreshSubscription,
-    }}>
+    <AuthContext.Provider value={{ user, loading, hasSubscription, isLifetime, accessChecked, isTrial: false, trialDaysLeft: 0, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, signOut, refreshSubscription }}>
       {children}
     </AuthContext.Provider>
   );
