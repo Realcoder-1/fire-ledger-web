@@ -932,13 +932,14 @@ export default function AppDashboard() {
             <div className="fl-fire-hero">
               <div className="fl-fire-hero-left">
                 <div className="fl-fire-label">
-                  {fireMode === 'standard' ? 'Financial Independence' : fireMode === 'lean' ? 'Lean FIRE' : fireMode === 'fat' ? 'Fat FIRE' : fireMode === 'coast' ? 'Coast FIRE' : 'Barista FIRE'}
-                  {' · '}{CURRENCIES[currency].symbol} {currency}
-                  {fireMode !== 'standard' && (
-                    <button className="fl-fire-mode-badge-btn" onClick={() => setTab('fire')} title="Change FIRE mode">
-                      {fireMode === 'lean' ? 'Lean' : fireMode === 'fat' ? 'Fat' : fireMode === 'coast' ? 'Coast' : 'Barista'}
-                    </button>
-                  )}
+  {fireMode === 'standard' ? 'Financial Independence' : fireMode === 'lean' ? 'Lean FIRE' : fireMode === 'fat' ? 'Fat FIRE' : fireMode === 'coast' ? 'Coast FIRE' : 'Barista FIRE'}
+  {' · '}{CURRENCIES[currency].symbol} {currency}
+</div>
+{fireMode !== 'standard' && (
+  <button className="fl-fire-mode-badge-btn" onClick={() => setTab('fire')} title="Change FIRE mode" style={{marginBottom: 4}}>
+    {fireMode === 'lean' ? 'Lean' : fireMode === 'fat' ? 'Fat' : fireMode === 'coast' ? 'Coast' : 'Barista'}
+  </button>
+)}
                 </div>
                 <div className="fl-fire-years">
                   {(activeModeYears === Infinity || (activeModeYears === 0 && fireMode === 'coast' && coastReached)) ? '—' : activeModeYears}
@@ -953,10 +954,10 @@ export default function AppDashboard() {
                   }
                 </div>
                 {fireMode === 'barista' && (
-                  <div className="fl-fire-barista-note">
-                    Work part-time earning {fmt(baristaPartTimeIncome)}/yr · portfolio covers the rest
-                  </div>
-                )}
+  <div className="fl-fire-barista-note" style={{marginTop: 6, fontSize: 13}}>
+    Work part-time earning {fmt(baristaPartTimeIncome)}/yr · portfolio covers the rest
+  </div>
+)}
                 {isFinite(activeModeYears) && activeModeYears > 0 && (
                   <div className="fl-fire-hours-row">
                     <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
