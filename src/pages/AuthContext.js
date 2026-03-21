@@ -53,4 +53,39 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signInWithGoogle = () => supabase.auth.signInWithOAuth({
-    provider:
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/app' }
+  });
+
+  const signOut = () => supabase.auth.signOut();
+  const refreshSubscription = () => user && checkAccess(user);
+
+  const signInWithEmail = (email, password) =>
+  supabase.auth.signInWithPassword({ email, password });
+
+const signUpWithEmail = (email, password) =>
+  supabase.auth.signUp({ email, password });
+
+const resetPassword = (email) =>
+  supabase.auth.resetPasswordForEmail(email);
+
+const signOut = () => supabase.auth.signOut();
+
+return (
+  <AuthContext.Provider
+    value={{
+      user,
+      loading,
+      hasSubscription,
+      isLifetime,
+      accessChecked,
+      signInWithGoogle,
+      signInWithEmail,
+      signUpWithEmail,
+      resetPassword,
+      signOut,
+    }}
+  >
+    {children}
+  </AuthContext.Provider>
+);
