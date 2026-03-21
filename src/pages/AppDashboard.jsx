@@ -434,7 +434,7 @@ function GuidePage() {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
   const { user, signOut, isLifetime } = useAuth();
-
+const [darkMode, setDarkMode] = useState(true);
   const [tab, setTab] = useState('home');
   const [txs, setTxs] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -528,6 +528,9 @@ export default function AppDashboard() {
     window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAdd, form]);
+useEffect(() => {
+  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+}, [darkMode]);
 
   const saveSettings = async (fs, cc, cur, age, retire, fm) => {
     if (isLifetime) return;
@@ -901,6 +904,9 @@ export default function AppDashboard() {
             <button className="fl-curr-btn" onClick={() => setShowCurrMenu(p => !p)}>{currency}</button>
             {showCurrMenu && <div className="fl-curr-menu">{Object.entries(CURRENCIES).map(([code, c]) => <button key={code} className={`fl-curr-opt ${currency === code ? 'active' : ''}`} onClick={() => { setCurrency(code); saveSettings(null, null, code); setShowCurrMenu(false); showToast(`Currency: ${code}`) }}>{c.symbol} {code}</button>)}</div>}
           </div>
+<button className="fl-signout" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
+  {darkMode ? '☀️' : '🌙'}
+</button>
           <button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
         </div>
       </aside>

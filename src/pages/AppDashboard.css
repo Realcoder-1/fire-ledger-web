@@ -1254,3 +1254,66 @@ white-space: nowrap;
   box-shadow: var(--shadow);
   margin-bottom: 40px;
 }
+[data-theme="light"] {
+  --bg:           #f4f4f8;
+  --surface:      #ffffff;
+  --surface2:     #ebebf0;
+  --border:       rgba(0,0,0,0.08);
+  --t1:           #0f0f13;
+  --t2:           #555560;
+  --t3:           #999;
+  --purple-light: #7c3aed;
+  --purple-dark:  #5b21b6;
+  --green:        #16a34a;
+  --red:          #dc2626;
+  --gold:         #b45309;
+  --pink:         #db2777;
+  --blue:         #2563eb;
+}
+
+[data-theme="light"] .fl-shell {
+  background: var(--bg);
+  color: var(--t1);
+}
+
+[data-theme="light"] .fl-sidebar {
+  background: #ffffff;
+  border-right: 1px solid var(--border);
+}
+
+[data-theme="light"] .fl-main {
+  background: var(--bg);
+}
+
+[data-theme="light"] .fl-metric-card,
+[data-theme="light"] .fl-fire-hero,
+[data-theme="light"] .fl-insight-card,
+[data-theme="light"] .fl-proj-card,
+[data-theme="light"] .fl-mc-card,
+[data-theme="light"] .fl-export-card,
+[data-theme="light"] .fl-settings-card,
+[data-theme="light"] .fl-tx-card,
+[data-theme="light"] .fl-modal {
+  background: #ffffff;
+  border: 1px solid var(--border);
+}
+
+[data-theme="light"] .fl-nav-item {
+  color: var(--t2);
+}
+
+[data-theme="light"] .fl-nav-item.active {
+  color: var(--purple-light);
+  background: rgba(124,58,237,0.08);
+}
+
+[data-theme="light"] .fl-btn-primary {
+  background: var(--purple-light);
+  color: #fff;
+}
+
+[data-theme="light"] .fl-fire-hours-row {
+  background: rgba(220,38,38,0.08);
+  border: 1px solid rgba(220,38,38,0.2);
+  color: var(--red);
+}
