@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import './SignIn.css';
 
 export default function SignIn() {
-  const { user, hasSubscription, signInWithGoogle } = useAuth();
+  const { user, hasSubscription, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const navigate = useNavigate();
 
   const [mode,     setMode]     = useState('login');  // 'login' | 'signup'
@@ -26,21 +26,20 @@ export default function SignIn() {
     if (!email || !password) { setError('Please enter your email and password.'); return; }
 
     if (mode === 'signup') {
-      if (password !== confirm) { setError('Passwords do not match.'); return; }
-      if (password.length < 8)  { setError('Password must be at least 8 characters.'); return; }
-      setLoading(true);
-      const { error: err } = await supabase.auth.signUp({ email, password });
-      setLoading(false);
-      if (err) { setError(err.message); return; }
-      setSuccess('Account created! Check your email to confirm, then sign in.');
-      setMode('login');
-    } else {
-      setLoading(true);
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-      setLoading(false);
-      if (err) { setError('Incorrect email or password.'); return; }
-      // useEffect will redirect
-    }
+  if (password !== confirm) { setError('Passwords do not match.'); return; }
+  if (password.length < 8)  { setError('Password must be at least 8 characters.'); return; }
+  setLoading(true);
+  const { error: err } = await signUpWithEmail(email, password);
+  setLoading(false);
+  if (err) { setError(err.message); return; }
+  setSuccess('Account created! Check your email to confirm, then sign in.');
+  setMode('login');
+} else {
+  setLoading(true);
+  const { error: err } = await signInWithEmail(email, password);
+  setLoading(false);
+  if (err) { setError('Incorrect email or password.'); return; }
+}
   };
 
   return (
