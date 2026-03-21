@@ -960,7 +960,8 @@ export default function AppDashboard() {
                 {isFinite(activeModeYears) && activeModeYears > 0 && (
                   <div className="fl-fire-hours-row">
                     <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
-                    <span className="fl-fire-hours-label">working hours until you never have to work again</span>
+{' '}
+<span className="fl-fire-hours-label">working hours until you never have to work again</span>
                   </div>
                 )}
                 <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{ width: `${activeModeProgress}%` }} /></div>
@@ -1021,11 +1022,11 @@ export default function AppDashboard() {
                 <div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div>
                 <div className="fl-fire-mode-tabs">
                   {[
-                    { id: 'standard', label: 'FIRE' },
-                    { id: 'lean', label: 'Lean FIRE' },
-                    { id: 'fat', label: 'Fat FIRE' },
-                    { id: 'coast', label: 'Coast FIRE' },
-                    { id: 'barista', label: 'Barista FIRE', icon: <Icon.Coffee /> },
+                   { id: 'standard', label: 'FIRE' },
+{ id: 'lean', label: 'Lean FIRE' },
+{ id: 'barista', label: 'Barista FIRE', icon: <Icon.Coffee /> },
+{ id: 'coast', label: 'Coast FIRE' },
+{ id: 'fat', label: 'Fat FIRE' },
                   ].map(m => (
                     <button key={m.id} className={`fl-fire-mode-btn ${fireMode === m.id ? 'active' : ''}`} onClick={() => { setFireMode(m.id); saveSettings(null, null, null, null, null, m.id); }}>
                       {m.icon && <span style={{ marginRight: 4 }}>{m.icon}</span>}{m.label}
@@ -1199,17 +1200,16 @@ export default function AppDashboard() {
                   {/* Working hours remaining */}
                   {isFinite(activeModeYears) && activeModeYears > 0 && (
                     <div className="fl-hours-callout">
-                      <span className="fl-hours-callout-num">{workingHoursLeft.toLocaleString()}</span>
-                      <span className="fl-hours-callout-label">working hours until you never have to work again</span>
-                    </div>
+  <span className="fl-hours-callout-num">{workingHoursLeft.toLocaleString()}</span>
+  {' '}
+  <span className="fl-hours-callout-label">working hours until you never have to work again</span>
+</div>
                   )}
 
                   {inflation > 0 && adjFireCalc.years !== fireCalc.years && (
                     <div className="fl-inflation-note">
-                      <span>⚠ Inflation-adjusted: adds </span>
-                      <strong>{adjFireCalc.years - fireCalc.years} years</strong>
-                      <span> vs nominal projection</span>
-                    </div>
+  ⚠ Inflation-adjusted: adds <strong style={{margin:'0 4px'}}>{adjFireCalc.years - fireCalc.years} years</strong> vs nominal projection
+</div>
                   )}
                 </div>
               </div>
@@ -1583,7 +1583,15 @@ export default function AppDashboard() {
                       <input className="fl-cat-add-input" placeholder="Add category" onKeyDown={e => { if (e.key === 'Enter' && e.target.value.trim()) { const u = { ...cats, [type]: [...cats[type], e.target.value.trim()] }; setCats(u); saveSettings(null, u, null); e.target.value = ''; showToast('Category added'); } }} />
                     </div>
                   </div>
-                ))}
+                ))}{/* ── Delete all data ── */}
+                <div className="fl-danger-zone" style={{marginTop: 24}}>
+                  <h3 style={{ color: 'var(--red)', marginBottom: 8 }}>Danger Zone</h3>
+                  <p style={{ fontSize: 13, color: 'var(--t2)', marginBottom: 12 }}>Permanently delete all your transactions and settings. This cannot be undone.</p>
+                  <button className="fl-btn-danger fl-btn-icon" style={{ width: '100%' }} onClick={() => setDeleteConfirm(true)}>
+                    <Icon.Trash />Delete all my data
+                  </button>
+                </div>
+              </div>
               </div>
               <div className="fl-settings-card">
                 <h3>Currency</h3>
@@ -1645,14 +1653,7 @@ export default function AppDashboard() {
                 <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 16 }} onClick={exportExcel}><Icon.Export />Download report</button>
                 <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 10 }} onClick={signOut}><Icon.LogOut />Sign out</button>
 
-                {/* ── Delete all data ── */}
-                <div className="fl-danger-zone">
-                  <h3 style={{ color: 'var(--red)', marginBottom: 8 }}>Danger Zone</h3>
-                  <p style={{ fontSize: 13, color: 'var(--t2)', marginBottom: 12 }}>Permanently delete all your transactions and settings. This cannot be undone.</p>
-                  <button className="fl-btn-danger fl-btn-icon" style={{ width: '100%' }} onClick={() => setDeleteConfirm(true)}>
-                    <Icon.Trash />Delete all my data
-                  </button>
-                </div>
+                
               </div>
             </div>
           </div>
