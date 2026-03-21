@@ -742,7 +742,7 @@ export default function Landing() {
       <section className="final-cta-section">
         <h2 className="final-cta-title">The question is simple.<br/>When can you stop working?</h2>
         <p className="final-cta-sub">Most people go their whole careers without ever calculating it. You now have a tool that answers it in five minutes — and keeps the answer updated every week.</p>
-       const [email, setEmail] = useState('');
+       
 
 <div className="email-capture">
   <input
