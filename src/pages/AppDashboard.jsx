@@ -612,10 +612,10 @@ useEffect(() => {
     setFire({ annualExpenses: 40000, annualSavings: 20000, currentSavings: 50000 });
     setCats(DEFAULT_CATS);
     setDeleteConfirm(false);
-    showToast('All data deleted', 'error');
-    // Re-show onboarding since settings are gone
-    setOnboardStep(0);
-    setShowOnboard(true);
+   showToast('All data deleted', 'error');
+sessionStorage.removeItem(`fl_onboarded_${userId}`);
+setOnboardStep(0);
+setShowOnboard(true);
   };
 
   const handleImportFile = e => {
