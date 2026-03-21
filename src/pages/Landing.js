@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import HoursPopup from '../components/HoursPopup';
 import ScrollHint from '../components/ScrollHint';
 import './Landing.css';
+import { useState } from 'react';
+import { supabase } from '../supabaseClient'; // adjust path if needed
 
 // ── Animated cycling caption (AnyInterview-style) ──────
 const HERO_CAPTIONS = [
@@ -740,17 +742,33 @@ export default function Landing() {
       <section className="final-cta-section">
         <h2 className="final-cta-title">The question is simple.<br/>When can you stop working?</h2>
         <p className="final-cta-sub">Most people go their whole careers without ever calculating it. You now have a tool that answers it in five minutes — and keeps the answer updated every week.</p>
-        <div className="email-capture">
+       const [email, setEmail] = useState('');
+
+<div className="email-capture">
   <input
     type="email"
     placeholder="Enter your email"
     className="email-input"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
   />
+
   <button
     className="btn-primary"
-    onClick={() => {
-      // TODO: connect to backend / email service
-      alert('Subscribed');
+    onClick={async () => {
+      if (!email) return alert('Enter email');
+
+      const { error } = await supabase
+        .from('waitlist')
+        .insert([{ email }]);
+
+      if (error) {
+        console.error(error);
+        alert('Something went wrong');
+      } else {
+        alert('You’re on the list');
+        setEmail('');
+      }
     }}
   >
     Join waitlist →
