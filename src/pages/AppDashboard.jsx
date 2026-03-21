@@ -964,7 +964,7 @@ useEffect(() => {
                   </div>
                 )}
                 {isFinite(activeModeYears) && activeModeYears > 0 && (
-               <div className="fl-fire-hours-row" style={{maxWidth: 420}}>
+               <div className="fl-fire-hours-row" style={{maxWidth: '55%'}}>
   <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
   {' '}
   <span className="fl-fire-hours-label">working hours until you never have to work again</span>
@@ -973,9 +973,8 @@ useEffect(() => {
                 <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{ width: `${activeModeProgress}%` }} /></div>
                 <div className="fl-fire-progress-label">{activeModeProgress.toFixed(1)}% of the way there &nbsp;·&nbsp; {fmt(fire.currentSavings)} of {fmt(activeModeNum)}</div>
               </div>
-              <div className="fl-fire-hero-right">
-                <svg viewBox="0 0 200 200" className="fl-fire-ring" style={{width: 200, height: 200}}>
-  <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="14" />
+<div className="fl-fire-hero-right" style={{display:'flex', alignItems:'center', justifyContent:'center', minWidth: 200}}>
+  <svg viewBox="0 0 200 200" className="fl-fire-ring" style={{width: 180, height: 180}}>  <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="14" />
   <circle cx="100" cy="100" r="82" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="14" strokeDasharray="515" strokeDashoffset={515 - (515 * activeModeProgress / 100)} strokeLinecap="round" transform="rotate(-90 100 100)" />strokeDasharray="352" strokeDashoffset={352 - (352 * activeModeProgress / 100)} strokeLinecap="round" transform="rotate(-90 70 70)" />
                   <defs><linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--purple-light)" /><stop offset="100%" stopColor="var(--purple-dark)" /></linearGradient></defs>
                 </svg>
