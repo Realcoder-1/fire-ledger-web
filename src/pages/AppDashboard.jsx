@@ -32,6 +32,8 @@ const Icon = {
   Edit:         () => <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9.5V11h1.5l5-5L7 4.5l-5 5zM10.5 3l-.8-.8a.7.7 0 00-1 0L8 2.9l1.5 1.5.7-.7a.7.7 0 000-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>,
   Lightning:    () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9.5 2L4 9h5.5L6.5 14l6.5-7H7.5L9.5 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
   X:            () => <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  Trash:        () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M5 3.5V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M11 3.5l-.8 8a.5.5 0 01-.5.5H4.3a.5.5 0 01-.5-.5L3 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  Coffee:       () => <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 5h8v6a3 3 0 01-3 3H6a3 3 0 01-3-3V5z" stroke="currentColor" strokeWidth="1.4"/><path d="M11 7h1.5A1.5 1.5 0 0114 8.5v0A1.5 1.5 0 0112.5 10H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M6 3c0-1 1-1 1-2M9 3c0-1 1-1 1-2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
 };
 
 // ─── Currency config ──────────────────────────────────────────────────────────
@@ -459,12 +461,14 @@ export default function AppDashboard() {
   const [mcRunning,     setMcRunning]   = useState(false);
   const [projYears,     setProjYears]   = useState(35);
   const [inflation,     setInflation]   = useState(3);
+  // ── Active FIRE mode shared between FIRE calc and dashboard ──
   const [fireMode,      setFireMode]    = useState('standard');
   const [currentAge,    setCurrentAge]  = useState(30);
   const [retireAge,     setRetireAge]   = useState(65);
   const [swr,           setSwr]         = useState(4);
   const [contribMode,   setContribMode] = useState('annual');
   const [contribs,      setContribs]    = useState(0);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [nw, setNw] = useState({ houseValue:0, carValue:0, cashSavings:0, investments:0, otherAssets:0, creditCard:0, studentLoan:0, mortgage:0, personalLoan:0, otherLiabilities:0 });
   const [cg, setCg] = useState({ initial:0, years:10, growthRate:7, inflationRate:3, contribType:'annual', contribution:0, compounding:'annual' });
   const [cgResult, setCgResult] = useState(null);
@@ -476,11 +480,16 @@ export default function AppDashboard() {
 
   const showToast = (msg, type='success') => { setToast({msg,type}); setTimeout(()=>setToast(null),2800); };
 
+  // ── FIX: track onboarding completion separately to prevent repeat on reload ──
   const load = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     if (isLifetime) {
-      setShowOnboard(true);
+      // For lifetime/session users, only show onboard once per session
+      const sessionOnboarded = sessionStorage.getItem(`fl_onboarded_${userId}`);
+      if (!sessionOnboarded) {
+        setShowOnboard(true);
+      }
       setLoading(false);
       return;
     }
@@ -493,7 +502,14 @@ export default function AppDashboard() {
       if (setRes.data.fire_settings)     setFire(setRes.data.fire_settings);
       if (setRes.data.custom_categories) setCats(setRes.data.custom_categories);
       if (setRes.data.currency)          setCurrency(setRes.data.currency);
-    } else { setShowOnboard(true); }
+      if (setRes.data.current_age)       setCurrentAge(setRes.data.current_age);
+      if (setRes.data.retire_age)        setRetireAge(setRes.data.retire_age);
+      if (setRes.data.fire_mode)         setFireMode(setRes.data.fire_mode);
+      // Settings row exists → onboarding was completed, never show again
+    } else {
+      // No settings row → first time ever for this account
+      setShowOnboard(true);
+    }
     setLoading(false);
   }, [userId, isLifetime]);
 
@@ -513,9 +529,18 @@ export default function AppDashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAdd,form]);
 
-  const saveSettings = async (fs, cc, cur) => {
+  const saveSettings = async (fs, cc, cur, age, retire, fm) => {
     if (isLifetime) return;
-    supabase.from('user_settings').upsert({ user_id:userId, fire_settings:fs||fire, custom_categories:cc||cats, currency:cur||currency, updated_at:new Date().toISOString() }, { onConflict:'user_id' });
+    await supabase.from('user_settings').upsert({
+      user_id: userId,
+      fire_settings: fs || fire,
+      custom_categories: cc || cats,
+      currency: cur || currency,
+      current_age: age !== undefined ? age : currentAge,
+      retire_age: retire !== undefined ? retire : retireAge,
+      fire_mode: fm !== undefined ? fm : fireMode,
+      updated_at: new Date().toISOString(),
+    }, { onConflict:'user_id' });
   };
 
   const addTx = async () => {
@@ -565,6 +590,28 @@ export default function AppDashboard() {
     setShowAdd(false); setEditTx(null);
     setForm({ amount:'', description:'', type:'need', category:'', date: new Date().toISOString().split('T')[0], recurring:false });
     setRawAmt('');
+  };
+
+  // ── Delete all user data ──
+  const deleteAllData = async () => {
+    if (isLifetime) {
+      setTxs([]);
+      setDeleteConfirm(false);
+      showToast('Session data cleared');
+      return;
+    }
+    await Promise.all([
+      supabase.from('transactions').delete().eq('user_id', userId),
+      supabase.from('user_settings').delete().eq('user_id', userId),
+    ]);
+    setTxs([]);
+    setFire({ annualExpenses:40000, annualSavings:20000, currentSavings:50000 });
+    setCats(DEFAULT_CATS);
+    setDeleteConfirm(false);
+    showToast('All data deleted', 'error');
+    // Re-show onboarding since settings are gone
+    setOnboardStep(0);
+    setShowOnboard(true);
   };
 
   const handleImportFile = e => {
@@ -659,12 +706,40 @@ export default function AppDashboard() {
   const todayStr = now.toISOString().split('T')[0];
   const todaySpd = txs.filter(t=>t.date===todayStr&&(t.type==='need'||t.type==='want')).reduce((s,t)=>s+t.amount,0);
   const streak   = (()=>{let s=0;for(let i=0;i<30;i++){const d=new Date(now);d.setDate(d.getDate()-i);if(txs.some(t=>t.date===d.toISOString().split('T')[0]))s++;else break;}return s;})();
-  const fireDate = fireCalc.years<100?new Date(now.getFullYear()+fireCalc.years,now.getMonth()).toLocaleString('default',{month:'short',year:'numeric'}):'—';
   const filtered = filterType==='all'?txs:txs.filter(t=>t.type===filterType);
   const gradeRaw = parseFloat(savRate);
   const grade    = gradeRaw>=60?'A+':gradeRaw>=50?'A':gradeRaw>=40?'B':gradeRaw>=30?'C':'D';
   const gradeClr = gradeRaw>=50?'var(--green)':gradeRaw>=35?'var(--gold)':'var(--red)';
   const projPts  = buildProjection(fire.currentSavings,fire.annualSavings,fire.annualExpenses,projYears);
+
+  // ── FIRE mode derived numbers (shared between FIRE Calc and Dashboard) ──
+  const yearsToGrow = Math.max(1, retireAge - currentAge);
+  const annualContrib = contribMode==='monthly' ? contribs*12 : contribs;
+  const leanNum     = fire.annualExpenses * 0.75 * 25;
+  const fatNum      = fire.annualExpenses * 1.5  * 25;
+  const coastAmt    = Math.max(0, (fireCalc.fireNum - annualContrib * ((Math.pow(1.07,yearsToGrow)-1)/0.07)) / Math.pow(1.07, yearsToGrow));
+  const coastReached = fire.currentSavings >= coastAmt;
+  // Barista FIRE: semi-retire, need part-time income to cover ~40% of expenses
+  const baristaPartTimeIncome = fire.annualExpenses * 0.4;
+  const baristaNetExp         = fire.annualExpenses * 0.6;
+  const baristaNum            = baristaNetExp * 25;
+  const baristaReached        = fire.currentSavings >= baristaNum;
+
+  const activeModeNum = fireMode==='lean' ? leanNum : fireMode==='fat' ? fatNum : fireMode==='coast' ? coastAmt : fireMode==='barista' ? baristaNum : fireCalc.fireNum;
+  const activeModeCalc = calcFIRE(
+    fireMode==='lean' ? fire.annualExpenses*0.75 : fireMode==='fat' ? fire.annualExpenses*1.5 : fireMode==='barista' ? baristaNetExp : fire.annualExpenses,
+    fire.annualSavings,
+    fire.currentSavings,
+  );
+  const activeModeProgress = activeModeNum > 0 ? Math.min((fire.currentSavings / activeModeNum)*100, 100) : 0;
+  const activeModeYears    = fireMode==='coast' ? (coastReached ? 0 : activeModeCalc.years) : activeModeCalc.years;
+  const activeModeDate     = activeModeYears < 100 ? new Date(now.getFullYear()+activeModeYears,now.getMonth()).toLocaleString('default',{month:'short',year:'numeric'}) : '—';
+  const ageAtFIRE          = currentAge + (isFinite(activeModeYears) ? activeModeYears : 0);
+  const workingHoursLeft   = isFinite(activeModeYears) && activeModeYears > 0 ? Math.round(activeModeYears*52*40) : 0;
+
+  const realReturn = Math.max(0.001, (1.07 / (1 + inflation/100)) - 1);
+  const adjFireCalc = calcFIRE(fire.annualExpenses, fire.annualSavings, fire.currentSavings, realReturn);
+  const annualIncome = fireCalc.fireNum * (swr/100);
 
   const navMonth = (dir)=>{let m=selMonth+dir,y=selYear;if(m<0){m=11;y--;}else if(m>11){m=0;y++;}setSelMonth(m);setSelYear(y);};
 
@@ -675,11 +750,12 @@ export default function AppDashboard() {
     saving:{label:'Saving', icon:<Icon.ArrowRight/>,color:'var(--gold)', bg:'rgba(251,191,36,0.1)', border:'rgba(251,191,36,0.35)'},
   };
 
+  // ── Nav order: Dashboard → FIRE Calc → Insights → Transactions → … ──
   const NAV_ITEMS = [
     {id:'home',        icon:<Icon.Dashboard/>,    label:'Dashboard'},
-    {id:'transactions',icon:<Icon.Transactions/>, label:'Transactions'},
-    {id:'insights',    icon:<Icon.Insights/>,     label:'Insights'},
     {id:'fire',        icon:<Icon.Fire/>,          label:'FIRE Calc'},
+    {id:'insights',    icon:<Icon.Insights/>,     label:'Insights'},
+    {id:'transactions',icon:<Icon.Transactions/>, label:'Transactions'},
     {id:'projections', icon:<Icon.Projections/>,  label:'Projections'},
     {id:'networth',    icon:<Icon.Wallet/>,        label:'Net Worth'},
     {id:'compound',    icon:<Icon.Lightning/>,     label:'Compound Growth'},
@@ -708,16 +784,47 @@ export default function AppDashboard() {
         </div>
       )}
 
-      {/* ONBOARDING */}
+      {/* ONBOARDING — only shown when no settings row exists (first login) */}
       {showOnboard && (
         <div className="fl-overlay">
           <div className="fl-onboard">
             <div className="ob-brand"><Icon.Flame/><span>FIRELedger</span></div>
-            <div className="ob-progress">{[0,1,2,3].map(i=><div key={i} className={`ob-dot ${onboardStep>=i?'active':''}`}/>)}</div>
-            {onboardStep===0&&<div className="ob-step"><h2>Welcome to FIRELedger</h2><p>Your personal financial independence tracker. Let's set up your profile in 4 steps so your dashboard reflects your actual numbers from day one.</p><button className="fl-btn-primary" onClick={()=>setOnboardStep(1)}>Get started</button></div>}
+            <div className="ob-progress">{[0,1,2,3,4].map(i=><div key={i} className={`ob-dot ${onboardStep>=i?'active':''}`}/>)}</div>
+
+            {onboardStep===0&&<div className="ob-step"><h2>Welcome to FIRELedger</h2><p>Your personal financial independence tracker. Let's set up your profile in 5 steps so your dashboard reflects your actual numbers from day one.</p><button className="fl-btn-primary" onClick={()=>setOnboardStep(1)}>Get started</button></div>}
+
             {onboardStep===1&&<div className="ob-step"><h2>Select your currency</h2><p>All figures will be displayed in your chosen currency.</p><div className="ob-currency-grid">{Object.entries(CURRENCIES).map(([code,c])=><button key={code} className={`ob-currency-btn ${currency===code?'active':''}`} onClick={()=>setCurrency(code)}><span className="ob-curr-code">{code}</span><span className="ob-curr-name">{c.name}</span><span className="ob-curr-sym">{c.symbol}</span></button>)}</div><button className="fl-btn-primary" onClick={()=>setOnboardStep(2)}>Continue</button></div>}
-            {onboardStep===2&&<div className="ob-step"><h2>Annual expenses</h2><p>How much do you expect to spend per year in retirement? This sets your FIRE number (expenses × 25).</p><div className="ob-input-wrap"><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="40000" value={fire.annualExpenses||''} onChange={e=>setFire(p=>({...p,annualExpenses:parseFloat(e.target.value)||0}))}/></div><div className="ob-hint">FIRE target = {fmt(fire.annualExpenses*25)}</div><button className="fl-btn-primary" onClick={()=>setOnboardStep(3)}>Continue</button></div>}
-            {onboardStep===3&&<div className="ob-step"><h2>Your savings</h2><p>Annual savings and total invested so far.</p><div className="ob-input-wrap"><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="Annual savings" value={fire.annualSavings||''} onChange={e=>setFire(p=>({...p,annualSavings:parseFloat(e.target.value)||0}))}/></div><div className="ob-input-wrap" style={{marginTop:10}}><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="Current savings" value={fire.currentSavings||''} onChange={e=>setFire(p=>({...p,currentSavings:parseFloat(e.target.value)||0}))}/></div><div className="ob-hint">{calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years===Infinity?'Set savings to calculate':'Estimated '+calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years+' years to FIRE'}</div><button className="fl-btn-primary" style={{marginTop:12}} onClick={async()=>{await saveSettings(fire,cats,currency);setShowOnboard(false);showToast('Profile saved'); setTimeout(()=>setTourStep(0), 300);}}>Launch dashboard</button></div>}
+
+            {onboardStep===2&&<div className="ob-step">
+              <h2>Your age</h2>
+              <p>Used to calculate when you'll reach financial independence and which FIRE path fits your life stage.</p>
+              <div style={{display:'flex',gap:12,marginBottom:16}}>
+                <div className="ob-input-wrap" style={{flex:1}}>
+                  <span className="ob-sym">Now</span>
+                  <input className="fl-input-lg ob-input" type="number" placeholder="30" value={currentAge||''} onChange={e=>setCurrentAge(parseInt(e.target.value)||0)}/>
+                </div>
+                <div className="ob-input-wrap" style={{flex:1}}>
+                  <span className="ob-sym">Goal</span>
+                  <input className="fl-input-lg ob-input" type="number" placeholder="45" value={retireAge||''} onChange={e=>setRetireAge(parseInt(e.target.value)||0)}/>
+                </div>
+              </div>
+              <div className="ob-hint">
+                {retireAge > currentAge
+                  ? `You want to stop working in ${retireAge - currentAge} years, at age ${retireAge}`
+                  : 'Enter your current age and target retirement age'}
+              </div>
+              <button className="fl-btn-primary" onClick={()=>setOnboardStep(3)}>Continue</button>
+            </div>}
+
+            {onboardStep===3&&<div className="ob-step"><h2>Annual expenses</h2><p>How much do you expect to spend per year in retirement? This sets your FIRE number (expenses × 25).</p><div className="ob-input-wrap"><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="40000" value={fire.annualExpenses||''} onChange={e=>setFire(p=>({...p,annualExpenses:parseFloat(e.target.value)||0}))}/></div><div className="ob-hint">FIRE target = {fmt(fire.annualExpenses*25)}</div><button className="fl-btn-primary" onClick={()=>setOnboardStep(4)}>Continue</button></div>}
+
+            {onboardStep===4&&<div className="ob-step"><h2>Your savings</h2><p>Annual savings and total invested so far.</p><div className="ob-input-wrap"><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="Annual savings" value={fire.annualSavings||''} onChange={e=>setFire(p=>({...p,annualSavings:parseFloat(e.target.value)||0}))}/></div><div className="ob-input-wrap" style={{marginTop:10}}><span className="ob-sym">{sym}</span><input className="fl-input-lg ob-input" type="number" placeholder="Current savings" value={fire.currentSavings||''} onChange={e=>setFire(p=>({...p,currentSavings:parseFloat(e.target.value)||0}))}/></div><div className="ob-hint">{calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years===Infinity?'Set savings to calculate':'Estimated '+calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years+' years to FIRE — you\'d be '+( currentAge + calcFIRE(fire.annualExpenses,fire.annualSavings,fire.currentSavings).years)+' years old'}</div><button className="fl-btn-primary" style={{marginTop:12}} onClick={async()=>{
+              await saveSettings(fire, cats, currency, currentAge, retireAge, fireMode);
+              if (isLifetime) sessionStorage.setItem(`fl_onboarded_${userId}`, '1');
+              setShowOnboard(false);
+              showToast('Profile saved');
+              setTimeout(()=>setTourStep(0), 300);
+            }}>Launch dashboard</button></div>}
           </div>
         </div>
       )}
@@ -732,6 +839,22 @@ export default function AppDashboard() {
                 <div key={i} className="fl-tx-card"><div className="fl-tx-card-badge" style={{background:amtColor(t.type)+'18',color:amtColor(t.type)}}>{TYPE_LABEL[t.type]}</div><div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.date}{t.category?` · ${t.category}`:''}</span></div><span className="fl-tx-card-amount" style={{color:amtColor(t.type)}}>{fmtD(t.amount)}</span></div>
               ))}
               {importPreview.length>0&&<button className="fl-btn-primary" style={{width:'100%',marginTop:8}} onClick={confirmImport}>Import {importAll.length} transactions</button>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRM MODAL */}
+      {deleteConfirm && (
+        <div className="fl-overlay" onClick={()=>setDeleteConfirm(false)}>
+          <div className="fl-modal" style={{maxWidth:420}} onClick={e=>e.stopPropagation()}>
+            <div className="fl-modal-header"><h2>Delete all data</h2><button className="fl-modal-close" onClick={()=>setDeleteConfirm(false)}><Icon.X/></button></div>
+            <div className="fl-modal-body">
+              <p style={{color:'var(--t2)',fontSize:14,marginBottom:20}}>This will permanently delete all your transactions, FIRE settings, and account preferences. This cannot be undone.</p>
+              <div style={{display:'flex',gap:10}}>
+                <button className="fl-btn-ghost" style={{flex:1}} onClick={()=>setDeleteConfirm(false)}>Cancel</button>
+                <button className="fl-btn-danger" style={{flex:1}} onClick={deleteAllData}>Yes, delete everything</button>
+              </div>
             </div>
           </div>
         </div>
@@ -765,15 +888,10 @@ export default function AppDashboard() {
               </div>
             </div>
           )}
-          {/* ── Single upgrade button — no duplicates ── */}
           {isLifetime ? (
-            <a href="/pricing" className="fl-upgrade-btn fl-upgrade-btn-session">
-              Upgrade to save data →
-            </a>
+            <a href="/pricing" className="fl-upgrade-btn fl-upgrade-btn-session">Upgrade to save data →</a>
           ) : (
-            <a href="/pricing" className="fl-upgrade-btn">
-              Manage plan →
-            </a>
+            <a href="/pricing" className="fl-upgrade-btn">Manage plan →</a>
           )}
           <div className="fl-user-chip">
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
@@ -789,7 +907,7 @@ export default function AppDashboard() {
 
       <main className="fl-main" id="fl-main-scroll">
 
-        {/* DASHBOARD */}
+        {/* ── DASHBOARD ── */}
         {tab==='home'&&(
           <div key="home" className="fl-page">
             <div className="fl-page-top">
@@ -810,36 +928,63 @@ export default function AppDashboard() {
               </div>
             )}
 
+            {/* Hero — reflects active FIRE mode */}
             <div className="fl-fire-hero">
               <div className="fl-fire-hero-left">
-                <div className="fl-fire-label">Financial Independence · {CURRENCIES[currency].symbol} {currency}</div>
-                <div className="fl-fire-years">{fireCalc.years===Infinity?'—':fireCalc.years}<span className="fl-fire-years-unit">{fireCalc.years!==Infinity?' years away':''}</span></div>
-                <div className="fl-fire-date">Projected freedom: <strong>{fireDate}</strong></div>
-                {isFinite(fireCalc.years)&&fireCalc.years>0&&(
+                <div className="fl-fire-label">
+                  {fireMode==='standard'?'Financial Independence':fireMode==='lean'?'Lean FIRE':fireMode==='fat'?'Fat FIRE':fireMode==='coast'?'Coast FIRE':'Barista FIRE'}
+                  {' · '}{CURRENCIES[currency].symbol} {currency}
+                  {fireMode!=='standard'&&(
+                    <button className="fl-fire-mode-badge-btn" onClick={()=>setTab('fire')} title="Change FIRE mode">
+                      {fireMode==='lean'?'Lean':fireMode==='fat'?'Fat':fireMode==='coast'?'Coast':'Barista'}
+                    </button>
+                  )}
+                </div>
+                <div className="fl-fire-years">
+                  {activeModeYears===Infinity||activeModeYears===0&&fireMode==='coast'&&coastReached?'—':activeModeYears}
+                  <span className="fl-fire-years-unit">
+                    {fireMode==='coast'&&coastReached?' coast reached':activeModeYears!==Infinity?' years away':''}
+                  </span>
+                </div>
+                <div className="fl-fire-date">
+                  {fireMode==='coast'&&coastReached
+                    ? 'You have reached Coast FIRE — keep contributing and compound does the rest'
+                    : <>Projected freedom: <strong>{activeModeDate}</strong> · age <strong>{isFinite(ageAtFIRE)?ageAtFIRE:'—'}</strong></>
+                  }
+                </div>
+                {fireMode==='barista'&&(
+                  <div className="fl-fire-barista-note">
+                    Work part-time earning {fmt(baristaPartTimeIncome)}/yr · portfolio covers the rest
+                  </div>
+                )}
+                {isFinite(activeModeYears)&&activeModeYears>0&&(
                   <div className="fl-fire-hours-row">
-                    <span className="fl-fire-hours-num">{Math.round(fireCalc.years*52*40).toLocaleString()}</span>
+                    <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
                     <span className="fl-fire-hours-label">working hours until you never have to work again</span>
                   </div>
                 )}
-                <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{width:`${fireCalc.progress}%`}}/></div>
-                <div className="fl-fire-progress-label">{fireCalc.progress.toFixed(1)}% of the way there &nbsp;·&nbsp; {fmt(fire.currentSavings)} of {fmt(fireCalc.fireNum)}</div>
+                <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{width:`${activeModeProgress}%`}}/></div>
+                <div className="fl-fire-progress-label">{activeModeProgress.toFixed(1)}% of the way there &nbsp;·&nbsp; {fmt(fire.currentSavings)} of {fmt(activeModeNum)}</div>
               </div>
               <div className="fl-fire-hero-right">
                 <svg viewBox="0 0 140 140" className="fl-fire-ring">
                   <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="11"/>
-                  <circle cx="70" cy="70" r="56" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="11" strokeDasharray="352" strokeDashoffset={352-(352*fireCalc.progress/100)} strokeLinecap="round" transform="rotate(-90 70 70)"/>
+                  <circle cx="70" cy="70" r="56" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="11" strokeDasharray="352" strokeDashoffset={352-(352*activeModeProgress/100)} strokeLinecap="round" transform="rotate(-90 70 70)"/>
                   <defs><linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--purple-light)"/><stop offset="100%" stopColor="var(--purple-dark)"/></linearGradient></defs>
                 </svg>
-                <div className="fl-ring-center"><span className="fl-ring-pct">{fireCalc.progress.toFixed(0)}%</span><span className="fl-ring-sub">to FIRE</span></div>
+                <div className="fl-ring-center">
+                  <span className="fl-ring-pct">{activeModeProgress.toFixed(0)}%</span>
+                  <span className="fl-ring-sub">to {fireMode==='lean'?'Lean ':fireMode==='fat'?'Fat ':fireMode==='coast'?'Coast ':fireMode==='barista'?'Barista ':''}FIRE</span>
+                </div>
               </div>
             </div>
 
             <div className="fl-metrics">
               {[
-                {label:'Income',  value:fmt(income),       sub:'This month',                                     color:'var(--green)', icon:<Icon.ArrowUp/>},
-                {label:'Spent',   value:fmt(needs+wants),  sub:`${income>0?(((needs+wants)/income)*100).toFixed(0):0}% of income`,  color:'var(--red)',   icon:<Icon.ArrowDown/>},
-                {label:'Saved',   value:fmt(savings),      sub:`${savRate}% savings rate`,                       color:'var(--gold)', icon:<Icon.ArrowRight/>},
-                {label:'Grade',   value:grade,             sub:'Monthly savings score',                          color:gradeClr,       icon:<Icon.Star/>},
+                {label:'Income',  value:fmt(income),       sub:'This month',                                                                color:'var(--green)', icon:<Icon.ArrowUp/>},
+                {label:'Spent',   value:fmt(needs+wants),  sub:`${income>0?(((needs+wants)/income)*100).toFixed(0):0}% of income`,         color:'var(--red)',   icon:<Icon.ArrowDown/>},
+                {label:'Saved',   value:fmt(savings),      sub:`${savRate}% savings rate`,                                                  color:'var(--gold)', icon:<Icon.ArrowRight/>},
+                {label:'Grade',   value:grade,             sub:'Monthly savings score',                                                     color:gradeClr,       icon:<Icon.Star/>},
               ].map((m,i)=>(
                 <div key={i} className="fl-metric-card" style={{'--accent':m.color}}>
                   <div className="fl-metric-top"><span className="fl-metric-label">{m.label}</span><span style={{color:m.color}} className="fl-metric-icon-wrap">{m.icon}</span></div>
@@ -865,41 +1010,214 @@ export default function AppDashboard() {
           </div>
         )}
 
-        {/* TRANSACTIONS */}
-        {tab==='transactions'&&(
-          <div key="tx" className="fl-page">
+        {/* ── FIRE CALC ── (moved up in nav) */}
+        {tab==='fire'&&(()=>{
+          const displayNum = fireMode==='lean' ? leanNum : fireMode==='fat' ? fatNum : fireMode==='coast' ? coastAmt : fireMode==='barista' ? baristaNum : fireCalc.fireNum;
+          const displayProgress = displayNum > 0 ? Math.min((fire.currentSavings / displayNum)*100, 100) : 0;
+          const displayAgeAtFIRE = currentAge + (isFinite(activeModeYears) ? activeModeYears : 0);
+          return (
+          <div key="fire" className="fl-page">
             <div className="fl-page-top">
-              <div><h1 className="fl-title">Transactions</h1><p className="fl-subtitle">{txs.length} entries</p></div>
-              <div style={{display:'flex',gap:9,flexWrap:'wrap'}}>
-                <button className="fl-btn-ghost fl-btn-icon" onClick={()=>fileRef.current?.click()}><Icon.Import/>Import</button>
-                <button className="fl-btn-ghost fl-btn-icon" onClick={exportCSV}><Icon.Export/>Export</button>
-                <button className="fl-add-fab" onClick={()=>setShowAdd(true)}><Icon.Plus/>Add</button>
-                <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{display:'none'}} onChange={handleImportFile}/>
+              <div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div>
+              <div className="fl-fire-mode-tabs">
+                {[
+                  {id:'standard',label:'FIRE'},
+                  {id:'lean',    label:'Lean FIRE'},
+                  {id:'fat',     label:'Fat FIRE'},
+                  {id:'coast',   label:'Coast FIRE'},
+                  {id:'barista', label:'Barista FIRE', icon:<Icon.Coffee/>},
+                ].map(m=>(
+                  <button key={m.id} className={`fl-fire-mode-btn ${fireMode===m.id?'active':''}`} onClick={()=>{setFireMode(m.id);saveSettings(null,null,null,null,null,m.id);}}>
+                    {m.icon&&<span style={{marginRight:4}}>{m.icon}</span>}{m.label}
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="fl-filter-row">
-              {['all','income','need','want','saving'].map(f=>(
-                <button key={f} className={`fl-chip ${filterType===f?'active':''}`}
-                  style={filterType===f&&f!=='all'?{borderColor:TYPE_COLOR[f],color:TYPE_COLOR[f],background:TYPE_COLOR[f]+'18'}:{}}
-                  onClick={()=>setFilterType(f)}>{f==='all'?'All':TYPE_LABEL[f]}</button>
-              ))}
+
+            <div className="fl-fire-mode-desc">
+              {fireMode==='standard'&&<p><strong>FIRE</strong> — Standard financial independence. 25× your current annual expenses invested. Withdraw {swr}% per year indefinitely.</p>}
+              {fireMode==='lean'&&<p><strong>Lean FIRE</strong> — Retire on 75% of your current expenses. Requires a frugal lifestyle. FIRE number = {fmt(leanNum)}.</p>}
+              {fireMode==='fat'&&<p><strong>Fat FIRE</strong> — Retire on 150% of your current expenses. Full lifestyle, no compromises. FIRE number = {fmt(fatNum)}.</p>}
+              {fireMode==='coast'&&<p><strong>Coast FIRE</strong> — Save enough now that compound growth alone reaches your FIRE number. Coast number = {fmt(coastAmt)}. {coastReached?'✓ You have reached Coast FIRE.':'You need '+fmt(Math.max(0,coastAmt-fire.currentSavings))+' more.'}</p>}
+              {fireMode==='barista'&&<p><strong>Barista FIRE</strong> — Semi-retire now. Work part-time earning ~{fmt(baristaPartTimeIncome)}/yr to cover 40% of expenses. Your portfolio ({fmt(baristaNum)}) covers the remaining 60%. {baristaReached?'✓ You have reached Barista FIRE.':'You need '+fmt(Math.max(0,baristaNum-fire.currentSavings))+' more.'}</p>}
             </div>
-            <div className="fl-tx-cards">
-              {filtered.map(t=>(
-                <div key={t.id} className="fl-tx-card">
-                  <div className="fl-tx-card-badge" style={{background:amtColor(t.type)+'18',color:amtColor(t.type)}}>{TYPE_LABEL[t.type]}</div>
-                  <div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.category?`${t.category} · `:''}{t.date}{t.recurring?' · Recurring':''}</span></div>
-                  <span className="fl-tx-card-amount" style={{color:amtColor(t.type)}}>{t.type==='income'||t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span>
-                  <button className="fl-tx-edit" onClick={()=>openEdit(t)}><Icon.Edit/></button>
-                  <button className="fl-tx-del" onClick={()=>deleteTx(t.id)}><Icon.X/></button>
+
+            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Scroll down to see your FIRE projection and statistics</span></div>
+            <div className="fl-fire-layout">
+              <div className="fl-fire-inputs">
+                <h3>Your Numbers</h3>
+
+                {/* Age inputs — always visible */}
+                <div className="fl-fire-field">
+                  <label>Age</label>
+                  <div style={{display:'flex',gap:8}}>
+                    <div className="fl-fire-input-wrap" style={{flex:1}}>
+                      <span className="fl-input-prefix">Now</span>
+                      <input className="fl-fire-input" type="number" placeholder="30"
+                        value={currentAge||''} onChange={e=>{setCurrentAge(parseInt(e.target.value)||0);}}/>
+                    </div>
+                    <div className="fl-fire-input-wrap" style={{flex:1}}>
+                      <span className="fl-input-prefix">Goal</span>
+                      <input className="fl-fire-input" type="number" placeholder="45"
+                        value={retireAge||''} onChange={e=>{setRetireAge(parseInt(e.target.value)||0);}}/>
+                    </div>
+                  </div>
+                  <span className="fl-fire-hint">{retireAge > currentAge ? `${retireAge - currentAge} years to your target retirement age` : 'Set your current and target age'}</span>
                 </div>
-              ))}
-              {filtered.length===0&&<div className="fl-empty"><p>No transactions found</p></div>}
+
+                {[
+                  {key:'annualExpenses',label:'Annual Expenses',hint:'Expected yearly spend in retirement'},
+                  {key:'annualSavings', label:'Annual Savings',  hint:'Amount you invest per year'},
+                  {key:'currentSavings',label:'Current Savings', hint:'Total already invested or saved'},
+                ].map(f=>(
+                  <div key={f.key} className="fl-fire-field">
+                    <label>{f.label}</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" placeholder="0"
+                        value={fire[f.key]||''}
+                        onChange={e=>setFire(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/>
+                    </div>
+                    <span className="fl-fire-hint">{f.hint}</span>
+                  </div>
+                ))}
+
+                <div className="fl-fire-field">
+                  <label>Inflation Rate</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">%</span>
+                    <input className="fl-fire-input" type="number" placeholder="3" step="0.5"
+                      value={inflation||''} onChange={e=>setInflation(parseFloat(e.target.value)||0)}/>
+                  </div>
+                  <span className="fl-fire-hint">Real return adjusted for inflation (default 3%)</span>
+                </div>
+
+                <div className="fl-fire-field">
+                  <label>Safe Withdrawal Rate</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">%</span>
+                    <input className="fl-fire-input" type="number" placeholder="4" step="0.1"
+                      value={swr||''} onChange={e=>setSwr(parseFloat(e.target.value)||4)}/>
+                  </div>
+                  <span className="fl-fire-hint">Annual % drawn from portfolio (default 4%)</span>
+                </div>
+
+                {(fireMode==='coast') && <>
+                  <div className="fl-fire-field">
+                    <label>Contributions</label>
+                    <div className="fl-contrib-toggle">
+                      <button className={contribMode==='annual'?'active':''} onClick={()=>setContribMode('annual')}>Annual</button>
+                      <button className={contribMode==='monthly'?'active':''} onClick={()=>setContribMode('monthly')}>Monthly</button>
+                    </div>
+                    <div className="fl-fire-input-wrap" style={{marginTop:6}}>
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" placeholder="0"
+                        value={contribs||''} onChange={e=>setContribs(parseFloat(e.target.value)||0)}/>
+                    </div>
+                    <span className="fl-fire-hint">Optional — how much you still plan to contribute</span>
+                  </div>
+                </>}
+
+                {fireMode==='barista'&&(
+                  <div className="fl-fire-field">
+                    <label>Part-time income coverage</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" readOnly value={Math.round(baristaPartTimeIncome)} style={{opacity:0.6}}/>
+                    </div>
+                    <span className="fl-fire-hint">40% of annual expenses — what your part-time work covers</span>
+                  </div>
+                )}
+
+                <button className="fl-btn-primary" style={{width:'100%'}} onClick={()=>{saveSettings(fire,null,null,currentAge,retireAge,fireMode);showToast('Settings saved');}}>Save settings</button>
+
+                <div className="fl-whatif">
+                  <h4>What if I saved more?</h4>
+                  <div className="fl-whatif-row">
+                    <span style={{whiteSpace:'nowrap',minWidth:90}}>{sym}{whatIf.toLocaleString()} /mo</span>
+                    <input type="range" min="0" max="5000" step="50" value={whatIf} onChange={e=>setWhatIf(parseInt(e.target.value))} className="fl-slider"/>
+                  </div>
+                  {whatIf>0&&<div className="fl-whatif-result">Saves <strong style={{color:'var(--green)'}}>{Math.max(0,fireCalc.years-fireWI.years)} years</strong> — retire in <strong style={{color:'var(--purple-light)'}}>{fireWI.years} years</strong></div>}
+                </div>
+              </div>
+
+              <div className="fl-fire-results">
+                <div className="fl-fire-big-ring">
+                  <svg viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16"/>
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="url(#fire-calc-grad)" strokeWidth="16"
+                      strokeDasharray="534" strokeDashoffset={534-(534*displayProgress/100)}
+                      strokeLinecap="round" transform="rotate(-90 100 100)"/>
+                    <defs><linearGradient id="fire-calc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="var(--purple-light)"/>
+                      <stop offset="100%" stopColor="var(--purple-dark)"/>
+                    </linearGradient></defs>
+                  </svg>
+                  <div className="fl-fire-big-center">
+                    <span className="fl-fire-big-pct">{displayProgress.toFixed(1)}%</span>
+                    <span className="fl-fire-big-sub">to {fireMode==='lean'?'Lean ':fireMode==='fat'?'Fat ':fireMode==='coast'?'Coast ':fireMode==='barista'?'Barista ':''}FIRE</span>
+                  </div>
+                </div>
+
+                <div className="fl-fire-stat-grid">
+                  {/* Common stats for all modes */}
+                  {(()=>{
+                    const modeLabel = fireMode==='lean'?'Lean ':fireMode==='fat'?'Fat ':fireMode==='coast'?'Coast ':fireMode==='barista'?'Barista ':'';
+                    const modeIncome = displayNum * (swr/100);
+                    const stats = fireMode==='coast' ? [
+                      {label:'Coast FIRE Number',  value:fmt(coastAmt),    hint:'Needed now to coast',                                                   color:'var(--gold)'},
+                      {label:'Current Savings',    value:fmt(fire.currentSavings), hint:'What you have today',                                           color:coastReached?'var(--green)':'var(--t1)'},
+                      {label:'Gap to Coast',       value:coastReached?'Reached ✓':fmt(Math.max(0,coastAmt-fire.currentSavings)), hint:coastReached?'Stop contributing — compound does the rest':'Still needed', color:coastReached?'var(--green)':'var(--red)'},
+                      {label:'Age at Freedom',     value:coastReached?currentAge:displayAgeAtFIRE, hint:`You'd be ${coastReached?currentAge:displayAgeAtFIRE} when you stop working`,                            color:'var(--purple-light)'},
+                      {label:'Annual Income',      value:fmt(modeIncome),  hint:`At ${swr}% withdrawal`,                                                 color:'var(--green)'},
+                      {label:'Monthly Income',     value:fmt(modeIncome/12), hint:'Per month in retirement',                                             color:'var(--green)'},
+                    ] : fireMode==='barista' ? [
+                      {label:'Barista FIRE Number', value:fmt(baristaNum),  hint:'60% of expenses × 25',                                                 color:'var(--gold)'},
+                      {label:'Gap',                 value:baristaReached?'Reached ✓':fmt(Math.max(0,baristaNum-fire.currentSavings)), hint:baristaReached?'Semi-retire now':'Still needed',  color:baristaReached?'var(--green)':'var(--red)'},
+                      {label:'Years Away',          value:baristaReached?0:activeModeYears===Infinity?'—':activeModeYears, hint:'At 7% return',           color:baristaReached?'var(--green)':'var(--gold)'},
+                      {label:'Age at Freedom',      value:displayAgeAtFIRE, hint:`You'd be ${displayAgeAtFIRE} when you semi-retire`,                     color:'var(--purple-light)'},
+                      {label:'Portfolio income',    value:fmt(baristaNum*(swr/100)), hint:`${swr}% from portfolio`,                                        color:'var(--green)'},
+                      {label:'Part-time needed',    value:fmt(baristaPartTimeIncome), hint:'40% of expenses covered by work',                             color:'var(--gold)'},
+                    ] : [
+                      {label:`${modeLabel}FIRE Number`, value:fmt(displayNum), hint:fireMode==='lean'?'75% of expenses × 25':fireMode==='fat'?'150% of expenses × 25':'25× annual expenses', color:'var(--gold)'},
+                      {label:'Years Away',          value:adjFireCalc.years===Infinity?'—':activeModeYears, hint:`At 7% return, ${inflation}% inflation`, color:activeModeYears<=10?'var(--green)':activeModeYears<=20?'var(--gold)':'var(--red)'},
+                      {label:'Freedom Date',        value:activeModeDate,    hint:'Inflation-adjusted projection',                                        color:'var(--purple-light)'},
+                      {label:'Age at Freedom',      value:displayAgeAtFIRE,  hint:`You'll be ${displayAgeAtFIRE} when you stop working`,                  color:'var(--purple-light)'},
+                      {label:'Annual Income',       value:fmt(modeIncome),   hint:`At ${swr}% withdrawal rate`,                                           color:'var(--green)'},
+                      {label:'Monthly Income',      value:fmt(modeIncome/12), hint:'Per month in retirement',                                             color:'var(--green)'},
+                    ];
+                    return stats.map((s,i)=>(
+                      <div key={i} className="fl-fire-stat">
+                        <span className="fl-fire-stat-label">{s.label}</span>
+                        <span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label.includes('Date')||s.label.includes('Gap')?16:22}}>{s.value}</span>
+                        <span className="fl-fire-stat-hint">{s.hint}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+
+                {/* Working hours remaining */}
+                {isFinite(activeModeYears)&&activeModeYears>0&&(
+                  <div className="fl-hours-callout">
+                    <span className="fl-hours-callout-num">{workingHoursLeft.toLocaleString()}</span>
+                    <span className="fl-hours-callout-label">working hours until you never have to work again</span>
+                  </div>
+                )}
+
+                {inflation>0&&adjFireCalc.years!==fireCalc.years&&(
+                  <div className="fl-inflation-note">
+                    <span>⚠ Inflation-adjusted: adds </span>
+                    <strong>{adjFireCalc.years-fireCalc.years} years</strong>
+                    <span> vs nominal projection</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
-        {/* INSIGHTS */}
+        {/* ── INSIGHTS ── */}
         {tab==='insights'&&(
           <div key="insights" className="fl-page">
             <div className="fl-page-top">
@@ -949,195 +1267,45 @@ export default function AppDashboard() {
                 {mTxs.filter(t=>t.type==='need'||t.type==='want').length===0&&<p className="fl-empty-sm">No expenses this month</p>}
               </div>
             </div>
-
-            {/* ── Guidance panel — outside and after fl-insights-grid ── */}
             <GuidanceInsightsPanel txs={mTxs} fire={fire} currency={currency} />
-
           </div>
         )}
 
-        {/* FIRE CALC */}
-        {tab==='fire'&&(()=>{
-          const realReturn = Math.max(0.001, (1.07 / (1 + inflation/100)) - 1);
-          const adjFireCalc = calcFIRE(fire.annualExpenses, fire.annualSavings, fire.currentSavings, realReturn);
-          const leanNum  = fire.annualExpenses * 0.75 * 25;
-          const fatNum   = fire.annualExpenses * 1.5  * 25;
-          const yearsToGrow = Math.max(1, retireAge - currentAge);
-          const annualContrib = contribMode==='monthly' ? contribs*12 : contribs;
-          const coastAmt = Math.max(0, (fireCalc.fireNum - annualContrib * ((Math.pow(1.07,yearsToGrow)-1)/0.07)) / Math.pow(1.07, yearsToGrow));
-          const coastReached = fire.currentSavings >= coastAmt;
-          const displayNum = fireMode==='lean' ? leanNum : fireMode==='fat' ? fatNum : fireMode==='coast' ? coastAmt : fireCalc.fireNum;
-          const displayProgress = displayNum > 0 ? Math.min((fire.currentSavings / displayNum)*100, 100) : 0;
-          const annualIncome = fireCalc.fireNum * (swr/100);
-          const leanIncome   = leanNum * (swr/100);
-          const fatIncome    = fatNum  * (swr/100);
-          return (
-          <div key="fire" className="fl-page">
+        {/* ── TRANSACTIONS ── */}
+        {tab==='transactions'&&(
+          <div key="tx" className="fl-page">
             <div className="fl-page-top">
-              <div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div>
-              <div className="fl-fire-mode-tabs">
-                {[{id:'standard',label:'FIRE'},{id:'lean',label:'Lean FIRE'},{id:'fat',label:'Fat FIRE'},{id:'coast',label:'Coast FIRE'}].map(m=>(
-                  <button key={m.id} className={`fl-fire-mode-btn ${fireMode===m.id?'active':''}`} onClick={()=>setFireMode(m.id)}>{m.label}</button>
-                ))}
+              <div><h1 className="fl-title">Transactions</h1><p className="fl-subtitle">{txs.length} entries</p></div>
+              <div style={{display:'flex',gap:9,flexWrap:'wrap'}}>
+                <button className="fl-btn-ghost fl-btn-icon" onClick={()=>fileRef.current?.click()}><Icon.Import/>Import</button>
+                <button className="fl-btn-ghost fl-btn-icon" onClick={exportCSV}><Icon.Export/>Export</button>
+                <button className="fl-add-fab" onClick={()=>setShowAdd(true)}><Icon.Plus/>Add</button>
+                <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{display:'none'}} onChange={handleImportFile}/>
               </div>
             </div>
-
-            <div className="fl-fire-mode-desc">
-              {fireMode==='standard'&&<p><strong>FIRE</strong> — Standard financial independence. 25× your current annual expenses invested. Withdraw {swr}% per year indefinitely.</p>}
-              {fireMode==='lean'&&<p><strong>Lean FIRE</strong> — Retire on 75% of your current expenses. Requires a frugal lifestyle. FIRE number = {fmt(leanNum)}.</p>}
-              {fireMode==='fat'&&<p><strong>Fat FIRE</strong> — Retire on 150% of your current expenses. Full lifestyle, no compromises. FIRE number = {fmt(fatNum)}.</p>}
-              {fireMode==='coast'&&<p><strong>Coast FIRE</strong> — Save enough now that compound growth alone reaches your FIRE number. Coast number = {fmt(coastAmt)}. {coastReached?'✓ You have reached Coast FIRE.':'You need '+fmt(Math.max(0,coastAmt-fire.currentSavings))+' more.'}</p>}
+            <div className="fl-filter-row">
+              {['all','income','need','want','saving'].map(f=>(
+                <button key={f} className={`fl-chip ${filterType===f?'active':''}`}
+                  style={filterType===f&&f!=='all'?{borderColor:TYPE_COLOR[f],color:TYPE_COLOR[f],background:TYPE_COLOR[f]+'18'}:{}}
+                  onClick={()=>setFilterType(f)}>{f==='all'?'All':TYPE_LABEL[f]}</button>
+              ))}
             </div>
-
-            <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Scroll down to see your FIRE projection and statistics</span></div>
-            <div className="fl-fire-layout">
-              <div className="fl-fire-inputs">
-                <h3>Your Numbers</h3>
-                {[
-                  {key:'annualExpenses',label:'Annual Expenses',hint:'Expected yearly spend in retirement'},
-                  {key:'annualSavings', label:'Annual Savings',  hint:'Amount you invest per year'},
-                  {key:'currentSavings',label:'Current Savings', hint:'Total already invested or saved'},
-                ].map(f=>(
-                  <div key={f.key} className="fl-fire-field">
-                    <label>{f.label}</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">{sym}</span>
-                      <input className="fl-fire-input" type="number" placeholder="0"
-                        value={fire[f.key]||''}
-                        onChange={e=>setFire(p=>({...p,[f.key]:parseFloat(e.target.value)||0}))}/>
-                    </div>
-                    <span className="fl-fire-hint">{f.hint}</span>
-                  </div>
-                ))}
-
-                <div className="fl-fire-field">
-                  <label>Inflation Rate</label>
-                  <div className="fl-fire-input-wrap">
-                    <span className="fl-input-prefix">%</span>
-                    <input className="fl-fire-input" type="number" placeholder="3" step="0.5"
-                      value={inflation||''} onChange={e=>setInflation(parseFloat(e.target.value)||0)}/>
-                  </div>
-                  <span className="fl-fire-hint">Real return adjusted for inflation (default 3%)</span>
+            <div className="fl-tx-cards">
+              {filtered.map(t=>(
+                <div key={t.id} className="fl-tx-card">
+                  <div className="fl-tx-card-badge" style={{background:amtColor(t.type)+'18',color:amtColor(t.type)}}>{TYPE_LABEL[t.type]}</div>
+                  <div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.category?`${t.category} · `:''}{t.date}{t.recurring?' · Recurring':''}</span></div>
+                  <span className="fl-tx-card-amount" style={{color:amtColor(t.type)}}>{t.type==='income'||t.type==='saving'?'+':'-'}{fmtD(t.amount)}</span>
+                  <button className="fl-tx-edit" onClick={()=>openEdit(t)}><Icon.Edit/></button>
+                  <button className="fl-tx-del" onClick={()=>deleteTx(t.id)}><Icon.X/></button>
                 </div>
-
-                <div className="fl-fire-field">
-                  <label>Safe Withdrawal Rate</label>
-                  <div className="fl-fire-input-wrap">
-                    <span className="fl-input-prefix">%</span>
-                    <input className="fl-fire-input" type="number" placeholder="4" step="0.1"
-                      value={swr||''} onChange={e=>setSwr(parseFloat(e.target.value)||4)}/>
-                  </div>
-                  <span className="fl-fire-hint">Annual % drawn from portfolio (default 4%)</span>
-                </div>
-
-                {fireMode==='coast'&&<>
-                  <div className="fl-fire-field">
-                    <label>Current Age</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">yr</span>
-                      <input className="fl-fire-input" type="number" placeholder="30"
-                        value={currentAge||''} onChange={e=>setCurrentAge(parseInt(e.target.value)||0)}/>
-                    </div>
-                  </div>
-                  <div className="fl-fire-field">
-                    <label>Retirement Age</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">yr</span>
-                      <input className="fl-fire-input" type="number" placeholder="65"
-                        value={retireAge||''} onChange={e=>setRetireAge(parseInt(e.target.value)||0)}/>
-                    </div>
-                    <span className="fl-fire-hint">{Math.max(0,retireAge-currentAge)} years to grow</span>
-                  </div>
-                  <div className="fl-fire-field">
-                    <label>Contributions</label>
-                    <div className="fl-contrib-toggle">
-                      <button className={contribMode==='annual'?'active':''} onClick={()=>setContribMode('annual')}>Annual</button>
-                      <button className={contribMode==='monthly'?'active':''} onClick={()=>setContribMode('monthly')}>Monthly</button>
-                    </div>
-                    <div className="fl-fire-input-wrap" style={{marginTop:6}}>
-                      <span className="fl-input-prefix">{sym}</span>
-                      <input className="fl-fire-input" type="number" placeholder="0"
-                        value={contribs||''} onChange={e=>setContribs(parseFloat(e.target.value)||0)}/>
-                    </div>
-                    <span className="fl-fire-hint">Optional — how much you still plan to contribute</span>
-                  </div>
-                </>}
-
-                <button className="fl-btn-primary" style={{width:'100%'}} onClick={()=>{saveSettings(fire,null,null);showToast('Settings saved');}}>Save settings</button>
-
-                <div className="fl-whatif">
-                  <h4>What if I saved more?</h4>
-                  <div className="fl-whatif-row">
-                    <span style={{whiteSpace:'nowrap',minWidth:90}}>{sym}{whatIf.toLocaleString()} /mo</span>
-                    <input type="range" min="0" max="5000" step="50" value={whatIf} onChange={e=>setWhatIf(parseInt(e.target.value))} className="fl-slider"/>
-                  </div>
-                  {whatIf>0&&<div className="fl-whatif-result">Saves <strong style={{color:'var(--green)'}}>{Math.max(0,fireCalc.years-fireWI.years)} years</strong> — retire in <strong style={{color:'var(--purple-light)'}}>{fireWI.years} years</strong></div>}
-                </div>
-              </div>
-
-              <div className="fl-fire-results">
-                <div className="fl-fire-big-ring">
-                  <svg viewBox="0 0 200 200">
-                    <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16"/>
-                    <circle cx="100" cy="100" r="85" fill="none" stroke="url(#fire-calc-grad)" strokeWidth="16"
-                      strokeDasharray="534" strokeDashoffset={534-(534*displayProgress/100)}
-                      strokeLinecap="round" transform="rotate(-90 100 100)"/>
-                    <defs><linearGradient id="fire-calc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="var(--purple-light)"/>
-                      <stop offset="100%" stopColor="var(--purple-dark)"/>
-                    </linearGradient></defs>
-                  </svg>
-                  <div className="fl-fire-big-center">
-                    <span className="fl-fire-big-pct">{displayProgress.toFixed(1)}%</span>
-                    <span className="fl-fire-big-sub">to {fireMode==='lean'?'Lean ':fireMode==='fat'?'Fat ':fireMode==='coast'?'Coast ':''}FIRE</span>
-                  </div>
-                </div>
-
-                <div className="fl-fire-stat-grid">
-                  {fireMode!=='coast'&&[
-                    {label:'FIRE Number',    value:fmt(displayNum),                                    hint:fireMode==='lean'?'75% of expenses × 25':fireMode==='fat'?'150% of expenses × 25':'25× annual expenses', color:'var(--gold)'},
-                    {label:'Years Away',     value:adjFireCalc.years===Infinity?'—':adjFireCalc.years, hint:`At 7% return, ${inflation}% inflation`,                                                                  color:adjFireCalc.years<=10?'var(--green)':adjFireCalc.years<=20?'var(--gold)':'var(--red)'},
-                    {label:'Freedom Date',   value:fireDate,                                           hint:'Inflation-adjusted projection',                                                                          color:'var(--purple-light)'},
-                    {label:'Hours Left',     value:isFinite(adjFireCalc.years)&&adjFireCalc.years>0?Math.round(adjFireCalc.years*52*40).toLocaleString():'—', hint:'Working hours until freedom',                   color:'var(--red)'},
-                    {label:'Annual Income',  value:fmt(fireMode==='lean'?leanIncome:fireMode==='fat'?fatIncome:annualIncome), hint:`At ${swr}% withdrawal rate`,                                                    color:'var(--green)'},
-                    {label:'Monthly Income', value:fmt((fireMode==='lean'?leanIncome:fireMode==='fat'?fatIncome:annualIncome)/12), hint:'Per month in retirement',                                                   color:'var(--green)'},
-                  ].map((s,i)=>(
-                    <div key={i} className="fl-fire-stat">
-                      <span className="fl-fire-stat-label">{s.label}</span>
-                      <span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label==='Freedom Date'?16:22}}>{s.value}</span>
-                      <span className="fl-fire-stat-hint">{s.hint}</span>
-                    </div>
-                  ))}
-                  {fireMode==='coast'&&[
-                    {label:'Coast FIRE Number', value:fmt(coastAmt),                                    hint:'Needed now to coast',                                                                                   color:'var(--gold)'},
-                    {label:'Current Savings',   value:fmt(fire.currentSavings),                         hint:'What you have today',                                                                                  color:coastReached?'var(--green)':'var(--t1)'},
-                    {label:'Gap to Coast',      value:coastReached?'Reached ✓':fmt(Math.max(0,coastAmt-fire.currentSavings)), hint:coastReached?'You can stop contributing':'Still needed',                        color:coastReached?'var(--green)':'var(--red)'},
-                    {label:'Years to Grow',     value:yearsToGrow,                                      hint:`Age ${currentAge} → ${retireAge}`,                                                                    color:'var(--purple-light)'},
-                    {label:'Annual Income',     value:fmt(annualIncome),                                hint:`At ${swr}% withdrawal`,                                                                               color:'var(--green)'},
-                    {label:'Monthly Income',    value:fmt(annualIncome/12),                             hint:'Per month in retirement',                                                                              color:'var(--green)'},
-                  ].map((s,i)=>(
-                    <div key={i} className="fl-fire-stat">
-                      <span className="fl-fire-stat-label">{s.label}</span>
-                      <span className="fl-fire-stat-value" style={{color:s.color,fontSize:s.label==='Gap to Coast'||s.label==='Freedom Date'?16:22}}>{s.value}</span>
-                      <span className="fl-fire-stat-hint">{s.hint}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {inflation>0&&adjFireCalc.years!==fireCalc.years&&(
-                  <div className="fl-inflation-note">
-                    <span>⚠ Inflation-adjusted: adds </span>
-                    <strong>{adjFireCalc.years-fireCalc.years} years</strong>
-                    <span> vs nominal projection</span>
-                  </div>
-                )}
-              </div>
+              ))}
+              {filtered.length===0&&<div className="fl-empty"><p>No transactions found</p></div>}
             </div>
           </div>
-          );
-        })()}
+        )}
 
-        {/* PROJECTIONS */}
+        {/* ── PROJECTIONS ── */}
         {tab==='projections'&&(
           <div key="proj" className="fl-page">
             <div className="fl-page-top">
@@ -1189,7 +1357,7 @@ export default function AppDashboard() {
           </div>
         )}
 
-        {/* EXPORT */}
+        {/* ── EXPORT ── */}
         {tab==='export'&&(
           <div key="export" className="fl-page">
             <div className="fl-page-top"><div><h1 className="fl-title">Export & Import</h1><p className="fl-subtitle">Your data, your way — no lock-in</p></div></div>
@@ -1212,7 +1380,7 @@ export default function AppDashboard() {
           </div>
         )}
 
-        {/* NET WORTH */}
+        {/* ── NET WORTH ── */}
         {tab==='networth'&&(
           <div key="networth" className="fl-page">
             <div className="fl-page-top"><div><h1 className="fl-title">Net Worth</h1><p className="fl-subtitle">Assets minus liabilities — your real financial picture</p></div></div>
@@ -1299,7 +1467,7 @@ export default function AppDashboard() {
           </div>
         )}
 
-        {/* COMPOUND GROWTH */}
+        {/* ── COMPOUND GROWTH ── */}
         {tab==='compound'&&(
           <div key="compound" className="fl-page">
             <div className="fl-page-top"><div><h1 className="fl-title">Compound Growth</h1><p className="fl-subtitle">See how your money grows over time</p></div></div>
@@ -1351,13 +1519,13 @@ export default function AppDashboard() {
                 <button className="fl-btn-primary" style={{width:'100%'}} onClick={()=>{
                   const n = cg.compounding==='monthly' ? cg.years*12 : cg.years;
                   const r = cg.compounding==='monthly' ? cg.growthRate/100/12 : cg.growthRate/100;
-                  const annualContrib = cg.contribType==='monthly' ? cg.contribution*12 : cg.contribution;
-                  const periodicContrib = cg.compounding==='monthly' ? annualContrib/12 : annualContrib;
+                  const annualContribCg = cg.contribType==='monthly' ? cg.contribution*12 : cg.contribution;
+                  const periodicContrib = cg.compounding==='monthly' ? annualContribCg/12 : annualContribCg;
                   const nominal = cg.initial * Math.pow(1+r,n) + periodicContrib * ((Math.pow(1+r,n)-1)/r);
                   const realRate = (1+cg.growthRate/100)/(1+cg.inflationRate/100)-1;
                   const rn = cg.compounding==='monthly' ? realRate/12 : realRate;
                   const real = cg.initial * Math.pow(1+rn,n) + periodicContrib * ((Math.pow(1+rn,n)-1)/rn);
-                  const totalContribs = cg.initial + annualContrib * cg.years;
+                  const totalContribs = cg.initial + annualContribCg * cg.years;
                   const rule72 = cg.growthRate > 0 ? (72/cg.growthRate).toFixed(1) : '—';
                   setCgResult({ nominal, real, totalContribs, growth: nominal-totalContribs, rule72 });
                 }}>Calculate Growth</button>
@@ -1398,10 +1566,9 @@ export default function AppDashboard() {
           </div>
         )}
 
-        {/* GUIDE */}
         {tab==='guide'&&<GuidePage/>}
 
-        {/* SETTINGS */}
+        {/* ── SETTINGS ── */}
         {tab==='settings'&&(
           <div key="settings" className="fl-page">
             <div className="fl-page-top"><h1 className="fl-title">Settings</h1></div>
@@ -1429,7 +1596,27 @@ export default function AppDashboard() {
                     </button>
                   ))}
                 </div>
-                <h3 style={{marginTop:24,marginBottom:16}}>Account</h3>
+
+                <h3 style={{marginTop:24,marginBottom:12}}>Age</h3>
+                <div style={{display:'flex',gap:12,marginBottom:16}}>
+                  <div className="fl-fire-field" style={{flex:1,marginBottom:0}}>
+                    <label>Current Age</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">yr</span>
+                      <input className="fl-fire-input" type="number" placeholder="30" value={currentAge||''} onChange={e=>setCurrentAge(parseInt(e.target.value)||0)}/>
+                    </div>
+                  </div>
+                  <div className="fl-fire-field" style={{flex:1,marginBottom:0}}>
+                    <label>Retirement Age Goal</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">yr</span>
+                      <input className="fl-fire-input" type="number" placeholder="45" value={retireAge||''} onChange={e=>setRetireAge(parseInt(e.target.value)||0)}/>
+                    </div>
+                  </div>
+                </div>
+                <button className="fl-btn-ghost" style={{width:'100%',marginBottom:16}} onClick={()=>{saveSettings(null,null,null,currentAge,retireAge,null);showToast('Age settings saved');}}>Save age settings</button>
+
+                <h3 style={{marginTop:8,marginBottom:16}}>Account</h3>
                 <div className="fl-account-row">
                   <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
                   <div><div style={{fontWeight:600,fontSize:14}}>{user?.email}</div><div style={{fontSize:12,color:'var(--t2)',marginTop:2}}>{isLifetime ? 'Lifetime · Session only' : 'Pro · Cloud sync active'}</div></div>
@@ -1456,14 +1643,23 @@ export default function AppDashboard() {
                   </div>
                 )}
                 <button className="fl-btn-ghost fl-btn-icon" style={{width:'100%',marginTop:16}} onClick={exportExcel}><Icon.Export/>Download report</button>
-                <button className="fl-btn-danger fl-btn-icon" style={{width:'100%',marginTop:10}} onClick={signOut}><Icon.LogOut/>Sign out</button>
+                <button className="fl-btn-ghost fl-btn-icon" style={{width:'100%',marginTop:10}} onClick={signOut}><Icon.LogOut/>Sign out</button>
+
+                {/* ── Delete all data ── */}
+                <div className="fl-danger-zone">
+                  <h3 style={{color:'var(--red)',marginBottom:8}}>Danger Zone</h3>
+                  <p style={{fontSize:13,color:'var(--t2)',marginBottom:12}}>Permanently delete all your transactions and settings. This cannot be undone.</p>
+                  <button className="fl-btn-danger fl-btn-icon" style={{width:'100%'}} onClick={()=>setDeleteConfirm(true)}>
+                    <Icon.Trash/>Delete all my data
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* ADD TRANSACTION MODAL */}
+      {/* ── ADD / EDIT TRANSACTION MODAL ── */}
       {showAdd&&(
         <div className="fl-overlay" onClick={()=>setShowAdd(false)}>
           <div className="fl-modal fl-modal-log" onClick={e=>e.stopPropagation()}>
