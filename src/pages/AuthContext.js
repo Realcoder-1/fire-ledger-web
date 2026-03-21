@@ -67,8 +67,7 @@ export function AuthProvider({ children }) {
     email,
     password,
     options: {
-      emailRedirectTo: undefined,
-      data: {}
+      emailRedirectTo: window.location.origin + '/app'
     }
   });
 

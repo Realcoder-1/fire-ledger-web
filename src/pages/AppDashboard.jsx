@@ -834,7 +834,16 @@ export default function AppDashboard() {
               </div>
             </div>
 
-            <div className="fl-metrics">
+            {fireCalc.years !== Infinity && (
+<div className="fl-hours-banner">
+<div className="fl-hours-left">
+<span className="fl-hours-num">{Math.round(fireCalc.years * 2080).toLocaleString()}</span>
+<span className="fl-hours-label">working hours until you never have to work again</span>
+</div>
+<div className="fl-hours-action" onClick={()=>setTab('fire')}>Reduce this →</div>
+</div>
+)}
+<div className="fl-metrics">
               {[
                 {label:'Income',  value:fmt(income),       sub:'This month',                                     color:'var(--green)', icon:<Icon.ArrowUp/>},
                 {label:'Spent',   value:fmt(needs+wants),  sub:`${income>0?(((needs+wants)/income)*100).toFixed(0):0}% of income`,  color:'var(--red)',   icon:<Icon.ArrowDown/>},
@@ -976,7 +985,7 @@ export default function AppDashboard() {
             <div className="fl-page-top">
               <div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div>
               <div className="fl-fire-mode-tabs">
-                {[{id:'standard',label:'FIRE'},{id:'lean',label:'Lean FIRE'},{id:'fat',label:'Fat FIRE'},{id:'coast',label:'Coast FIRE'}].map(m=>(
+                {[{id:'standard',label:'FIRE'},{id:'lean',label:'Lean FIRE'},{id:'fat',label:'Fat FIRE'},{id:'coast',label:'Coast FIRE'},{id:'barista',label:'Barista FIRE'}].map(m=>(
                   <button key={m.id} className={`fl-fire-mode-btn ${fireMode===m.id?'active':''}`} onClick={()=>setFireMode(m.id)}>{m.label}</button>
                 ))}
               </div>
@@ -986,7 +995,7 @@ export default function AppDashboard() {
               {fireMode==='standard'&&<p><strong>FIRE</strong> — Standard financial independence. 25× your current annual expenses invested. Withdraw {swr}% per year indefinitely.</p>}
               {fireMode==='lean'&&<p><strong>Lean FIRE</strong> — Retire on 75% of your current expenses. Requires a frugal lifestyle. FIRE number = {fmt(leanNum)}.</p>}
               {fireMode==='fat'&&<p><strong>Fat FIRE</strong> — Retire on 150% of your current expenses. Full lifestyle, no compromises. FIRE number = {fmt(fatNum)}.</p>}
-              {fireMode==='coast'&&<p><strong>Coast FIRE</strong> — Save enough now that compound growth alone reaches your FIRE number. Coast number = {fmt(coastAmt)}. {coastReached?'✓ You have reached Coast FIRE.':'You need '+fmt(Math.max(0,coastAmt-fire.currentSavings))+' more.'}</p>}
+              {fireMode==='coast'&&<p><strong>Coast FIRE</strong> — Save enough now that compound growth alone reaches your FIRE number. Coast number = {fmt(coastAmt)}. {coastReached?'✓ You have reached Coast FIRE.':'You need '+fmt(Math.max(0,coastAmt-fire.currentSavings))+' more.'}</p>}{fireMode==='barista'&&<p><strong>Barista FIRE</strong> — Semi-retire. Work part-time to cover basic expenses while your portfolio grows. FIRE number = {fmt(fireCalc.fireNum * 0.5)} (50% of standard) — the rest is covered by part-time income.</p>}
             </div>
 
             <div className="fl-scroll-hint"><Icon.ArrowDown/><span>Scroll down to see your FIRE projection and statistics</span></div>
@@ -1124,7 +1133,20 @@ export default function AppDashboard() {
                   ))}
                 </div>
 
-                {inflation>0&&adjFireCalc.years!==fireCalc.years&&(
+                {fireMode==='barista'&&[
+{label:'Barista FIRE Number', value:fmt(fireCalc.fireNum * 0.5), hint:'50% of full FIRE number', color:'var(--gold)'},
+{label:'Current Progress',    value:${Math.min((fire.currentSavings/(fireCalc.fireNum*0.5))*100,100).toFixed(1)}%, hint:'Toward Barista FIRE', color:'var(--purple-light)'},
+{label:'Gap Remaining',       value:fmt(Math.max(0,fireCalc.fireNum0.5-fire.currentSavings)), hint:'Still needed', color:'var(--red)'},
+{label:'Part-time Income Needed', value:fmt(fire.annualExpenses * 0.5 / 12), hint:'Per month from work', color:'var(--green)'},
+{label:'Annual Income (portfolio)', value:fmt(fireCalc.fireNum0.5*(swr/100)), hint:At ${swr}% withdrawal, color:'var(--green)'},
+{label:'Freedom Date',        value:fireDate, hint:'Full FIRE date for reference', color:'var(--purple-light)'},
+].map((s,i)=>(
+<div key={i} className="fl-fire-stat">
+<span className="fl-fire-stat-label">{s.label}</span>
+<span className="fl-fire-stat-value" style={{color:s.color,fontSize:22}}>{s.value}</span>
+<span className="fl-fire-stat-hint">{s.hint}</span>
+</div>
+))}{inflation>0&&adjFireCalc.years!==fireCalc.years&&(
                   <div className="fl-inflation-note">
                     <span>⚠ Inflation-adjusted: adds </span>
                     <strong>{adjFireCalc.years-fireCalc.years} years</strong>
