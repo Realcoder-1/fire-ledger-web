@@ -366,7 +366,7 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
 .fl-curr-btn:hover { border-color:var(--border2); color:var(--t1); }
 
 /* ── GUIDE PAGE ──────────────────────────────────────── */
-.fl-guide-layout { display:grid; grid-template-columns:200px 1fr; gap:0; background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--shadow); }
+.fl-guide-layout { display:grid; grid-template-columns:200px 1fr; gap:0; background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; box-shadow:var(--shadow); margin-bottom:40px; }
 .fl-guide-nav { border-right:1px solid var(--border); padding:8px; display:flex; flex-direction:column; gap:2px; }
 .fl-guide-nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; background:none; border:none; color:var(--t2); font-family:'Inter',sans-serif; font-size:13px; font-weight:500; cursor:pointer; text-align:left; transition:all 0.15s; position:relative; width:100%; }
 .fl-guide-nav-item:hover { background:var(--bg3); color:var(--t1); }
