@@ -302,6 +302,7 @@ export default function Landing() {
   const [showPopup,   setShowPopup]   = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
   const [openFaq,     setOpenFaq]     = useState(null);
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     if (!localStorage.getItem(POPUP_KEY)) {
