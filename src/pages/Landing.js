@@ -576,7 +576,7 @@ const [waitlistMessage, setWaitlistMessage] = useState('');
             <p>Every tool I found either required a finance degree to understand, gave me a number with no context, or was so generic it was useless. None of them tracked whether I was on pace. None told me what my discretionary spending was costing me in years of my life. None gave me the same clarity that a proper system would.</p>
             <p>So "So I built FIRE Ledger. For myself. A system where I enter my numbers and get a clear timeline of exactly when I can stop working, then track every week whether I'm getting closer or further away. As time passed, I realised others had long been asking the same question. So I decided to share it with the world. </p>
           </div>
-          <div className="story-quote">
+            <div className="story-quote">
             <div className="story-quote-mark">"</div>
             <p className="story-quote-text">
               "Most people will work until they're told they can stop — not because they have to, but because they never had a system that showed them exactly when they could walk away and what it would take to get there faster. FIRE Ledger changes that. You put in your numbers, you get your date, and from that point on the system tracks every week whether your choices are buying back years of your life or costing you them. It doesn't just tell you where you stand. It tells you what to do about it.
