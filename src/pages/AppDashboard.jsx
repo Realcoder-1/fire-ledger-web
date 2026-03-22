@@ -880,6 +880,18 @@ export default function AppDashboard() {
           ))}
         </nav>
         <div className="fl-sidebar-footer">
+          {isLifetime && (
+            <div className="fl-trial-banner" style={{ borderColor: 'rgba(251,191,36,0.25)' }}>
+              <div className="fl-trial-days" style={{ background: 'rgba(251,191,36,0.12)' }}>
+                <span className="fl-trial-num" style={{ color: '#fbbf24', fontSize: 16 }}>⚡</span>
+                <span className="fl-trial-label">Local</span>
+              </div>
+              <div className="fl-trial-info">
+                <span>Session only</span>
+                <a href="/pricing" className="fl-trial-upgrade">Upgrade →</a>
+              </div>
+            </div>
+          )}
           <div className="fl-user-chip" onClick={() => setTab('settings')} style={{ cursor: 'pointer' }}>
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info">
