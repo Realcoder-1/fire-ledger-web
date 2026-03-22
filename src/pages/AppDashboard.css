@@ -604,4 +604,58 @@ body { background:var(--bg); color:var(--t1); font-family:'Inter',sans-serif; -w
   .fl-guide-nav-bar { display:none; }
   .fl-toast { max-width:calc(100vw - 32px); text-align:center; white-space:normal; }
   .fl-main::after { left:0; }
+}[data-theme="light"] {
+  --bg:            #f0f2f5;
+  --bg2:           #ffffff;
+  --bg3:           #f4f5f7;
+  --bg4:           #e8eaed;
+  --border:        rgba(0,0,0,0.08);
+  --border2:       rgba(0,0,0,0.14);
+  --t1:            #111318;
+  --t2:            #555a6b;
+  --t3:            #999daa;
+  --purple-light:  #7c3aed;
+  --purple-dark:   #5b21b6;
+  --purple-glow:   rgba(124,58,237,0.15);
+  --purple-subtle: rgba(124,58,237,0.08);
+  --green:         #16a34a;
+  --red:           #dc2626;
+  --gold:          #b45309;
+  --blue:          #2563eb;
+  --shadow:        0 2px 12px rgba(0,0,0,0.08);
 }
+
+[data-theme="light"] body {
+  background: var(--bg);
+  color: var(--t1);
+}
+
+[data-theme="light"] .fl-fire-hero::before {
+  background: radial-gradient(ellipse at 75% 50%, rgba(124,58,237,0.08) 0%, transparent 65%);
+}
+
+[data-theme="light"] .fl-fire-hours-row {
+  background: rgba(220,38,38,0.06);
+  border-color: rgba(220,38,38,0.18);
+}
+
+[data-theme="light"] .fl-fire-hours-num { color: #dc2626; }
+
+[data-theme="light"] .fl-hours-callout {
+  background: rgba(220,38,38,0.06);
+  border-color: rgba(220,38,38,0.18);
+}
+
+[data-theme="light"] .fl-hours-callout-num { color: #dc2626; }
+
+.fl-theme-toggle {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: opacity 0.15s;
+  align-self: flex-end;
+}
+.fl-theme-toggle:hover { opacity: 0.7; }

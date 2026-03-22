@@ -879,7 +879,7 @@ setShowOnboard(true);
             </button>
           ))}
         </nav>
-        <div className="fl-sidebar-footer">
+        <div className="fl-sidebar-footer" style={{gap: 10, paddingTop: 14}}>
           {isLifetime && (
             <div className="fl-trial-banner" style={{ borderColor: 'rgba(251,191,36,0.25)' }}>
               <div className="fl-trial-days" style={{ background: 'rgba(251,191,36,0.12)' }}>
@@ -901,14 +901,15 @@ setShowOnboard(true);
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
           </div>
-          <div className="fl-curr-wrap">
-            <button className="fl-curr-btn" onClick={() => setShowCurrMenu(p => !p)}>{currency}</button>
-            {showCurrMenu && <div className="fl-curr-menu">{Object.entries(CURRENCIES).map(([code, c]) => <button key={code} className={`fl-curr-opt ${currency === code ? 'active' : ''}`} onClick={() => { setCurrency(code); saveSettings(null, null, code); setShowCurrMenu(false); showToast(`Currency: ${code}`) }}>{c.symbol} {code}</button>)}</div>}
+          
           </div>
 <button className="fl-signout" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
   {darkMode ? '☀️' : '🌙'}
 </button>
-          <button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
+          <button className="fl-theme-toggle" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
+  {darkMode ? '☀️' : '🌙'}
+</button>
+<button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
         </div>
       </aside>
 
