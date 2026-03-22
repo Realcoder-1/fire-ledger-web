@@ -897,11 +897,16 @@ export default function AppDashboard() {
           ) : (
             <a href="/pricing" className="fl-upgrade-btn">Manage plan →</a>
           )}
-          <div className="fl-user-chip">
+          <div className="fl-user-chip" onClick={() => setTab('settings')} style={{ cursor: 'pointer' }}>
             <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
             <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
           </div>
-
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <button className="fl-theme-toggle" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+            <button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
+          </div>
         </div>
         <button className="fl-signout" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
           {darkMode ? '☀️' : '🌙'}
