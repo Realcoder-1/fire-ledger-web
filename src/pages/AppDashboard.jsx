@@ -456,7 +456,7 @@ export default function AppDashboard() {
   const [milestone, setMilestone] = useState(null);
   const [rawAmt, setRawAmt] = useState('');
   const [currency, setCurrency] = useState('USD');
-  const [showCurrMenu, setShowCurrMenu] = useState(false);
+
   const [mcResult, setMcResult] = useState(null);
   const [mcRunning, setMcRunning] = useState(false);
   const [projYears, setProjYears] = useState(35);
