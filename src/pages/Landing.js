@@ -574,12 +574,12 @@ const [waitlistMessage, setWaitlistMessage] = useState('');
             <p>A few years ago, I sat down and tried to answer a simple question: <strong>when can I actually stop working?</strong></p>
             <p>Not when the government says I can retire. Not a vague number from a generic calculator assuming I'd spend my whole career at one salary. The real question — based on what I actually earn, what I actually spend, and what I've actually saved.</p>
             <p>Every tool I found either required a finance degree to understand, gave me a number with no context, or was so generic it was useless. None of them tracked whether I was on pace. None told me what my discretionary spending was costing me in years of my life. None gave me the same clarity that a proper system would.</p>
-            <p>So I built FIRE Ledger. For myself. A system where I enter the numbers and get a date. Then track weekly whether I'm getting closer or further away. When I showed it to people in the finance space, they said others were going through the same thing.</p>
+            <p>So "So I built FIRE Ledger. For myself. A system where I enter my numbers and get a clear timeline of exactly when I can stop working, then track every week whether I'm getting closer or further away. As time passed, I realised others had long been asking the same question. So I decided to share it with the world. </p>
           </div>
           <div className="story-quote">
             <div className="story-quote-mark">"</div>
             <p className="story-quote-text">
-              The question isn't whether you can retire early. It's whether you've ever actually run the numbers. Most people haven't — not because they don't want to, but because no one gave them a tool simple enough to answer it in five minutes.
+              "Most people will work until they're told they can stop — not because they have to, but because they never had a system that showed them exactly when they could walk away and what it would take to get there faster. FIRE Ledger changes that. You put in your numbers, you get your date, and from that point on the system tracks every week whether your choices are buying back years of your life or costing you them. It doesn't just tell you where you stand. It tells you what to do about it.
             </p>
             <div className="story-quote-author">
               <div className="story-quote-avatar">F</div>
@@ -592,7 +592,7 @@ const [waitlistMessage, setWaitlistMessage] = useState('');
             <div className="validation-icon">✓</div>
             <div>
               <div className="validation-title">Validated by people in the space</div>
-              <p className="validation-body">"This addresses a real gap. The FIRE community has the philosophy — they've never had a tracking tool this focused on the actual number. The utility is clear."</p>
+              <p className="validation-body">"This is what the FIRE community has been missing. Not another calculator — a system that holds you accountable to your own timeline and tells you exactly what needs to change. Once you see your freedom date moving, you can't unsee it.""</p>
               <div className="validation-source">— Finance community feedback, March 2026</div>
             </div>
           </div>

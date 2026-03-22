@@ -92,7 +92,7 @@ function runMonteCarlo(currentSav, annualSav, annualExp, simYears = 35, runs = 5
 const makeFmt = (currency) => {
   const { symbol } = CURRENCIES[currency] || CURRENCIES.USD;
   return {
-    fmt: n => `${symbol}${Math.abs(n) >= 1000000 ? (n / 1000000).toFixed(1) + 'M' : Math.abs(n) >= 1000 ? (n / 1000).toFixed(0) + 'k' : Math.round(n)}`,
+    fmt: n => `${symbol}${Math.abs(parseFloat(n)).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,k' : Math.round(n)}`,
     fmtD: n => `${symbol}${Math.abs(parseFloat(n)).toFixed(2)}`,
     sym: symbol,
   };
@@ -1606,7 +1606,7 @@ setShowOnboard(true);
                     <button key={code} className={`fl-curr-settings-btn ${currency === code ? 'active' : ''}`} onClick={() => { setCurrency(code); saveSettings(null, null, code); showToast(`Currency set to ${code}`); }}>
                       <span style={{ fontWeight: 700, fontSize: 18 }}>{c.symbol}</span>
                       <span style={{ fontWeight: 700, fontSize: 13 }}>{code}</span>
-                      <span style={{ fontSize: 11, color: 'var(--t2)' }}>{c.name}</span>
+                      <span style={{ fontSize: 11, color: 'var(--t1)' }}>{c.name}</span>
                     </button>
                   ))}
                 </div>
