@@ -879,828 +879,837 @@ export default function AppDashboard() {
             </button>
           ))}
         </nav>
-        <div className="fl-sidebar-footer" style={{ gap: 10, paddingTop: 14 }}>
-          {isLifetime && (
-            <div className="fl-trial-banner" style={{ borderColor: 'rgba(251,191,36,0.25)' }}>
-              <div className="fl-trial-days" style={{ background: 'rgba(251,191,36,0.12)' }}>
-                <span className="fl-trial-num" style={{ color: '#fbbf24', fontSize: 16 }}>⚡</span>
-                <span className="fl-trial-label">Local</span>
-              </div>
-              <div className="fl-trial-info">
-                <span>Session only</span>
-                <a href="/pricing" className="fl-trial-upgrade">Upgrade →</a>
-              </div>
+        <div className="fl-sidebar-footer">
+          <div className="fl-user-chip" onClick={() => setTab('settings')} style={{ cursor: 'pointer' }}>
+            <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
+            <div className="fl-user-info">
+              <span className="fl-user-email">{user?.email?.split('@')[0]}</span>
+              <span className="fl-user-plan">Pro</span>
             </div>
-          )}
+          </div>
+          <div className="fl-sidebar-divider" />
           {isLifetime ? (
             <a href="/pricing" className="fl-upgrade-btn fl-upgrade-btn-session">Upgrade to save data →</a>
           ) : (
             <a href="/pricing" className="fl-upgrade-btn">Manage plan →</a>
           )}
-          <div className="fl-user-chip" onClick={() => setTab('settings')} style={{ cursor: 'pointer' }}>
-            <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-            <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
             <button className="fl-theme-toggle" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
               {darkMode ? '☀️' : '🌙'}
             </button>
             <button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
           </div>
-
-
         </div>
+          )}
+        {isLifetime ? (
+          <a href="/pricing" className="fl-upgrade-btn fl-upgrade-btn-session">Upgrade to save data →</a>
+        ) : (
+          <a href="/pricing" className="fl-upgrade-btn">Manage plan →</a>
+        )}
+        <div className="fl-user-chip" onClick={() => setTab('settings')} style={{ cursor: 'pointer' }}>
+          <div className="fl-avatar">{user?.email?.[0]?.toUpperCase()}</div>
+          <div className="fl-user-info"><span className="fl-user-email">{user?.email?.split('@')[0]}</span><span className="fl-user-plan">Pro</span></div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <button className="fl-theme-toggle" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+          <button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
+        </div>
+
+
+    </div>
       </aside >
 
-      <main className="fl-main" id="fl-main-scroll">
+    <main className="fl-main" id="fl-main-scroll">
 
-        {/* ── DASHBOARD ── */}
-        {tab === 'home' && (
-          <div key="home" className="fl-page">
-            <div className="fl-page-top">
-              <div>
-                <h1 className="fl-title">{now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening'}</h1>
-                <p className="fl-subtitle">{todaySpd > 0 ? `${fmtD(todaySpd)} spent today` : 'No spending logged today'}{streak > 1 && <span className="fl-streak"> · {streak}-day streak</span>}</p>
-              </div>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <div className="fl-month-nav"><button onClick={() => navMonth(-1)}><Icon.ChevLeft /></button><span>{MONTHS[selMonth]} {selYear}</span><button onClick={() => navMonth(1)} disabled={isCurr}><Icon.ChevRight /></button></div>
-                <button className="fl-add-fab" onClick={() => { setEditTx(null); setRawAmt(''); setForm({ amount: '', description: '', type: 'need', category: '', date: new Date().toISOString().split('T')[0], recurring: false }); setShowAdd(true); setTimeout(() => addAmtRef.current?.focus(), 80); }}><Icon.Plus />Log transaction</button>
-              </div>
+      {/* ── DASHBOARD ── */}
+      {tab === 'home' && (
+        <div key="home" className="fl-page">
+          <div className="fl-page-top">
+            <div>
+              <h1 className="fl-title">{now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening'}</h1>
+              <p className="fl-subtitle">{todaySpd > 0 ? `${fmtD(todaySpd)} spent today` : 'No spending logged today'}{streak > 1 && <span className="fl-streak"> · {streak}-day streak</span>}</p>
             </div>
-
-            {isLifetime && (
-              <div className="fl-lifetime-nudge">
-                <span>⚡ Session only — your data will clear when you close this tab.</span>
-                <a href="/pricing" className="fl-lifetime-upgrade">Save data permanently →</a>
-              </div>
-            )}
-
-            {/* Hero — reflects active FIRE mode */}
-            <div className="fl-fire-hero">
-              <div className="fl-fire-hero-left">
-                <div className="fl-fire-label">
-                  {fireMode === 'standard' ? 'Financial Independence' : fireMode === 'lean' ? 'Lean FIRE' : fireMode === 'fat' ? 'Fat FIRE' : fireMode === 'coast' ? 'Coast FIRE' : 'Barista FIRE'}
-                  {' · '}{CURRENCIES[currency].symbol} {currency}
-                  {fireMode !== 'standard' && (
-                    <button className="fl-fire-mode-badge-btn" onClick={() => setTab('fire')} title="Change FIRE mode" style={{ marginBottom: 4, background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.4)', color: 'var(--purple-light)', borderRadius: 6, padding: '2px 8px', fontSize: 11, cursor: 'pointer' }}>
-                      {fireMode === 'lean' ? 'Lean' : fireMode === 'fat' ? 'Fat' : fireMode === 'coast' ? 'Coast' : 'Barista'}
-                    </button>
-                  )}
-                </div>
-                <div className="fl-fire-years">
-                  {(activeModeYears === Infinity || (activeModeYears === 0 && fireMode === 'coast' && coastReached)) ? '—' : activeModeYears}
-                  <span className="fl-fire-years-unit">
-                    {fireMode === 'coast' && coastReached ? ' coast reached' : activeModeYears !== Infinity ? ' years away' : ''}
-                  </span>
-                </div>
-                <div className="fl-fire-date">
-                  {fireMode === 'coast' && coastReached
-                    ? 'You have reached Coast FIRE — keep contributing and compound does the rest'
-                    : <>Projected freedom: <strong>{activeModeDate}</strong> · age <strong>{isFinite(ageAtFIRE) ? ageAtFIRE : '—'}</strong>{fireMode === 'barista' && <> · part-time {fmt(baristaPartTimeIncome)}/yr</>}</>
-                  }
-                </div>
-                {fireMode === 'barista' && (
-                  <div className="fl-fire-barista-note" style={{ marginTop: 6, fontSize: 13 }}>
-                    Work part-time earning {fmt(baristaPartTimeIncome)}/yr · portfolio covers the rest
-                  </div>
-                )}
-                {isFinite(activeModeYears) && activeModeYears > 0 && (
-                  <div className="fl-fire-hours-row" style={{ maxWidth: '55%' }}>
-                    <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
-                    {' '}
-                    <span className="fl-fire-hours-label">working hours until you never have to work again</span>
-                  </div>
-                )}
-                <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{ width: `${activeModeProgress}%` }} /></div>
-                <div className="fl-fire-progress-label">{activeModeProgress.toFixed(1)}% of the way there &nbsp;·&nbsp; {fmt(fire.currentSavings)} of {fmt(activeModeNum)}</div>
-              </div>
-              <div className="fl-fire-hero-right">
-                <svg viewBox="0 0 140 140" className="fl-fire-ring">
-                  <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="11" />
-                  <circle cx="70" cy="70" r="56" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="11"
-                    strokeDasharray="352" strokeDashoffset={352 - (352 * activeModeProgress / 100)}
-                    strokeLinecap="round" transform="rotate(-90 70 70)" />
-                  <defs><linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="var(--purple-light)" />
-                    <stop offset="100%" stopColor="var(--purple-dark)" />
-                  </linearGradient></defs>
-                </svg>
-                <div className="fl-ring-center">
-                  <span className="fl-ring-pct">{activeModeProgress.toFixed(0)}%</span>
-                  <span className="fl-ring-sub">to {fireMode === 'lean' ? 'Lean ' : fireMode === 'fat' ? 'Fat ' : fireMode === 'coast' ? 'Coast ' : fireMode === 'barista' ? 'Barista ' : ''}FIRE</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="fl-metrics">
-              {[
-                { label: 'Income', value: fmt(income), sub: 'This month', color: 'var(--green)', icon: <Icon.ArrowUp /> },
-                { label: 'Spent', value: fmt(needs + wants), sub: `${income > 0 ? (((needs + wants) / income) * 100).toFixed(0) : 0}% of income`, color: 'var(--red)', icon: <Icon.ArrowDown /> },
-                { label: 'Saved', value: fmt(savings), sub: `${savRate}% savings rate`, color: 'var(--gold)', icon: <Icon.ArrowRight /> },
-                { label: 'Grade', value: grade, sub: 'Monthly savings score', color: gradeClr, icon: <Icon.Star /> },
-              ].map((m, i) => (
-                <div key={i} className="fl-metric-card" style={{ '--accent': m.color }}>
-                  <div className="fl-metric-top"><span className="fl-metric-label">{m.label}</span><span style={{ color: m.color }} className="fl-metric-icon-wrap">{m.icon}</span></div>
-                  <div className="fl-metric-value" style={{ color: m.color }}>{m.value}</div>
-                  <div className="fl-metric-sub">{m.sub}</div>
-                </div>
-              ))}
-            </div>
-
-            <GuidanceHomeWidget txs={mTxs} fire={fire} currency={currency} />
-
-            <div className="fl-section-header"><h2 className="fl-section-title">Recent Transactions</h2><button className="fl-link-btn" onClick={() => setTab('transactions')}>View all</button></div>
-            <div className="fl-tx-list">
-              {txs.slice(0, 8).map(t => (
-                <div key={t.id} className="fl-tx-row">
-                  <div className="fl-tx-type-dot" style={{ background: amtColor(t.type) }} />
-                  <div className="fl-tx-body"><span className="fl-tx-desc">{t.description}</span><span className="fl-tx-meta">{t.category || TYPE_LABEL[t.type]} · {t.date}</span></div>
-                  <span className="fl-tx-amount" style={{ color: amtColor(t.type) }}>{t.type === 'income' || t.type === 'saving' ? '+' : '-'}{fmtD(t.amount)}</span>
-                </div>
-              ))}
-              {txs.length === 0 && <div className="fl-empty"><p>No transactions yet. Log your first transaction to get started.</p><button className="fl-btn-primary" onClick={() => setShowAdd(true)}>Log transaction</button></div>}
-            </div>
-          </div>
-        )}
-
-        {/* ── FIRE CALC ── (moved up in nav) */}
-        {tab === 'fire' && (() => {
-          const displayNum = fireMode === 'lean' ? leanNum : fireMode === 'fat' ? fatNum : fireMode === 'coast' ? coastAmt : fireMode === 'barista' ? baristaNum : fireCalc.fireNum;
-          const displayProgress = displayNum > 0 ? Math.min((fire.currentSavings / displayNum) * 100, 100) : 0;
-          const displayAgeAtFIRE = currentAge + (isFinite(activeModeYears) ? activeModeYears : 0);
-          return (
-            <div key="fire" className="fl-page">
-              <div className="fl-page-top">
-                <div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div>
-                <div className="fl-fire-mode-tabs">
-                  {[
-                    { id: 'standard', label: 'FIRE' },
-                    { id: 'lean', label: 'Lean FIRE' },
-                    { id: 'barista', label: 'Barista FIRE', icon: <Icon.Coffee /> },
-                    { id: 'coast', label: 'Coast FIRE' },
-                    { id: 'fat', label: 'Fat FIRE' },
-                  ].map(m => (
-                    <button key={m.id} className={`fl-fire-mode-btn ${fireMode === m.id ? 'active' : ''}`} onClick={() => { setFireMode(m.id); saveSettings(null, null, null, null, null, m.id); }}>
-                      {m.icon && <span style={{ marginRight: 4 }}>{m.icon}</span>}{m.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="fl-fire-mode-desc">
-                {fireMode === 'standard' && <p><strong>FIRE</strong> — Standard financial independence. 25× your current annual expenses invested. Withdraw {swr}% per year indefinitely.</p>}
-                {fireMode === 'lean' && <p><strong>Lean FIRE</strong> — Retire on 75% of your current expenses. Requires a frugal lifestyle. FIRE number = {fmt(leanNum)}.</p>}
-                {fireMode === 'fat' && <p><strong>Fat FIRE</strong> — Retire on 150% of your current expenses. Full lifestyle, no compromises. FIRE number = {fmt(fatNum)}.</p>}
-                {fireMode === 'coast' && <p><strong>Coast FIRE</strong> — Save enough now that compound growth alone reaches your FIRE number. Coast number = {fmt(coastAmt)}. {coastReached ? '✓ You have reached Coast FIRE.' : 'You need ' + fmt(Math.max(0, coastAmt - fire.currentSavings)) + ' more.'}</p>}
-                {fireMode === 'barista' && <p><strong>Barista FIRE</strong> — Semi-retire now. Work part-time earning ~{fmt(baristaPartTimeIncome)}/yr to cover 40% of expenses. Your portfolio ({fmt(baristaNum)}) covers the remaining 60%. {baristaReached ? '✓ You have reached Barista FIRE.' : 'You need ' + fmt(Math.max(0, baristaNum - fire.currentSavings)) + ' more.'}</p>}
-              </div>
-
-              <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Scroll down to see your FIRE projection and statistics</span></div>
-              <div className="fl-fire-layout">
-                <div className="fl-fire-inputs">
-                  <h3>Your Numbers</h3>
-
-                  {/* Age inputs — always visible */}
-                  <div className="fl-fire-field">
-                    <label>Age</label>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <div className="fl-fire-input-wrap" style={{ flex: 1 }}>
-                        <span className="fl-input-prefix">Now</span>
-                        <input className="fl-fire-input" type="number" placeholder="30"
-                          value={currentAge || ''} onChange={e => { setCurrentAge(parseInt(e.target.value) || 0); }} />
-                      </div>
-                      <div className="fl-fire-input-wrap" style={{ flex: 1 }}>
-                        <span className="fl-input-prefix">Goal</span>
-                        <input className="fl-fire-input" type="number" placeholder="45"
-                          value={retireAge || ''} onChange={e => { setRetireAge(parseInt(e.target.value) || 0); }} />
-                      </div>
-                    </div>
-                    <span className="fl-fire-hint">{retireAge > currentAge ? `${retireAge - currentAge} years to your target retirement age` : 'Set your current and target age'}</span>
-                  </div>
-
-                  {[
-                    { key: 'annualExpenses', label: 'Annual Expenses', hint: 'Expected yearly spend in retirement' },
-                    { key: 'annualSavings', label: 'Annual Savings', hint: 'Amount you invest per year' },
-                    { key: 'currentSavings', label: 'Current Savings', hint: 'Total already invested or saved' },
-                  ].map(f => (
-                    <div key={f.key} className="fl-fire-field">
-                      <label>{f.label}</label>
-                      <div className="fl-fire-input-wrap">
-                        <span className="fl-input-prefix">{sym}</span>
-                        <input className="fl-fire-input" type="number" placeholder="0"
-                          value={fire[f.key] || ''}
-                          onChange={e => setFire(p => ({ ...p, [f.key]: parseFloat(e.target.value) || 0 }))} />
-                      </div>
-                      <span className="fl-fire-hint">{f.hint}</span>
-                    </div>
-                  ))}
-
-                  <div className="fl-fire-field">
-                    <label>Inflation Rate</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">%</span>
-                      <input className="fl-fire-input" type="number" placeholder="3" step="0.5"
-                        value={inflation || ''} onChange={e => setInflation(parseFloat(e.target.value) || 0)} />
-                    </div>
-                    <span className="fl-fire-hint">Real return adjusted for inflation (default 3%)</span>
-                  </div>
-
-                  <div className="fl-fire-field">
-                    <label>Safe Withdrawal Rate</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">%</span>
-                      <input className="fl-fire-input" type="number" placeholder="4" step="0.1"
-                        value={swr || ''} onChange={e => setSwr(parseFloat(e.target.value) || 4)} />
-                    </div>
-                    <span className="fl-fire-hint">Annual % drawn from portfolio (default 4%)</span>
-                  </div>
-
-                  {(fireMode === 'coast') && <>
-                    <div className="fl-fire-field">
-                      <label>Contributions</label>
-                      <div className="fl-contrib-toggle">
-                        <button className={contribMode === 'annual' ? 'active' : ''} onClick={() => setContribMode('annual')}>Annual</button>
-                        <button className={contribMode === 'monthly' ? 'active' : ''} onClick={() => setContribMode('monthly')}>Monthly</button>
-                      </div>
-                      <div className="fl-fire-input-wrap" style={{ marginTop: 6 }}>
-                        <span className="fl-input-prefix">{sym}</span>
-                        <input className="fl-fire-input" type="number" placeholder="0"
-                          value={contribs || ''} onChange={e => setContribs(parseFloat(e.target.value) || 0)} />
-                      </div>
-                      <span className="fl-fire-hint">Optional — how much you still plan to contribute</span>
-                    </div>
-                  </>}
-
-                  {fireMode === 'barista' && (
-                    <div className="fl-fire-field">
-                      <label>Part-time income coverage</label>
-                      <div className="fl-fire-input-wrap">
-                        <span className="fl-input-prefix">{sym}</span>
-                        <input className="fl-fire-input" type="number" readOnly value={Math.round(baristaPartTimeIncome)} style={{ opacity: 0.6 }} />
-                      </div>
-                      <span className="fl-fire-hint">40% of annual expenses — what your part-time work covers</span>
-                    </div>
-                  )}
-
-                  <button className="fl-btn-primary" style={{ width: '100%' }} onClick={() => { saveSettings(fire, null, null, currentAge, retireAge, fireMode); showToast('Settings saved'); }}>Save settings</button>
-
-                  <div className="fl-whatif">
-                    <h4>What if I saved more?</h4>
-                    <div className="fl-whatif-row">
-                      <span style={{ whiteSpace: 'nowrap', minWidth: 90 }}>{sym}{whatIf.toLocaleString()} /mo</span>
-                      <input type="range" min="0" max="5000" step="50" value={whatIf} onChange={e => setWhatIf(parseInt(e.target.value))} className="fl-slider" />
-                    </div>
-                    {whatIf > 0 && <div className="fl-whatif-result">Saves <strong style={{ color: 'var(--green)' }}>{Math.max(0, fireCalc.years - fireWI.years)} years</strong> — retire in <strong style={{ color: 'var(--purple-light)' }}>{fireWI.years} years</strong></div>}
-                  </div>
-                </div>
-
-                <div className="fl-fire-results">
-                  <div className="fl-fire-big-ring">
-                    <svg viewBox="0 0 200 200">
-                      <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16" />
-                      <circle cx="100" cy="100" r="85" fill="none" stroke="url(#fire-calc-grad)" strokeWidth="16"
-                        strokeDasharray="534" strokeDashoffset={534 - (534 * displayProgress / 100)}
-                        strokeLinecap="round" transform="rotate(-90 100 100)" />
-                      <defs><linearGradient id="fire-calc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--purple-light)" />
-                        <stop offset="100%" stopColor="var(--purple-dark)" />
-                      </linearGradient></defs>
-                    </svg>
-                    <div className="fl-fire-big-center">
-                      <span className="fl-fire-big-pct">{displayProgress.toFixed(1)}%</span>
-                      <span className="fl-fire-big-sub">to {fireMode === 'lean' ? 'Lean ' : fireMode === 'fat' ? 'Fat ' : fireMode === 'coast' ? 'Coast ' : fireMode === 'barista' ? 'Barista ' : ''}FIRE</span>
-                    </div>
-                  </div>
-
-                  <div className="fl-fire-stat-grid">
-                    {/* Common stats for all modes */}
-                    {(() => {
-                      const modeLabel = fireMode === 'lean' ? 'Lean ' : fireMode === 'fat' ? 'Fat ' : fireMode === 'coast' ? 'Coast ' : fireMode === 'barista' ? 'Barista ' : '';
-                      const modeIncome = displayNum * (swr / 100);
-                      const stats = fireMode === 'coast' ? [
-                        { label: 'Coast FIRE Number', value: fmt(coastAmt), hint: 'Needed now to coast', color: 'var(--gold)' },
-                        { label: 'Current Savings', value: fmt(fire.currentSavings), hint: 'What you have today', color: coastReached ? 'var(--green)' : 'var(--t1)' },
-                        { label: 'Gap to Coast', value: coastReached ? 'Reached ✓' : fmt(Math.max(0, coastAmt - fire.currentSavings)), hint: coastReached ? 'Stop contributing — compound does the rest' : 'Still needed', color: coastReached ? 'var(--green)' : 'var(--red)' },
-                        { label: 'Age at Freedom', value: coastReached ? currentAge : displayAgeAtFIRE, hint: `You'd be ${coastReached ? currentAge : displayAgeAtFIRE} when you stop working`, color: 'var(--purple-light)' },
-                        { label: 'Annual Income', value: fmt(modeIncome), hint: `At ${swr}% withdrawal`, color: 'var(--green)' },
-                        { label: 'Monthly Income', value: fmt(modeIncome / 12), hint: 'Per month in retirement', color: 'var(--green)' },
-                      ] : fireMode === 'barista' ? [
-                        { label: 'Barista FIRE Number', value: fmt(baristaNum), hint: '60% of expenses × 25', color: 'var(--gold)' },
-                        { label: 'Gap', value: baristaReached ? 'Reached ✓' : fmt(Math.max(0, baristaNum - fire.currentSavings)), hint: baristaReached ? 'Semi-retire now' : 'Still needed', color: baristaReached ? 'var(--green)' : 'var(--red)' },
-                        { label: 'Years Away', value: baristaReached ? 0 : activeModeYears === Infinity ? '—' : activeModeYears, hint: 'At 7% return', color: baristaReached ? 'var(--green)' : 'var(--gold)' },
-                        { label: 'Age at Freedom', value: displayAgeAtFIRE, hint: `You'd be ${displayAgeAtFIRE} when you semi-retire`, color: 'var(--purple-light)' },
-                        { label: 'Portfolio income', value: fmt(baristaNum * (swr / 100)), hint: `${swr}% from portfolio`, color: 'var(--green)' },
-                        { label: 'Part-time needed', value: fmt(baristaPartTimeIncome), hint: '40% of expenses covered by work', color: 'var(--gold)' },
-                      ] : [
-                        { label: `${modeLabel}FIRE Number`, value: fmt(displayNum), hint: fireMode === 'lean' ? '75% of expenses × 25' : fireMode === 'fat' ? '150% of expenses × 25' : '25× annual expenses', color: 'var(--gold)' },
-                        { label: 'Years Away', value: adjFireCalc.years === Infinity ? '—' : activeModeYears, hint: `At 7% return, ${inflation}% inflation`, color: activeModeYears <= 10 ? 'var(--green)' : activeModeYears <= 20 ? 'var(--gold)' : 'var(--red)' },
-                        { label: 'Freedom Date', value: activeModeDate, hint: 'Inflation-adjusted projection', color: 'var(--purple-light)' },
-                        { label: 'Age at Freedom', value: displayAgeAtFIRE, hint: `You'll be ${displayAgeAtFIRE} when you stop working`, color: 'var(--purple-light)' },
-                        { label: 'Annual Income', value: fmt(modeIncome), hint: `At ${swr}% withdrawal rate`, color: 'var(--green)' },
-                        { label: 'Monthly Income', value: fmt(modeIncome / 12), hint: 'Per month in retirement', color: 'var(--green)' },
-                      ];
-                      return stats.map((s, i) => (
-                        <div key={i} className="fl-fire-stat">
-                          <span className="fl-fire-stat-label">{s.label}</span>
-                          <span className="fl-fire-stat-value" style={{ color: s.color, fontSize: s.label.includes('Date') || s.label.includes('Gap') ? 16 : 22 }}>{s.value}</span>
-                          <span className="fl-fire-stat-hint">{s.hint}</span>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-
-                  {/* Working hours remaining */}
-                  {isFinite(activeModeYears) && activeModeYears > 0 && (
-                    <div className="fl-hours-callout">
-                      <span className="fl-hours-callout-num">{workingHoursLeft.toLocaleString()}</span>
-                      {' '}
-                      <span className="fl-hours-callout-label">working hours until you never have to work again</span>
-                    </div>
-                  )}
-
-                  {inflation > 0 && adjFireCalc.years !== fireCalc.years && (
-                    <div className="fl-inflation-note">
-                      ⚠ Inflation-adjusted: adds <strong style={{ margin: '0 4px' }}>{adjFireCalc.years - fireCalc.years} years</strong> vs nominal projection
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* ── INSIGHTS ── */}
-        {tab === 'insights' && (
-          <div key="insights" className="fl-page">
-            <div className="fl-page-top">
-              <div><h1 className="fl-title">Insights</h1><p className="fl-subtitle">Financial patterns for {MONTHS[selMonth]} {selYear}</p></div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <div className="fl-month-nav"><button onClick={() => navMonth(-1)}><Icon.ChevLeft /></button><span>{MONTHS[selMonth]} {selYear}</span><button onClick={() => navMonth(1)} disabled={isCurr}><Icon.ChevRight /></button></div>
+              <button className="fl-add-fab" onClick={() => { setEditTx(null); setRawAmt(''); setForm({ amount: '', description: '', type: 'need', category: '', date: new Date().toISOString().split('T')[0], recurring: false }); setShowAdd(true); setTimeout(() => addAmtRef.current?.focus(), 80); }}><Icon.Plus />Log transaction</button>
             </div>
-            <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Scroll down for your savings grade and spending breakdown</span></div>
-            <div className="fl-insights-grid">
-              <div className="fl-insight-card fl-insight-wide">
-                <h3>Monthly Overview</h3>
-                <div className="fl-overview-bars">
-                  {[{ label: 'Income', val: income, color: 'var(--green)' }, { label: 'Needs', val: needs, color: 'var(--red)' }, { label: 'Wants', val: wants, color: 'var(--red)' }, { label: 'Savings', val: savings, color: 'var(--gold)' }].map(b => (
-                    <div key={b.label} className="fl-bar-row">
-                      <span className="fl-bar-label">{b.label}</span>
-                      <div className="fl-bar-track"><div className="fl-bar-fill" style={{ width: `${income > 0 ? Math.min((b.val / income) * 100, 100) : 0}%`, background: b.color }} /></div>
-                      <span className="fl-bar-val" style={{ color: b.color }}>{fmt(b.val)}</span>
-                    </div>
-                  ))}
-                </div>
+          </div>
+
+          {isLifetime && (
+            <div className="fl-lifetime-nudge">
+              <span>⚡ Session only — your data will clear when you close this tab.</span>
+              <a href="/pricing" className="fl-lifetime-upgrade">Save data permanently →</a>
+            </div>
+          )}
+
+          {/* Hero — reflects active FIRE mode */}
+          <div className="fl-fire-hero">
+            <div className="fl-fire-hero-left">
+              <div className="fl-fire-label">
+                {fireMode === 'standard' ? 'Financial Independence' : fireMode === 'lean' ? 'Lean FIRE' : fireMode === 'fat' ? 'Fat FIRE' : fireMode === 'coast' ? 'Coast FIRE' : 'Barista FIRE'}
+                {' · '}{CURRENCIES[currency].symbol} {currency}
+                {fireMode !== 'standard' && (
+                  <button className="fl-fire-mode-badge-btn" onClick={() => setTab('fire')} title="Change FIRE mode" style={{ marginBottom: 4, background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.4)', color: 'var(--purple-light)', borderRadius: 6, padding: '2px 8px', fontSize: 11, cursor: 'pointer' }}>
+                    {fireMode === 'lean' ? 'Lean' : fireMode === 'fat' ? 'Fat' : fireMode === 'coast' ? 'Coast' : 'Barista'}
+                  </button>
+                )}
               </div>
-              <div className="fl-insight-card">
-                <h3>Savings Grade</h3>
-                <div className="fl-grade-display"><span className="fl-grade-letter" style={{ color: gradeClr }}>{grade}</span><span className="fl-grade-rate">{savRate}% savings rate</span></div>
-                <div className="fl-grade-tiers">
-                  {[{ g: 'A+', min: 60, max: 999 }, { g: 'A', min: 50, max: 60 }, { g: 'B', min: 40, max: 50 }, { g: 'C', min: 30, max: 40 }, { g: 'D', min: 0, max: 30 }].map(t => (
-                    <div key={t.g} className={`fl-grade-tier ${gradeRaw >= t.min && gradeRaw < t.max ? 'active' : ''}`}><span>{t.g}</span><span>{t.min}%+</span></div>
-                  ))}
-                </div>
+              <div className="fl-fire-years">
+                {(activeModeYears === Infinity || (activeModeYears === 0 && fireMode === 'coast' && coastReached)) ? '—' : activeModeYears}
+                <span className="fl-fire-years-unit">
+                  {fireMode === 'coast' && coastReached ? ' coast reached' : activeModeYears !== Infinity ? ' years away' : ''}
+                </span>
               </div>
-              <div className="fl-insight-card">
-                <h3>50 / 30 / 20 Rule</h3>
-                <div className="fl-rule-list">
-                  {[{ label: 'Needs', actual: income > 0 ? (needs / income) * 100 : 0, target: 50, color: 'var(--red)' }, { label: 'Wants', actual: income > 0 ? (wants / income) * 100 : 0, target: 30, color: 'var(--red)' }, { label: 'Savings', actual: income > 0 ? (savings / income) * 100 : 0, target: 20, color: 'var(--gold)' }].map(r => (
-                    <div key={r.label} className="fl-rule-row">
-                      <span>{r.label}</span>
-                      <div className="fl-rule-bar-track"><div className="fl-rule-bar-fill" style={{ width: `${Math.min(r.actual, 100)}%`, background: r.color }} /><div className="fl-rule-target" style={{ left: `${r.target}%` }} /></div>
-                      <span style={{ color: r.actual <= r.target + 5 ? 'var(--green)' : 'var(--red)', fontWeight: 700, minWidth: 36, textAlign: 'right' }}>{r.actual.toFixed(0)}%</span>
-                    </div>
-                  ))}
-                </div>
+              <div className="fl-fire-date">
+                {fireMode === 'coast' && coastReached
+                  ? 'You have reached Coast FIRE — keep contributing and compound does the rest'
+                  : <>Projected freedom: <strong>{activeModeDate}</strong> · age <strong>{isFinite(ageAtFIRE) ? ageAtFIRE : '—'}</strong>{fireMode === 'barista' && <> · part-time {fmt(baristaPartTimeIncome)}/yr</>}</>
+                }
               </div>
-              <div className="fl-insight-card">
-                <h3>Top Expenses</h3>
-                {Object.entries(mTxs.filter(t => t.type === 'need' || t.type === 'want').reduce((a, t) => { const k = t.category || t.description; a[k] = (a[k] || 0) + t.amount; return a; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([cat, amt]) => (
-                  <div key={cat} className="fl-top-exp"><span>{cat}</span><div className="fl-top-exp-bar" style={{ width: `${income > 0 ? Math.min((amt / income) * 100, 60) : 10}%` }} /><span style={{ color: 'var(--red)', fontWeight: 600 }}>{fmt(amt)}</span></div>
+              {fireMode === 'barista' && (
+                <div className="fl-fire-barista-note" style={{ marginTop: 6, fontSize: 13 }}>
+                  Work part-time earning {fmt(baristaPartTimeIncome)}/yr · portfolio covers the rest
+                </div>
+              )}
+              {isFinite(activeModeYears) && activeModeYears > 0 && (
+                <div className="fl-fire-hours-row" style={{ maxWidth: '55%' }}>
+                  <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
+                  {' '}
+                  <span className="fl-fire-hours-label">working hours until you never have to work again</span>
+                </div>
+              )}
+              <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{ width: `${activeModeProgress}%` }} /></div>
+              <div className="fl-fire-progress-label">{activeModeProgress.toFixed(1)}% of the way there &nbsp;·&nbsp; {fmt(fire.currentSavings)} of {fmt(activeModeNum)}</div>
+            </div>
+            <div className="fl-fire-hero-right">
+              <svg viewBox="0 0 140 140" className="fl-fire-ring">
+                <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="11" />
+                <circle cx="70" cy="70" r="56" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="11"
+                  strokeDasharray="352" strokeDashoffset={352 - (352 * activeModeProgress / 100)}
+                  strokeLinecap="round" transform="rotate(-90 70 70)" />
+                <defs><linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="var(--purple-light)" />
+                  <stop offset="100%" stopColor="var(--purple-dark)" />
+                </linearGradient></defs>
+              </svg>
+              <div className="fl-ring-center">
+                <span className="fl-ring-pct">{activeModeProgress.toFixed(0)}%</span>
+                <span className="fl-ring-sub">to {fireMode === 'lean' ? 'Lean ' : fireMode === 'fat' ? 'Fat ' : fireMode === 'coast' ? 'Coast ' : fireMode === 'barista' ? 'Barista ' : ''}FIRE</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="fl-metrics">
+            {[
+              { label: 'Income', value: fmt(income), sub: 'This month', color: 'var(--green)', icon: <Icon.ArrowUp /> },
+              { label: 'Spent', value: fmt(needs + wants), sub: `${income > 0 ? (((needs + wants) / income) * 100).toFixed(0) : 0}% of income`, color: 'var(--red)', icon: <Icon.ArrowDown /> },
+              { label: 'Saved', value: fmt(savings), sub: `${savRate}% savings rate`, color: 'var(--gold)', icon: <Icon.ArrowRight /> },
+              { label: 'Grade', value: grade, sub: 'Monthly savings score', color: gradeClr, icon: <Icon.Star /> },
+            ].map((m, i) => (
+              <div key={i} className="fl-metric-card" style={{ '--accent': m.color }}>
+                <div className="fl-metric-top"><span className="fl-metric-label">{m.label}</span><span style={{ color: m.color }} className="fl-metric-icon-wrap">{m.icon}</span></div>
+                <div className="fl-metric-value" style={{ color: m.color }}>{m.value}</div>
+                <div className="fl-metric-sub">{m.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          <GuidanceHomeWidget txs={mTxs} fire={fire} currency={currency} />
+
+          <div className="fl-section-header"><h2 className="fl-section-title">Recent Transactions</h2><button className="fl-link-btn" onClick={() => setTab('transactions')}>View all</button></div>
+          <div className="fl-tx-list">
+            {txs.slice(0, 8).map(t => (
+              <div key={t.id} className="fl-tx-row">
+                <div className="fl-tx-type-dot" style={{ background: amtColor(t.type) }} />
+                <div className="fl-tx-body"><span className="fl-tx-desc">{t.description}</span><span className="fl-tx-meta">{t.category || TYPE_LABEL[t.type]} · {t.date}</span></div>
+                <span className="fl-tx-amount" style={{ color: amtColor(t.type) }}>{t.type === 'income' || t.type === 'saving' ? '+' : '-'}{fmtD(t.amount)}</span>
+              </div>
+            ))}
+            {txs.length === 0 && <div className="fl-empty"><p>No transactions yet. Log your first transaction to get started.</p><button className="fl-btn-primary" onClick={() => setShowAdd(true)}>Log transaction</button></div>}
+          </div>
+        </div>
+      )}
+
+      {/* ── FIRE CALC ── (moved up in nav) */}
+      {tab === 'fire' && (() => {
+        const displayNum = fireMode === 'lean' ? leanNum : fireMode === 'fat' ? fatNum : fireMode === 'coast' ? coastAmt : fireMode === 'barista' ? baristaNum : fireCalc.fireNum;
+        const displayProgress = displayNum > 0 ? Math.min((fire.currentSavings / displayNum) * 100, 100) : 0;
+        const displayAgeAtFIRE = currentAge + (isFinite(activeModeYears) ? activeModeYears : 0);
+        return (
+          <div key="fire" className="fl-page">
+            <div className="fl-page-top">
+              <div><h1 className="fl-title">FIRE Calculator</h1><p className="fl-subtitle">Financial Independence, Retire Early</p></div>
+              <div className="fl-fire-mode-tabs">
+                {[
+                  { id: 'standard', label: 'FIRE' },
+                  { id: 'lean', label: 'Lean FIRE' },
+                  { id: 'barista', label: 'Barista FIRE', icon: <Icon.Coffee /> },
+                  { id: 'coast', label: 'Coast FIRE' },
+                  { id: 'fat', label: 'Fat FIRE' },
+                ].map(m => (
+                  <button key={m.id} className={`fl-fire-mode-btn ${fireMode === m.id ? 'active' : ''}`} onClick={() => { setFireMode(m.id); saveSettings(null, null, null, null, null, m.id); }}>
+                    {m.icon && <span style={{ marginRight: 4 }}>{m.icon}</span>}{m.label}
+                  </button>
                 ))}
-                {mTxs.filter(t => t.type === 'need' || t.type === 'want').length === 0 && <p className="fl-empty-sm">No expenses this month</p>}
               </div>
             </div>
-            <GuidanceInsightsPanel txs={mTxs} fire={fire} currency={currency} />
-          </div>
-        )}
 
-        {/* ── TRANSACTIONS ── */}
-        {tab === 'transactions' && (
-          <div key="tx" className="fl-page">
-            <div className="fl-page-top">
-              <div><h1 className="fl-title">Transactions</h1><p className="fl-subtitle">{txs.length} entries</p></div>
-              <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
-                <button className="fl-btn-ghost fl-btn-icon" onClick={() => fileRef.current?.click()}><Icon.Import />Import</button>
-                <button className="fl-btn-ghost fl-btn-icon" onClick={exportCSV}><Icon.Export />Export</button>
-                <button className="fl-add-fab" onClick={() => setShowAdd(true)}><Icon.Plus />Add</button>
-                <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{ display: 'none' }} onChange={handleImportFile} />
-              </div>
+            <div className="fl-fire-mode-desc">
+              {fireMode === 'standard' && <p><strong>FIRE</strong> — Standard financial independence. 25× your current annual expenses invested. Withdraw {swr}% per year indefinitely.</p>}
+              {fireMode === 'lean' && <p><strong>Lean FIRE</strong> — Retire on 75% of your current expenses. Requires a frugal lifestyle. FIRE number = {fmt(leanNum)}.</p>}
+              {fireMode === 'fat' && <p><strong>Fat FIRE</strong> — Retire on 150% of your current expenses. Full lifestyle, no compromises. FIRE number = {fmt(fatNum)}.</p>}
+              {fireMode === 'coast' && <p><strong>Coast FIRE</strong> — Save enough now that compound growth alone reaches your FIRE number. Coast number = {fmt(coastAmt)}. {coastReached ? '✓ You have reached Coast FIRE.' : 'You need ' + fmt(Math.max(0, coastAmt - fire.currentSavings)) + ' more.'}</p>}
+              {fireMode === 'barista' && <p><strong>Barista FIRE</strong> — Semi-retire now. Work part-time earning ~{fmt(baristaPartTimeIncome)}/yr to cover 40% of expenses. Your portfolio ({fmt(baristaNum)}) covers the remaining 60%. {baristaReached ? '✓ You have reached Barista FIRE.' : 'You need ' + fmt(Math.max(0, baristaNum - fire.currentSavings)) + ' more.'}</p>}
             </div>
-            <div className="fl-filter-row">
-              {['all', 'income', 'need', 'want', 'saving'].map(f => (
-                <button key={f} className={`fl-chip ${filterType === f ? 'active' : ''}`}
-                  style={filterType === f && f !== 'all' ? { borderColor: TYPE_COLOR[f], color: TYPE_COLOR[f], background: TYPE_COLOR[f] + '18' } : {}}
-                  onClick={() => setFilterType(f)}>{f === 'all' ? 'All' : TYPE_LABEL[f]}</button>
-              ))}
-            </div>
-            <div className="fl-tx-cards">
-              {filtered.map(t => (
-                <div key={t.id} className="fl-tx-card">
-                  <div className="fl-tx-card-badge" style={{ background: amtColor(t.type) + '18', color: amtColor(t.type) }}>{TYPE_LABEL[t.type]}</div>
-                  <div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.category ? `${t.category} · ` : ''}{t.date}{t.recurring ? ' · Recurring' : ''}</span></div>
-                  <span className="fl-tx-card-amount" style={{ color: amtColor(t.type) }}>{t.type === 'income' || t.type === 'saving' ? '+' : '-'}{fmtD(t.amount)}</span>
-                  <button className="fl-tx-edit" onClick={() => openEdit(t)}><Icon.Edit /></button>
-                  <button className="fl-tx-del" onClick={() => deleteTx(t.id)}><Icon.X /></button>
+
+            <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Scroll down to see your FIRE projection and statistics</span></div>
+            <div className="fl-fire-layout">
+              <div className="fl-fire-inputs">
+                <h3>Your Numbers</h3>
+
+                {/* Age inputs — always visible */}
+                <div className="fl-fire-field">
+                  <label>Age</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <div className="fl-fire-input-wrap" style={{ flex: 1 }}>
+                      <span className="fl-input-prefix">Now</span>
+                      <input className="fl-fire-input" type="number" placeholder="30"
+                        value={currentAge || ''} onChange={e => { setCurrentAge(parseInt(e.target.value) || 0); }} />
+                    </div>
+                    <div className="fl-fire-input-wrap" style={{ flex: 1 }}>
+                      <span className="fl-input-prefix">Goal</span>
+                      <input className="fl-fire-input" type="number" placeholder="45"
+                        value={retireAge || ''} onChange={e => { setRetireAge(parseInt(e.target.value) || 0); }} />
+                    </div>
+                  </div>
+                  <span className="fl-fire-hint">{retireAge > currentAge ? `${retireAge - currentAge} years to your target retirement age` : 'Set your current and target age'}</span>
                 </div>
-              ))}
-              {filtered.length === 0 && <div className="fl-empty"><p>No transactions found</p></div>}
+
+                {[
+                  { key: 'annualExpenses', label: 'Annual Expenses', hint: 'Expected yearly spend in retirement' },
+                  { key: 'annualSavings', label: 'Annual Savings', hint: 'Amount you invest per year' },
+                  { key: 'currentSavings', label: 'Current Savings', hint: 'Total already invested or saved' },
+                ].map(f => (
+                  <div key={f.key} className="fl-fire-field">
+                    <label>{f.label}</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" placeholder="0"
+                        value={fire[f.key] || ''}
+                        onChange={e => setFire(p => ({ ...p, [f.key]: parseFloat(e.target.value) || 0 }))} />
+                    </div>
+                    <span className="fl-fire-hint">{f.hint}</span>
+                  </div>
+                ))}
+
+                <div className="fl-fire-field">
+                  <label>Inflation Rate</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">%</span>
+                    <input className="fl-fire-input" type="number" placeholder="3" step="0.5"
+                      value={inflation || ''} onChange={e => setInflation(parseFloat(e.target.value) || 0)} />
+                  </div>
+                  <span className="fl-fire-hint">Real return adjusted for inflation (default 3%)</span>
+                </div>
+
+                <div className="fl-fire-field">
+                  <label>Safe Withdrawal Rate</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">%</span>
+                    <input className="fl-fire-input" type="number" placeholder="4" step="0.1"
+                      value={swr || ''} onChange={e => setSwr(parseFloat(e.target.value) || 4)} />
+                  </div>
+                  <span className="fl-fire-hint">Annual % drawn from portfolio (default 4%)</span>
+                </div>
+
+                {(fireMode === 'coast') && <>
+                  <div className="fl-fire-field">
+                    <label>Contributions</label>
+                    <div className="fl-contrib-toggle">
+                      <button className={contribMode === 'annual' ? 'active' : ''} onClick={() => setContribMode('annual')}>Annual</button>
+                      <button className={contribMode === 'monthly' ? 'active' : ''} onClick={() => setContribMode('monthly')}>Monthly</button>
+                    </div>
+                    <div className="fl-fire-input-wrap" style={{ marginTop: 6 }}>
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" placeholder="0"
+                        value={contribs || ''} onChange={e => setContribs(parseFloat(e.target.value) || 0)} />
+                    </div>
+                    <span className="fl-fire-hint">Optional — how much you still plan to contribute</span>
+                  </div>
+                </>}
+
+                {fireMode === 'barista' && (
+                  <div className="fl-fire-field">
+                    <label>Part-time income coverage</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" readOnly value={Math.round(baristaPartTimeIncome)} style={{ opacity: 0.6 }} />
+                    </div>
+                    <span className="fl-fire-hint">40% of annual expenses — what your part-time work covers</span>
+                  </div>
+                )}
+
+                <button className="fl-btn-primary" style={{ width: '100%' }} onClick={() => { saveSettings(fire, null, null, currentAge, retireAge, fireMode); showToast('Settings saved'); }}>Save settings</button>
+
+                <div className="fl-whatif">
+                  <h4>What if I saved more?</h4>
+                  <div className="fl-whatif-row">
+                    <span style={{ whiteSpace: 'nowrap', minWidth: 90 }}>{sym}{whatIf.toLocaleString()} /mo</span>
+                    <input type="range" min="0" max="5000" step="50" value={whatIf} onChange={e => setWhatIf(parseInt(e.target.value))} className="fl-slider" />
+                  </div>
+                  {whatIf > 0 && <div className="fl-whatif-result">Saves <strong style={{ color: 'var(--green)' }}>{Math.max(0, fireCalc.years - fireWI.years)} years</strong> — retire in <strong style={{ color: 'var(--purple-light)' }}>{fireWI.years} years</strong></div>}
+                </div>
+              </div>
+
+              <div className="fl-fire-results">
+                <div className="fl-fire-big-ring">
+                  <svg viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="16" />
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="url(#fire-calc-grad)" strokeWidth="16"
+                      strokeDasharray="534" strokeDashoffset={534 - (534 * displayProgress / 100)}
+                      strokeLinecap="round" transform="rotate(-90 100 100)" />
+                    <defs><linearGradient id="fire-calc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="var(--purple-light)" />
+                      <stop offset="100%" stopColor="var(--purple-dark)" />
+                    </linearGradient></defs>
+                  </svg>
+                  <div className="fl-fire-big-center">
+                    <span className="fl-fire-big-pct">{displayProgress.toFixed(1)}%</span>
+                    <span className="fl-fire-big-sub">to {fireMode === 'lean' ? 'Lean ' : fireMode === 'fat' ? 'Fat ' : fireMode === 'coast' ? 'Coast ' : fireMode === 'barista' ? 'Barista ' : ''}FIRE</span>
+                  </div>
+                </div>
+
+                <div className="fl-fire-stat-grid">
+                  {/* Common stats for all modes */}
+                  {(() => {
+                    const modeLabel = fireMode === 'lean' ? 'Lean ' : fireMode === 'fat' ? 'Fat ' : fireMode === 'coast' ? 'Coast ' : fireMode === 'barista' ? 'Barista ' : '';
+                    const modeIncome = displayNum * (swr / 100);
+                    const stats = fireMode === 'coast' ? [
+                      { label: 'Coast FIRE Number', value: fmt(coastAmt), hint: 'Needed now to coast', color: 'var(--gold)' },
+                      { label: 'Current Savings', value: fmt(fire.currentSavings), hint: 'What you have today', color: coastReached ? 'var(--green)' : 'var(--t1)' },
+                      { label: 'Gap to Coast', value: coastReached ? 'Reached ✓' : fmt(Math.max(0, coastAmt - fire.currentSavings)), hint: coastReached ? 'Stop contributing — compound does the rest' : 'Still needed', color: coastReached ? 'var(--green)' : 'var(--red)' },
+                      { label: 'Age at Freedom', value: coastReached ? currentAge : displayAgeAtFIRE, hint: `You'd be ${coastReached ? currentAge : displayAgeAtFIRE} when you stop working`, color: 'var(--purple-light)' },
+                      { label: 'Annual Income', value: fmt(modeIncome), hint: `At ${swr}% withdrawal`, color: 'var(--green)' },
+                      { label: 'Monthly Income', value: fmt(modeIncome / 12), hint: 'Per month in retirement', color: 'var(--green)' },
+                    ] : fireMode === 'barista' ? [
+                      { label: 'Barista FIRE Number', value: fmt(baristaNum), hint: '60% of expenses × 25', color: 'var(--gold)' },
+                      { label: 'Gap', value: baristaReached ? 'Reached ✓' : fmt(Math.max(0, baristaNum - fire.currentSavings)), hint: baristaReached ? 'Semi-retire now' : 'Still needed', color: baristaReached ? 'var(--green)' : 'var(--red)' },
+                      { label: 'Years Away', value: baristaReached ? 0 : activeModeYears === Infinity ? '—' : activeModeYears, hint: 'At 7% return', color: baristaReached ? 'var(--green)' : 'var(--gold)' },
+                      { label: 'Age at Freedom', value: displayAgeAtFIRE, hint: `You'd be ${displayAgeAtFIRE} when you semi-retire`, color: 'var(--purple-light)' },
+                      { label: 'Portfolio income', value: fmt(baristaNum * (swr / 100)), hint: `${swr}% from portfolio`, color: 'var(--green)' },
+                      { label: 'Part-time needed', value: fmt(baristaPartTimeIncome), hint: '40% of expenses covered by work', color: 'var(--gold)' },
+                    ] : [
+                      { label: `${modeLabel}FIRE Number`, value: fmt(displayNum), hint: fireMode === 'lean' ? '75% of expenses × 25' : fireMode === 'fat' ? '150% of expenses × 25' : '25× annual expenses', color: 'var(--gold)' },
+                      { label: 'Years Away', value: adjFireCalc.years === Infinity ? '—' : activeModeYears, hint: `At 7% return, ${inflation}% inflation`, color: activeModeYears <= 10 ? 'var(--green)' : activeModeYears <= 20 ? 'var(--gold)' : 'var(--red)' },
+                      { label: 'Freedom Date', value: activeModeDate, hint: 'Inflation-adjusted projection', color: 'var(--purple-light)' },
+                      { label: 'Age at Freedom', value: displayAgeAtFIRE, hint: `You'll be ${displayAgeAtFIRE} when you stop working`, color: 'var(--purple-light)' },
+                      { label: 'Annual Income', value: fmt(modeIncome), hint: `At ${swr}% withdrawal rate`, color: 'var(--green)' },
+                      { label: 'Monthly Income', value: fmt(modeIncome / 12), hint: 'Per month in retirement', color: 'var(--green)' },
+                    ];
+                    return stats.map((s, i) => (
+                      <div key={i} className="fl-fire-stat">
+                        <span className="fl-fire-stat-label">{s.label}</span>
+                        <span className="fl-fire-stat-value" style={{ color: s.color, fontSize: s.label.includes('Date') || s.label.includes('Gap') ? 16 : 22 }}>{s.value}</span>
+                        <span className="fl-fire-stat-hint">{s.hint}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+
+                {/* Working hours remaining */}
+                {isFinite(activeModeYears) && activeModeYears > 0 && (
+                  <div className="fl-hours-callout">
+                    <span className="fl-hours-callout-num">{workingHoursLeft.toLocaleString()}</span>
+                    {' '}
+                    <span className="fl-hours-callout-label">working hours until you never have to work again</span>
+                  </div>
+                )}
+
+                {inflation > 0 && adjFireCalc.years !== fireCalc.years && (
+                  <div className="fl-inflation-note">
+                    ⚠ Inflation-adjusted: adds <strong style={{ margin: '0 4px' }}>{adjFireCalc.years - fireCalc.years} years</strong> vs nominal projection
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        )}
+        );
+      })()}
 
-        {/* ── PROJECTIONS ── */}
-        {tab === 'projections' && (
-          <div key="proj" className="fl-page">
-            <div className="fl-page-top">
-              <div><h1 className="fl-title">Projections</h1><p className="fl-subtitle">Wealth trajectory and scenario modelling</p></div>
-              <select className="fl-field-input" style={{ width: 'auto', padding: '8px 12px', fontSize: 13 }} value={projYears} onChange={e => { setProjYears(parseInt(e.target.value)); setMcResult(null); }}>
-                {[10, 15, 20, 25, 30, 35, 40].map(y => <option key={y} value={y}>{y} years</option>)}
-              </select>
+      {/* ── INSIGHTS ── */}
+      {tab === 'insights' && (
+        <div key="insights" className="fl-page">
+          <div className="fl-page-top">
+            <div><h1 className="fl-title">Insights</h1><p className="fl-subtitle">Financial patterns for {MONTHS[selMonth]} {selYear}</p></div>
+            <div className="fl-month-nav"><button onClick={() => navMonth(-1)}><Icon.ChevLeft /></button><span>{MONTHS[selMonth]} {selYear}</span><button onClick={() => navMonth(1)} disabled={isCurr}><Icon.ChevRight /></button></div>
+          </div>
+          <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Scroll down for your savings grade and spending breakdown</span></div>
+          <div className="fl-insights-grid">
+            <div className="fl-insight-card fl-insight-wide">
+              <h3>Monthly Overview</h3>
+              <div className="fl-overview-bars">
+                {[{ label: 'Income', val: income, color: 'var(--green)' }, { label: 'Needs', val: needs, color: 'var(--red)' }, { label: 'Wants', val: wants, color: 'var(--red)' }, { label: 'Savings', val: savings, color: 'var(--gold)' }].map(b => (
+                  <div key={b.label} className="fl-bar-row">
+                    <span className="fl-bar-label">{b.label}</span>
+                    <div className="fl-bar-track"><div className="fl-bar-fill" style={{ width: `${income > 0 ? Math.min((b.val / income) * 100, 100) : 0}%`, background: b.color }} /></div>
+                    <span className="fl-bar-val" style={{ color: b.color }}>{fmt(b.val)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Scroll down to see your wealth trajectory chart</span></div>
-            <div className="fl-proj-card">
-              <div className="fl-proj-card-header">
-                <div><h3>Wealth Trajectory</h3><p>Deterministic projection at 7% annual return{mcResult ? ' with Monte Carlo probability bands' : ''}</p></div>
-                <div className="fl-proj-legend">
-                  <span className="fl-legend-item" style={{ color: 'var(--purple-light)' }}>Projected</span>
-                  {mcResult && <><span className="fl-legend-item" style={{ color: 'var(--purple-light)', opacity: 0.5 }}>P90</span><span className="fl-legend-item" style={{ color: 'var(--red)', opacity: 0.5 }}>P10</span></>}
-                  <span className="fl-legend-item" style={{ color: 'var(--gold)' }}>FIRE target</span>
-                  {projPts.some(p => p.value >= fireCalc.fireNum) && <span className="fl-legend-item" style={{ color: 'var(--green)' }}>Crossover</span>}
+            <div className="fl-insight-card">
+              <h3>Savings Grade</h3>
+              <div className="fl-grade-display"><span className="fl-grade-letter" style={{ color: gradeClr }}>{grade}</span><span className="fl-grade-rate">{savRate}% savings rate</span></div>
+              <div className="fl-grade-tiers">
+                {[{ g: 'A+', min: 60, max: 999 }, { g: 'A', min: 50, max: 60 }, { g: 'B', min: 40, max: 50 }, { g: 'C', min: 30, max: 40 }, { g: 'D', min: 0, max: 30 }].map(t => (
+                  <div key={t.g} className={`fl-grade-tier ${gradeRaw >= t.min && gradeRaw < t.max ? 'active' : ''}`}><span>{t.g}</span><span>{t.min}%+</span></div>
+                ))}
+              </div>
+            </div>
+            <div className="fl-insight-card">
+              <h3>50 / 30 / 20 Rule</h3>
+              <div className="fl-rule-list">
+                {[{ label: 'Needs', actual: income > 0 ? (needs / income) * 100 : 0, target: 50, color: 'var(--red)' }, { label: 'Wants', actual: income > 0 ? (wants / income) * 100 : 0, target: 30, color: 'var(--red)' }, { label: 'Savings', actual: income > 0 ? (savings / income) * 100 : 0, target: 20, color: 'var(--gold)' }].map(r => (
+                  <div key={r.label} className="fl-rule-row">
+                    <span>{r.label}</span>
+                    <div className="fl-rule-bar-track"><div className="fl-rule-bar-fill" style={{ width: `${Math.min(r.actual, 100)}%`, background: r.color }} /><div className="fl-rule-target" style={{ left: `${r.target}%` }} /></div>
+                    <span style={{ color: r.actual <= r.target + 5 ? 'var(--green)' : 'var(--red)', fontWeight: 700, minWidth: 36, textAlign: 'right' }}>{r.actual.toFixed(0)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="fl-insight-card">
+              <h3>Top Expenses</h3>
+              {Object.entries(mTxs.filter(t => t.type === 'need' || t.type === 'want').reduce((a, t) => { const k = t.category || t.description; a[k] = (a[k] || 0) + t.amount; return a; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([cat, amt]) => (
+                <div key={cat} className="fl-top-exp"><span>{cat}</span><div className="fl-top-exp-bar" style={{ width: `${income > 0 ? Math.min((amt / income) * 100, 60) : 10}%` }} /><span style={{ color: 'var(--red)', fontWeight: 600 }}>{fmt(amt)}</span></div>
+              ))}
+              {mTxs.filter(t => t.type === 'need' || t.type === 'want').length === 0 && <p className="fl-empty-sm">No expenses this month</p>}
+            </div>
+          </div>
+          <GuidanceInsightsPanel txs={mTxs} fire={fire} currency={currency} />
+        </div>
+      )}
+
+      {/* ── TRANSACTIONS ── */}
+      {tab === 'transactions' && (
+        <div key="tx" className="fl-page">
+          <div className="fl-page-top">
+            <div><h1 className="fl-title">Transactions</h1><p className="fl-subtitle">{txs.length} entries</p></div>
+            <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
+              <button className="fl-btn-ghost fl-btn-icon" onClick={() => fileRef.current?.click()}><Icon.Import />Import</button>
+              <button className="fl-btn-ghost fl-btn-icon" onClick={exportCSV}><Icon.Export />Export</button>
+              <button className="fl-add-fab" onClick={() => setShowAdd(true)}><Icon.Plus />Add</button>
+              <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{ display: 'none' }} onChange={handleImportFile} />
+            </div>
+          </div>
+          <div className="fl-filter-row">
+            {['all', 'income', 'need', 'want', 'saving'].map(f => (
+              <button key={f} className={`fl-chip ${filterType === f ? 'active' : ''}`}
+                style={filterType === f && f !== 'all' ? { borderColor: TYPE_COLOR[f], color: TYPE_COLOR[f], background: TYPE_COLOR[f] + '18' } : {}}
+                onClick={() => setFilterType(f)}>{f === 'all' ? 'All' : TYPE_LABEL[f]}</button>
+            ))}
+          </div>
+          <div className="fl-tx-cards">
+            {filtered.map(t => (
+              <div key={t.id} className="fl-tx-card">
+                <div className="fl-tx-card-badge" style={{ background: amtColor(t.type) + '18', color: amtColor(t.type) }}>{TYPE_LABEL[t.type]}</div>
+                <div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.category ? `${t.category} · ` : ''}{t.date}{t.recurring ? ' · Recurring' : ''}</span></div>
+                <span className="fl-tx-card-amount" style={{ color: amtColor(t.type) }}>{t.type === 'income' || t.type === 'saving' ? '+' : '-'}{fmtD(t.amount)}</span>
+                <button className="fl-tx-edit" onClick={() => openEdit(t)}><Icon.Edit /></button>
+                <button className="fl-tx-del" onClick={() => deleteTx(t.id)}><Icon.X /></button>
+              </div>
+            ))}
+            {filtered.length === 0 && <div className="fl-empty"><p>No transactions found</p></div>}
+          </div>
+        </div>
+      )}
+
+      {/* ── PROJECTIONS ── */}
+      {tab === 'projections' && (
+        <div key="proj" className="fl-page">
+          <div className="fl-page-top">
+            <div><h1 className="fl-title">Projections</h1><p className="fl-subtitle">Wealth trajectory and scenario modelling</p></div>
+            <select className="fl-field-input" style={{ width: 'auto', padding: '8px 12px', fontSize: 13 }} value={projYears} onChange={e => { setProjYears(parseInt(e.target.value)); setMcResult(null); }}>
+              {[10, 15, 20, 25, 30, 35, 40].map(y => <option key={y} value={y}>{y} years</option>)}
+            </select>
+          </div>
+          <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Scroll down to see your wealth trajectory chart</span></div>
+          <div className="fl-proj-card">
+            <div className="fl-proj-card-header">
+              <div><h3>Wealth Trajectory</h3><p>Deterministic projection at 7% annual return{mcResult ? ' with Monte Carlo probability bands' : ''}</p></div>
+              <div className="fl-proj-legend">
+                <span className="fl-legend-item" style={{ color: 'var(--purple-light)' }}>Projected</span>
+                {mcResult && <><span className="fl-legend-item" style={{ color: 'var(--purple-light)', opacity: 0.5 }}>P90</span><span className="fl-legend-item" style={{ color: 'var(--red)', opacity: 0.5 }}>P10</span></>}
+                <span className="fl-legend-item" style={{ color: 'var(--gold)' }}>FIRE target</span>
+                {projPts.some(p => p.value >= fireCalc.fireNum) && <span className="fl-legend-item" style={{ color: 'var(--green)' }}>Crossover</span>}
+              </div>
+            </div>
+            <ProjectionChart points={projPts} fireNum={fireCalc.fireNum} sym={sym} mcResult={mcResult} />
+            <div className="fl-proj-milestones">
+              {[0.25, 0.5, 0.75, 1.0].map(pct => { const target = fireCalc.fireNum * pct; const yr = projPts.findIndex(p => p.value >= target); return yr > 0 ? <div key={pct} className="fl-proj-milestone"><span className="fl-proj-ms-label">{Math.round(pct * 100)}%</span><span className="fl-proj-ms-val">{fmt(target)}</span><span className="fl-proj-ms-yr">Year {yr}</span></div> : null; })}
+            </div>
+          </div>
+          <div className="fl-proj-stats">
+            {[{ label: 'Value at Year 10', value: fmt(projPts[Math.min(10, projPts.length - 1)]?.value || 0), color: 'var(--t1)' }, { label: 'Value at Year 20', value: fmt(projPts[Math.min(20, projPts.length - 1)]?.value || 0), color: 'var(--t1)' }, { label: `Value at Year ${projYears}`, value: fmt(projPts[projPts.length - 1]?.value || 0), color: 'var(--purple-light)' }, { label: 'FIRE Target', value: fmt(fireCalc.fireNum), color: 'var(--gold)' }].map((s, i) => (
+              <div key={i} className="fl-proj-stat-box"><span className="fl-proj-stat-label">{s.label}</span><span className="fl-proj-stat-val" style={{ color: s.color }}>{s.value}</span></div>
+            ))}
+          </div>
+          <div className="fl-mc-card">
+            <div className="fl-mc-header">
+              <div><h3>Monte Carlo Simulation</h3><p>500 simulations with randomised annual returns (mean 7%, standard deviation 12%) to model real-world market variance.</p></div>
+              <button className="fl-btn-primary" onClick={runMC} disabled={mcRunning}>{mcRunning ? 'Running…' : 'Run simulation'}</button>
+            </div>
+            {mcResult && <>
+              <div className="fl-mc-result">
+                <div className="fl-mc-success"><div className="fl-mc-pct" style={{ color: mcResult.successRate >= 80 ? 'var(--green)' : mcResult.successRate >= 60 ? 'var(--gold)' : 'var(--red)' }}>{mcResult.successRate}%</div><div className="fl-mc-success-label">Success rate</div><div className="fl-mc-success-sub">{mcResult.successRate} of 500 simulations reached FIRE in {projYears} years</div></div>
+                <div className="fl-mc-bands">
+                  {[{ label: 'Optimistic (P90)', val: mcResult.percentiles.p90[projYears], color: 'var(--green)' }, { label: 'Median (P50)', val: mcResult.percentiles.p50[projYears], color: 'var(--purple-light)' }, { label: 'Pessimistic (P10)', val: mcResult.percentiles.p10[projYears], color: 'var(--red)' }].map(b => (
+                    <div key={b.label} className="fl-mc-band-row"><span style={{ color: b.color, fontWeight: 600, fontSize: 12 }}>{b.label}</span><span style={{ fontWeight: 700, fontFamily: 'JetBrains Mono,monospace', fontSize: 15, color: b.color }}>{fmt(b.val || 0)}</span><span style={{ fontSize: 11, color: 'var(--t3)' }}>{(b.val || 0) >= mcResult.fireNum ? 'FIRE reached' : 'Below target'}</span></div>
+                  ))}
                 </div>
               </div>
-              <ProjectionChart points={projPts} fireNum={fireCalc.fireNum} sym={sym} mcResult={mcResult} />
-              <div className="fl-proj-milestones">
-                {[0.25, 0.5, 0.75, 1.0].map(pct => { const target = fireCalc.fireNum * pct; const yr = projPts.findIndex(p => p.value >= target); return yr > 0 ? <div key={pct} className="fl-proj-milestone"><span className="fl-proj-ms-label">{Math.round(pct * 100)}%</span><span className="fl-proj-ms-val">{fmt(target)}</span><span className="fl-proj-ms-yr">Year {yr}</span></div> : null; })}
+              <div className="fl-mc-bar-wrap"><div className="fl-mc-bar" style={{ width: `${mcResult.successRate}%`, background: mcResult.successRate >= 80 ? 'var(--green)' : mcResult.successRate >= 60 ? 'var(--gold)' : 'var(--red)' }} /></div>
+              <p className="fl-mc-disclaimer"><strong>Disclaimer:</strong> Monte Carlo simulations are for illustrative purposes only and do not constitute financial advice. Past market performance does not guarantee future results. Actual outcomes may differ materially due to inflation, taxation, fees, sequence-of-returns risk, and personal circumstances. Consult a qualified financial adviser before making investment or retirement decisions.</p>
+            </>}
+            {!mcResult && <div className="fl-mc-empty"><p>Run the simulation to see how your portfolio might perform across 500 different market scenarios.</p></div>}
+          </div>
+        </div>
+      )}
+
+      {/* ── EXPORT ── */}
+      {tab === 'export' && (
+        <div key="export" className="fl-page">
+          <div className="fl-page-top"><div><h1 className="fl-title">Export & Import</h1><p className="fl-subtitle">Your data, your way — no lock-in</p></div></div>
+          <div className="fl-export-grid">
+            <div className="fl-export-card"><div className="fl-export-icon-wrap"><Icon.Insights /></div><h3>Excel Report</h3><p>Full financial report with FIRE summary and all transactions — formatted for Excel or Google Sheets.</p><button className="fl-btn-primary" onClick={exportExcel}>Download report</button></div>
+            <div className="fl-export-card"><div className="fl-export-icon-wrap"><Icon.Transactions /></div><h3>CSV Export</h3><p>Raw transaction data. Compatible with any spreadsheet application or finance tool.</p><button className="fl-btn-primary" onClick={exportCSV}>Download CSV</button></div>
+            <div className="fl-export-card">
+              <div className="fl-export-icon-wrap"><Icon.Import /></div><h3>Smart Import</h3>
+              <p>Import from any CSV or PDF bank statement. Auto-detects column layouts, date formats, debit/credit columns, and semicolon or tab-separated files. No reformatting required.</p>
+              <button className="fl-btn-primary" onClick={() => fileRef.current?.click()}>Choose file</button>
+              <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{ display: 'none' }} onChange={handleImportFile} />
+            </div>
+            <div className="fl-export-card">
+              <div className="fl-export-icon-wrap"><Icon.Book /></div><h3>Template</h3>
+              <p>Download a starter CSV with the recommended column structure and example rows.</p>
+              <div className="fl-format-table">{['Date', 'Description', 'Type (income / need / want / saving)', 'Category', 'Amount', 'Recurring (Yes / No)'].map((c, i) => <div key={i} className="fl-format-row"><span className="fl-format-num">{i + 1}</span><span>{c}</span></div>)}</div>
+              <button className="fl-btn-ghost" style={{ marginTop: 8 }} onClick={() => { const s = 'Date,Description,Type,Category,Amount,Recurring\n2026-03-01,Monthly salary,income,,5000,No\n2026-03-02,Rent,need,Rent,1400,Yes\n2026-03-05,Groceries,need,Groceries,180,No'; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([s], { type: 'text/csv' })); a.download = 'fire-ledger-template.csv'; a.click(); showToast('Template downloaded'); }}>Download template</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── NET WORTH ── */}
+      {tab === 'networth' && (
+        <div key="networth" className="fl-page">
+          <div className="fl-page-top"><div><h1 className="fl-title">Net Worth</h1><p className="fl-subtitle">Assets minus liabilities — your real financial picture</p></div></div>
+          <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Fill in your figures — net worth appears below</span></div>
+          <div className="fl-nw-layout">
+            <div className="fl-nw-col">
+              <div className="fl-nw-section fl-nw-assets">
+                <h3>Assets</h3>
+                {[
+                  { key: 'houseValue', label: 'Property Value' },
+                  { key: 'carValue', label: 'Vehicle Value' },
+                  { key: 'cashSavings', label: 'Cash & Savings' },
+                  { key: 'investments', label: 'Investments' },
+                  { key: 'otherAssets', label: 'Other Assets' },
+                ].map(f => (
+                  <div key={f.key} className="fl-nw-field">
+                    <label>{f.label}</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" placeholder="0"
+                        value={nw[f.key] || ''}
+                        onChange={e => setNw(p => ({ ...p, [f.key]: parseFloat(e.target.value) || 0 }))} />
+                    </div>
+                  </div>
+                ))}
+                <div className="fl-nw-subtotal fl-nw-subtotal-green">
+                  <span>Total Assets</span>
+                  <strong>{fmt(Object.entries(nw).filter(([k]) => ['houseValue', 'carValue', 'cashSavings', 'investments', 'otherAssets'].includes(k)).reduce((s, [, v]) => s + v, 0))}</strong>
+                </div>
               </div>
             </div>
-            <div className="fl-proj-stats">
-              {[{ label: 'Value at Year 10', value: fmt(projPts[Math.min(10, projPts.length - 1)]?.value || 0), color: 'var(--t1)' }, { label: 'Value at Year 20', value: fmt(projPts[Math.min(20, projPts.length - 1)]?.value || 0), color: 'var(--t1)' }, { label: `Value at Year ${projYears}`, value: fmt(projPts[projPts.length - 1]?.value || 0), color: 'var(--purple-light)' }, { label: 'FIRE Target', value: fmt(fireCalc.fireNum), color: 'var(--gold)' }].map((s, i) => (
-                <div key={i} className="fl-proj-stat-box"><span className="fl-proj-stat-label">{s.label}</span><span className="fl-proj-stat-val" style={{ color: s.color }}>{s.value}</span></div>
-              ))}
-            </div>
-            <div className="fl-mc-card">
-              <div className="fl-mc-header">
-                <div><h3>Monte Carlo Simulation</h3><p>500 simulations with randomised annual returns (mean 7%, standard deviation 12%) to model real-world market variance.</p></div>
-                <button className="fl-btn-primary" onClick={runMC} disabled={mcRunning}>{mcRunning ? 'Running…' : 'Run simulation'}</button>
+            <div className="fl-nw-col">
+              <div className="fl-nw-section fl-nw-liabilities">
+                <h3>Liabilities</h3>
+                {[
+                  { key: 'mortgage', label: 'Mortgage' },
+                  { key: 'creditCard', label: 'Credit Card Debt' },
+                  { key: 'studentLoan', label: 'Student Loan' },
+                  { key: 'personalLoan', label: 'Personal Loan' },
+                  { key: 'otherLiabilities', label: 'Other Liabilities' },
+                ].map(f => (
+                  <div key={f.key} className="fl-nw-field">
+                    <label>{f.label}</label>
+                    <div className="fl-fire-input-wrap">
+                      <span className="fl-input-prefix">{sym}</span>
+                      <input className="fl-fire-input" type="number" placeholder="0"
+                        value={nw[f.key] || ''}
+                        onChange={e => setNw(p => ({ ...p, [f.key]: parseFloat(e.target.value) || 0 }))} />
+                    </div>
+                  </div>
+                ))}
+                <div className="fl-nw-subtotal fl-nw-subtotal-red">
+                  <span>Total Liabilities</span>
+                  <strong>{fmt(Object.entries(nw).filter(([k]) => ['mortgage', 'creditCard', 'studentLoan', 'personalLoan', 'otherLiabilities'].includes(k)).reduce((s, [, v]) => s + v, 0))}</strong>
+                </div>
               </div>
-              {mcResult && <>
-                <div className="fl-mc-result">
-                  <div className="fl-mc-success"><div className="fl-mc-pct" style={{ color: mcResult.successRate >= 80 ? 'var(--green)' : mcResult.successRate >= 60 ? 'var(--gold)' : 'var(--red)' }}>{mcResult.successRate}%</div><div className="fl-mc-success-label">Success rate</div><div className="fl-mc-success-sub">{mcResult.successRate} of 500 simulations reached FIRE in {projYears} years</div></div>
-                  <div className="fl-mc-bands">
-                    {[{ label: 'Optimistic (P90)', val: mcResult.percentiles.p90[projYears], color: 'var(--green)' }, { label: 'Median (P50)', val: mcResult.percentiles.p50[projYears], color: 'var(--purple-light)' }, { label: 'Pessimistic (P10)', val: mcResult.percentiles.p10[projYears], color: 'var(--red)' }].map(b => (
-                      <div key={b.label} className="fl-mc-band-row"><span style={{ color: b.color, fontWeight: 600, fontSize: 12 }}>{b.label}</span><span style={{ fontWeight: 700, fontFamily: 'JetBrains Mono,monospace', fontSize: 15, color: b.color }}>{fmt(b.val || 0)}</span><span style={{ fontSize: 11, color: 'var(--t3)' }}>{(b.val || 0) >= mcResult.fireNum ? 'FIRE reached' : 'Below target'}</span></div>
+            </div>
+          </div>
+          {(() => {
+            const assets = ['houseValue', 'carValue', 'cashSavings', 'investments', 'otherAssets'].reduce((s, k) => s + nw[k], 0);
+            const liabs = ['mortgage', 'creditCard', 'studentLoan', 'personalLoan', 'otherLiabilities'].reduce((s, k) => s + nw[k], 0);
+            const netWorth = assets - liabs;
+            const debtRatio = assets > 0 ? ((liabs / assets) * 100).toFixed(1) : 0;
+            return (
+              <div className="fl-nw-result">
+                <div className="fl-nw-result-main">
+                  <span className="fl-nw-result-label">Net Worth</span>
+                  <span className="fl-nw-result-value" style={{ color: netWorth >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(netWorth)}</span>
+                </div>
+                <div className="fl-nw-result-stats">
+                  <div className="fl-nw-stat"><span>Debt-to-Asset Ratio</span><strong style={{ color: parseFloat(debtRatio) > 50 ? 'var(--red)' : parseFloat(debtRatio) > 30 ? 'var(--gold)' : 'var(--green)' }}>{debtRatio}%</strong></div>
+                  <div className="fl-nw-stat"><span>% of FIRE number</span><strong style={{ color: 'var(--purple-light)' }}>{fireCalc.fireNum > 0 ? ((Math.max(0, netWorth) / fireCalc.fireNum) * 100).toFixed(1) : 0}%</strong></div>
+                  <div className="fl-nw-stat"><span>FIRE number</span><strong style={{ color: 'var(--gold)' }}>{fmt(fireCalc.fireNum)}</strong></div>
+                </div>
+                <div className="fl-nw-bar-wrap">
+                  <div className="fl-nw-bar-track">
+                    <div className="fl-nw-bar-assets" style={{ width: `${assets > 0 ? Math.min((assets / (assets + liabs)) * 100, 100) : 100}%` }} />
+                  </div>
+                  <div className="fl-nw-bar-labels"><span style={{ color: 'var(--green)' }}>Assets {fmt(assets)}</span><span style={{ color: 'var(--red)' }}>Liabilities {fmt(liabs)}</span></div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* ── COMPOUND GROWTH ── */}
+      {tab === 'compound' && (
+        <div key="compound" className="fl-page">
+          <div className="fl-page-top"><div><h1 className="fl-title">Compound Growth</h1><p className="fl-subtitle">See how your money grows over time</p></div></div>
+          <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Enter your numbers — results appear to the right</span></div>
+          <div className="fl-cg-layout">
+            <div className="fl-cg-inputs">
+              <h3>Your Numbers</h3>
+              <div className="fl-fire-field">
+                <label>Initial Investment</label>
+                <div className="fl-fire-input-wrap"><span className="fl-input-prefix">{sym}</span>
+                  <input className="fl-fire-input" type="number" placeholder="0" value={cg.initial || ''} onChange={e => setCg(p => ({ ...p, initial: parseFloat(e.target.value) || 0 }))} />
+                </div>
+              </div>
+              <div className="fl-fire-field">
+                <label>Investment Timeline</label>
+                <div className="fl-fire-input-wrap"><span className="fl-input-prefix">yr</span>
+                  <input className="fl-fire-input" type="number" placeholder="10" value={cg.years || ''} onChange={e => setCg(p => ({ ...p, years: parseInt(e.target.value) || 0 }))} />
+                </div>
+              </div>
+              <div className="fl-fire-field">
+                <label>Annual Growth Rate</label>
+                <div className="fl-fire-input-wrap"><span className="fl-input-prefix">%</span>
+                  <input className="fl-fire-input" type="number" placeholder="7" step="0.5" value={cg.growthRate || ''} onChange={e => setCg(p => ({ ...p, growthRate: parseFloat(e.target.value) || 0 }))} />
+                </div>
+              </div>
+              <div className="fl-fire-field">
+                <label>Annual Inflation Rate</label>
+                <div className="fl-fire-input-wrap"><span className="fl-input-prefix">%</span>
+                  <input className="fl-fire-input" type="number" placeholder="3" step="0.5" value={cg.inflationRate || ''} onChange={e => setCg(p => ({ ...p, inflationRate: parseFloat(e.target.value) || 0 }))} />
+                </div>
+              </div>
+              <div className="fl-fire-field">
+                <label>Contributions</label>
+                <div className="fl-contrib-toggle">
+                  <button className={cg.contribType === 'annual' ? 'active' : ''} onClick={() => setCg(p => ({ ...p, contribType: 'annual' }))}>Annual</button>
+                  <button className={cg.contribType === 'monthly' ? 'active' : ''} onClick={() => setCg(p => ({ ...p, contribType: 'monthly' }))}>Monthly</button>
+                </div>
+                <div className="fl-fire-input-wrap" style={{ marginTop: 6 }}><span className="fl-input-prefix">{sym}</span>
+                  <input className="fl-fire-input" type="number" placeholder="0" value={cg.contribution || ''} onChange={e => setCg(p => ({ ...p, contribution: parseFloat(e.target.value) || 0 }))} />
+                </div>
+              </div>
+              <div className="fl-fire-field">
+                <label>Compounding Frequency</label>
+                <div className="fl-contrib-toggle">
+                  <button className={cg.compounding === 'annual' ? 'active' : ''} onClick={() => setCg(p => ({ ...p, compounding: 'annual' }))}>Annual</button>
+                  <button className={cg.compounding === 'monthly' ? 'active' : ''} onClick={() => setCg(p => ({ ...p, compounding: 'monthly' }))}>Monthly</button>
+                </div>
+              </div>
+              <button className="fl-btn-primary" style={{ width: '100%' }} onClick={() => {
+                const n = cg.compounding === 'monthly' ? cg.years * 12 : cg.years;
+                const r = cg.compounding === 'monthly' ? cg.growthRate / 100 / 12 : cg.growthRate / 100;
+                const annualContribCg = cg.contribType === 'monthly' ? cg.contribution * 12 : cg.contribution;
+                const periodicContrib = cg.compounding === 'monthly' ? annualContribCg / 12 : annualContribCg;
+                const nominal = cg.initial * Math.pow(1 + r, n) + periodicContrib * ((Math.pow(1 + r, n) - 1) / r);
+                const realRate = (1 + cg.growthRate / 100) / (1 + cg.inflationRate / 100) - 1;
+                const rn = cg.compounding === 'monthly' ? realRate / 12 : realRate;
+                const real = cg.initial * Math.pow(1 + rn, n) + periodicContrib * ((Math.pow(1 + rn, n) - 1) / rn);
+                const totalContribs = cg.initial + annualContribCg * cg.years;
+                const rule72 = cg.growthRate > 0 ? (72 / cg.growthRate).toFixed(1) : '—';
+                setCgResult({ nominal, real, totalContribs, growth: nominal - totalContribs, rule72 });
+              }}>Calculate Growth</button>
+              <button className="fl-btn-ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => { setCg({ initial: 0, years: 10, growthRate: 7, inflationRate: 3, contribType: 'annual', contribution: 0, compounding: 'annual' }); setCgResult(null); }}>Clear</button>
+            </div>
+            <div className="fl-cg-results">
+              {cgResult ? (
+                <>
+                  <div className="fl-cg-result-hero">
+                    <span className="fl-cg-label">Nominal Value</span>
+                    <span className="fl-cg-value" style={{ color: 'var(--purple-light)' }}>{fmt(cgResult.nominal)}</span>
+                    <span className="fl-cg-sub">After {cg.years} years at {cg.growthRate}% growth</span>
+                  </div>
+                  <div className="fl-fire-stat-grid" style={{ marginTop: 16 }}>
+                    {[
+                      { label: 'Real Value', value: fmt(cgResult.real), hint: 'Inflation-adjusted', color: 'var(--green)' },
+                      { label: 'Total Contributed', value: fmt(cgResult.totalContribs), hint: 'Your actual money in', color: 'var(--t1)' },
+                      { label: 'Growth', value: fmt(cgResult.growth), hint: 'Compound interest earned', color: 'var(--gold)' },
+                      { label: 'Rule of 72', value: `${cgResult.rule72} yrs`, hint: 'Years to double at this rate', color: 'var(--purple-light)' },
+                    ].map((s, i) => (
+                      <div key={i} className="fl-fire-stat">
+                        <span className="fl-fire-stat-label">{s.label}</span>
+                        <span className="fl-fire-stat-value" style={{ color: s.color, fontSize: 18 }}>{s.value}</span>
+                        <span className="fl-fire-stat-hint">{s.hint}</span>
+                      </div>
                     ))}
                   </div>
+                  <div className="fl-cg-disclaimer">For illustrative purposes only. Does not constitute financial advice.</div>
+                </>
+              ) : (
+                <div className="fl-cg-empty">
+                  <div className="fl-cg-empty-icon"><Icon.Lightning /></div>
+                  <p>Enter your numbers and click Calculate Growth to see how your investment compounds over time.</p>
                 </div>
-                <div className="fl-mc-bar-wrap"><div className="fl-mc-bar" style={{ width: `${mcResult.successRate}%`, background: mcResult.successRate >= 80 ? 'var(--green)' : mcResult.successRate >= 60 ? 'var(--gold)' : 'var(--red)' }} /></div>
-                <p className="fl-mc-disclaimer"><strong>Disclaimer:</strong> Monte Carlo simulations are for illustrative purposes only and do not constitute financial advice. Past market performance does not guarantee future results. Actual outcomes may differ materially due to inflation, taxation, fees, sequence-of-returns risk, and personal circumstances. Consult a qualified financial adviser before making investment or retirement decisions.</p>
-              </>}
-              {!mcResult && <div className="fl-mc-empty"><p>Run the simulation to see how your portfolio might perform across 500 different market scenarios.</p></div>}
+              )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* ── EXPORT ── */}
-        {tab === 'export' && (
-          <div key="export" className="fl-page">
-            <div className="fl-page-top"><div><h1 className="fl-title">Export & Import</h1><p className="fl-subtitle">Your data, your way — no lock-in</p></div></div>
-            <div className="fl-export-grid">
-              <div className="fl-export-card"><div className="fl-export-icon-wrap"><Icon.Insights /></div><h3>Excel Report</h3><p>Full financial report with FIRE summary and all transactions — formatted for Excel or Google Sheets.</p><button className="fl-btn-primary" onClick={exportExcel}>Download report</button></div>
-              <div className="fl-export-card"><div className="fl-export-icon-wrap"><Icon.Transactions /></div><h3>CSV Export</h3><p>Raw transaction data. Compatible with any spreadsheet application or finance tool.</p><button className="fl-btn-primary" onClick={exportCSV}>Download CSV</button></div>
-              <div className="fl-export-card">
-                <div className="fl-export-icon-wrap"><Icon.Import /></div><h3>Smart Import</h3>
-                <p>Import from any CSV or PDF bank statement. Auto-detects column layouts, date formats, debit/credit columns, and semicolon or tab-separated files. No reformatting required.</p>
-                <button className="fl-btn-primary" onClick={() => fileRef.current?.click()}>Choose file</button>
-                <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{ display: 'none' }} onChange={handleImportFile} />
-              </div>
-              <div className="fl-export-card">
-                <div className="fl-export-icon-wrap"><Icon.Book /></div><h3>Template</h3>
-                <p>Download a starter CSV with the recommended column structure and example rows.</p>
-                <div className="fl-format-table">{['Date', 'Description', 'Type (income / need / want / saving)', 'Category', 'Amount', 'Recurring (Yes / No)'].map((c, i) => <div key={i} className="fl-format-row"><span className="fl-format-num">{i + 1}</span><span>{c}</span></div>)}</div>
-                <button className="fl-btn-ghost" style={{ marginTop: 8 }} onClick={() => { const s = 'Date,Description,Type,Category,Amount,Recurring\n2026-03-01,Monthly salary,income,,5000,No\n2026-03-02,Rent,need,Rent,1400,Yes\n2026-03-05,Groceries,need,Groceries,180,No'; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([s], { type: 'text/csv' })); a.download = 'fire-ledger-template.csv'; a.click(); showToast('Template downloaded'); }}>Download template</button>
+      {tab === 'guide' && <GuidePage />}
+
+      {/* ── SETTINGS ── */}
+      {tab === 'settings' && (
+        <div key="settings" className="fl-page">
+          <div className="fl-page-top"><h1 className="fl-title">Settings</h1></div>
+          <div className="fl-settings-grid">
+            <div className="fl-settings-card">
+              <h3>Custom Categories</h3>
+              {['needs', 'wants', 'savings'].map(type => (
+                <div key={type} className="fl-cat-group">
+                  <h4 style={{ color: type === 'needs' ? 'var(--red)' : type === 'wants' ? 'var(--red)' : 'var(--gold)' }}>{type.charAt(0).toUpperCase() + type.slice(1)}</h4>
+                  <div className="fl-cat-tags">
+                    {cats[type].map(cat => <span key={cat} className="fl-cat-tag">{cat}<button onClick={() => { const u = { ...cats, [type]: cats[type].filter(c => c !== cat) }; setCats(u); saveSettings(null, u, null); }}><Icon.X /></button></span>)}
+                    <input className="fl-cat-add-input" placeholder="Add category" onKeyDown={e => { if (e.key === 'Enter' && e.target.value.trim()) { const u = { ...cats, [type]: [...cats[type], e.target.value.trim()] }; setCats(u); saveSettings(null, u, null); e.target.value = ''; showToast('Category added'); } }} />
+                  </div>
+                </div>
+              ))}{/* ── Delete all data ── */}
+              <div className="fl-danger-zone" style={{ marginTop: 24 }}>
+                <h3 style={{ color: 'var(--red)', marginBottom: 8 }}>Danger Zone</h3>
+                <p style={{ fontSize: 13, color: 'var(--t2)', marginBottom: 12 }}>Permanently delete all your transactions and settings. This cannot be undone.</p>
+                <button className="fl-btn-danger fl-btn-icon" style={{ width: '100%' }} onClick={() => setDeleteConfirm(true)}>
+                  <Icon.Trash />Delete all my data
+                </button>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* ── NET WORTH ── */}
-        {tab === 'networth' && (
-          <div key="networth" className="fl-page">
-            <div className="fl-page-top"><div><h1 className="fl-title">Net Worth</h1><p className="fl-subtitle">Assets minus liabilities — your real financial picture</p></div></div>
-            <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Fill in your figures — net worth appears below</span></div>
-            <div className="fl-nw-layout">
-              <div className="fl-nw-col">
-                <div className="fl-nw-section fl-nw-assets">
-                  <h3>Assets</h3>
-                  {[
-                    { key: 'houseValue', label: 'Property Value' },
-                    { key: 'carValue', label: 'Vehicle Value' },
-                    { key: 'cashSavings', label: 'Cash & Savings' },
-                    { key: 'investments', label: 'Investments' },
-                    { key: 'otherAssets', label: 'Other Assets' },
-                  ].map(f => (
-                    <div key={f.key} className="fl-nw-field">
-                      <label>{f.label}</label>
-                      <div className="fl-fire-input-wrap">
-                        <span className="fl-input-prefix">{sym}</span>
-                        <input className="fl-fire-input" type="number" placeholder="0"
-                          value={nw[f.key] || ''}
-                          onChange={e => setNw(p => ({ ...p, [f.key]: parseFloat(e.target.value) || 0 }))} />
-                      </div>
-                    </div>
-                  ))}
-                  <div className="fl-nw-subtotal fl-nw-subtotal-green">
-                    <span>Total Assets</span>
-                    <strong>{fmt(Object.entries(nw).filter(([k]) => ['houseValue', 'carValue', 'cashSavings', 'investments', 'otherAssets'].includes(k)).reduce((s, [, v]) => s + v, 0))}</strong>
-                  </div>
-                </div>
-              </div>
-              <div className="fl-nw-col">
-                <div className="fl-nw-section fl-nw-liabilities">
-                  <h3>Liabilities</h3>
-                  {[
-                    { key: 'mortgage', label: 'Mortgage' },
-                    { key: 'creditCard', label: 'Credit Card Debt' },
-                    { key: 'studentLoan', label: 'Student Loan' },
-                    { key: 'personalLoan', label: 'Personal Loan' },
-                    { key: 'otherLiabilities', label: 'Other Liabilities' },
-                  ].map(f => (
-                    <div key={f.key} className="fl-nw-field">
-                      <label>{f.label}</label>
-                      <div className="fl-fire-input-wrap">
-                        <span className="fl-input-prefix">{sym}</span>
-                        <input className="fl-fire-input" type="number" placeholder="0"
-                          value={nw[f.key] || ''}
-                          onChange={e => setNw(p => ({ ...p, [f.key]: parseFloat(e.target.value) || 0 }))} />
-                      </div>
-                    </div>
-                  ))}
-                  <div className="fl-nw-subtotal fl-nw-subtotal-red">
-                    <span>Total Liabilities</span>
-                    <strong>{fmt(Object.entries(nw).filter(([k]) => ['mortgage', 'creditCard', 'studentLoan', 'personalLoan', 'otherLiabilities'].includes(k)).reduce((s, [, v]) => s + v, 0))}</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {(() => {
-              const assets = ['houseValue', 'carValue', 'cashSavings', 'investments', 'otherAssets'].reduce((s, k) => s + nw[k], 0);
-              const liabs = ['mortgage', 'creditCard', 'studentLoan', 'personalLoan', 'otherLiabilities'].reduce((s, k) => s + nw[k], 0);
-              const netWorth = assets - liabs;
-              const debtRatio = assets > 0 ? ((liabs / assets) * 100).toFixed(1) : 0;
-              return (
-                <div className="fl-nw-result">
-                  <div className="fl-nw-result-main">
-                    <span className="fl-nw-result-label">Net Worth</span>
-                    <span className="fl-nw-result-value" style={{ color: netWorth >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(netWorth)}</span>
-                  </div>
-                  <div className="fl-nw-result-stats">
-                    <div className="fl-nw-stat"><span>Debt-to-Asset Ratio</span><strong style={{ color: parseFloat(debtRatio) > 50 ? 'var(--red)' : parseFloat(debtRatio) > 30 ? 'var(--gold)' : 'var(--green)' }}>{debtRatio}%</strong></div>
-                    <div className="fl-nw-stat"><span>% of FIRE number</span><strong style={{ color: 'var(--purple-light)' }}>{fireCalc.fireNum > 0 ? ((Math.max(0, netWorth) / fireCalc.fireNum) * 100).toFixed(1) : 0}%</strong></div>
-                    <div className="fl-nw-stat"><span>FIRE number</span><strong style={{ color: 'var(--gold)' }}>{fmt(fireCalc.fireNum)}</strong></div>
-                  </div>
-                  <div className="fl-nw-bar-wrap">
-                    <div className="fl-nw-bar-track">
-                      <div className="fl-nw-bar-assets" style={{ width: `${assets > 0 ? Math.min((assets / (assets + liabs)) * 100, 100) : 100}%` }} />
-                    </div>
-                    <div className="fl-nw-bar-labels"><span style={{ color: 'var(--green)' }}>Assets {fmt(assets)}</span><span style={{ color: 'var(--red)' }}>Liabilities {fmt(liabs)}</span></div>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        )}
-
-        {/* ── COMPOUND GROWTH ── */}
-        {tab === 'compound' && (
-          <div key="compound" className="fl-page">
-            <div className="fl-page-top"><div><h1 className="fl-title">Compound Growth</h1><p className="fl-subtitle">See how your money grows over time</p></div></div>
-            <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Enter your numbers — results appear to the right</span></div>
-            <div className="fl-cg-layout">
-              <div className="fl-cg-inputs">
-                <h3>Your Numbers</h3>
-                <div className="fl-fire-field">
-                  <label>Initial Investment</label>
-                  <div className="fl-fire-input-wrap"><span className="fl-input-prefix">{sym}</span>
-                    <input className="fl-fire-input" type="number" placeholder="0" value={cg.initial || ''} onChange={e => setCg(p => ({ ...p, initial: parseFloat(e.target.value) || 0 }))} />
-                  </div>
-                </div>
-                <div className="fl-fire-field">
-                  <label>Investment Timeline</label>
-                  <div className="fl-fire-input-wrap"><span className="fl-input-prefix">yr</span>
-                    <input className="fl-fire-input" type="number" placeholder="10" value={cg.years || ''} onChange={e => setCg(p => ({ ...p, years: parseInt(e.target.value) || 0 }))} />
-                  </div>
-                </div>
-                <div className="fl-fire-field">
-                  <label>Annual Growth Rate</label>
-                  <div className="fl-fire-input-wrap"><span className="fl-input-prefix">%</span>
-                    <input className="fl-fire-input" type="number" placeholder="7" step="0.5" value={cg.growthRate || ''} onChange={e => setCg(p => ({ ...p, growthRate: parseFloat(e.target.value) || 0 }))} />
-                  </div>
-                </div>
-                <div className="fl-fire-field">
-                  <label>Annual Inflation Rate</label>
-                  <div className="fl-fire-input-wrap"><span className="fl-input-prefix">%</span>
-                    <input className="fl-fire-input" type="number" placeholder="3" step="0.5" value={cg.inflationRate || ''} onChange={e => setCg(p => ({ ...p, inflationRate: parseFloat(e.target.value) || 0 }))} />
-                  </div>
-                </div>
-                <div className="fl-fire-field">
-                  <label>Contributions</label>
-                  <div className="fl-contrib-toggle">
-                    <button className={cg.contribType === 'annual' ? 'active' : ''} onClick={() => setCg(p => ({ ...p, contribType: 'annual' }))}>Annual</button>
-                    <button className={cg.contribType === 'monthly' ? 'active' : ''} onClick={() => setCg(p => ({ ...p, contribType: 'monthly' }))}>Monthly</button>
-                  </div>
-                  <div className="fl-fire-input-wrap" style={{ marginTop: 6 }}><span className="fl-input-prefix">{sym}</span>
-                    <input className="fl-fire-input" type="number" placeholder="0" value={cg.contribution || ''} onChange={e => setCg(p => ({ ...p, contribution: parseFloat(e.target.value) || 0 }))} />
-                  </div>
-                </div>
-                <div className="fl-fire-field">
-                  <label>Compounding Frequency</label>
-                  <div className="fl-contrib-toggle">
-                    <button className={cg.compounding === 'annual' ? 'active' : ''} onClick={() => setCg(p => ({ ...p, compounding: 'annual' }))}>Annual</button>
-                    <button className={cg.compounding === 'monthly' ? 'active' : ''} onClick={() => setCg(p => ({ ...p, compounding: 'monthly' }))}>Monthly</button>
-                  </div>
-                </div>
-                <button className="fl-btn-primary" style={{ width: '100%' }} onClick={() => {
-                  const n = cg.compounding === 'monthly' ? cg.years * 12 : cg.years;
-                  const r = cg.compounding === 'monthly' ? cg.growthRate / 100 / 12 : cg.growthRate / 100;
-                  const annualContribCg = cg.contribType === 'monthly' ? cg.contribution * 12 : cg.contribution;
-                  const periodicContrib = cg.compounding === 'monthly' ? annualContribCg / 12 : annualContribCg;
-                  const nominal = cg.initial * Math.pow(1 + r, n) + periodicContrib * ((Math.pow(1 + r, n) - 1) / r);
-                  const realRate = (1 + cg.growthRate / 100) / (1 + cg.inflationRate / 100) - 1;
-                  const rn = cg.compounding === 'monthly' ? realRate / 12 : realRate;
-                  const real = cg.initial * Math.pow(1 + rn, n) + periodicContrib * ((Math.pow(1 + rn, n) - 1) / rn);
-                  const totalContribs = cg.initial + annualContribCg * cg.years;
-                  const rule72 = cg.growthRate > 0 ? (72 / cg.growthRate).toFixed(1) : '—';
-                  setCgResult({ nominal, real, totalContribs, growth: nominal - totalContribs, rule72 });
-                }}>Calculate Growth</button>
-                <button className="fl-btn-ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => { setCg({ initial: 0, years: 10, growthRate: 7, inflationRate: 3, contribType: 'annual', contribution: 0, compounding: 'annual' }); setCgResult(null); }}>Clear</button>
-              </div>
-              <div className="fl-cg-results">
-                {cgResult ? (
-                  <>
-                    <div className="fl-cg-result-hero">
-                      <span className="fl-cg-label">Nominal Value</span>
-                      <span className="fl-cg-value" style={{ color: 'var(--purple-light)' }}>{fmt(cgResult.nominal)}</span>
-                      <span className="fl-cg-sub">After {cg.years} years at {cg.growthRate}% growth</span>
-                    </div>
-                    <div className="fl-fire-stat-grid" style={{ marginTop: 16 }}>
-                      {[
-                        { label: 'Real Value', value: fmt(cgResult.real), hint: 'Inflation-adjusted', color: 'var(--green)' },
-                        { label: 'Total Contributed', value: fmt(cgResult.totalContribs), hint: 'Your actual money in', color: 'var(--t1)' },
-                        { label: 'Growth', value: fmt(cgResult.growth), hint: 'Compound interest earned', color: 'var(--gold)' },
-                        { label: 'Rule of 72', value: `${cgResult.rule72} yrs`, hint: 'Years to double at this rate', color: 'var(--purple-light)' },
-                      ].map((s, i) => (
-                        <div key={i} className="fl-fire-stat">
-                          <span className="fl-fire-stat-label">{s.label}</span>
-                          <span className="fl-fire-stat-value" style={{ color: s.color, fontSize: 18 }}>{s.value}</span>
-                          <span className="fl-fire-stat-hint">{s.hint}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="fl-cg-disclaimer">For illustrative purposes only. Does not constitute financial advice.</div>
-                  </>
-                ) : (
-                  <div className="fl-cg-empty">
-                    <div className="fl-cg-empty-icon"><Icon.Lightning /></div>
-                    <p>Enter your numbers and click Calculate Growth to see how your investment compounds over time.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === 'guide' && <GuidePage />}
-
-        {/* ── SETTINGS ── */}
-        {tab === 'settings' && (
-          <div key="settings" className="fl-page">
-            <div className="fl-page-top"><h1 className="fl-title">Settings</h1></div>
-            <div className="fl-settings-grid">
-              <div className="fl-settings-card">
-                <h3>Custom Categories</h3>
-                {['needs', 'wants', 'savings'].map(type => (
-                  <div key={type} className="fl-cat-group">
-                    <h4 style={{ color: type === 'needs' ? 'var(--red)' : type === 'wants' ? 'var(--red)' : 'var(--gold)' }}>{type.charAt(0).toUpperCase() + type.slice(1)}</h4>
-                    <div className="fl-cat-tags">
-                      {cats[type].map(cat => <span key={cat} className="fl-cat-tag">{cat}<button onClick={() => { const u = { ...cats, [type]: cats[type].filter(c => c !== cat) }; setCats(u); saveSettings(null, u, null); }}><Icon.X /></button></span>)}
-                      <input className="fl-cat-add-input" placeholder="Add category" onKeyDown={e => { if (e.key === 'Enter' && e.target.value.trim()) { const u = { ...cats, [type]: [...cats[type], e.target.value.trim()] }; setCats(u); saveSettings(null, u, null); e.target.value = ''; showToast('Category added'); } }} />
-                    </div>
-                  </div>
-                ))}{/* ── Delete all data ── */}
-                <div className="fl-danger-zone" style={{ marginTop: 24 }}>
-                  <h3 style={{ color: 'var(--red)', marginBottom: 8 }}>Danger Zone</h3>
-                  <p style={{ fontSize: 13, color: 'var(--t2)', marginBottom: 12 }}>Permanently delete all your transactions and settings. This cannot be undone.</p>
-                  <button className="fl-btn-danger fl-btn-icon" style={{ width: '100%' }} onClick={() => setDeleteConfirm(true)}>
-                    <Icon.Trash />Delete all my data
+            <div className="fl-settings-card">
+              <h3>Currency</h3>
+              <div className="fl-curr-settings-grid">
+                {Object.entries(CURRENCIES).map(([code, c]) => (
+                  <button key={code} className={`fl-curr-settings-btn ${currency === code ? 'active' : ''}`} onClick={() => { setCurrency(code); saveSettings(null, null, code); showToast(`Currency set to ${code}`); }}>
+                    <span style={{ fontWeight: 700, fontSize: 18 }}>{c.symbol}</span>
+                    <span style={{ fontWeight: 700, fontSize: 13 }}>{code}</span>
+                    <span style={{ fontSize: 11, color: 'var(--t1)' }}>{c.name}</span>
                   </button>
-                </div>
+                ))}
               </div>
 
-              <div className="fl-settings-card">
-                <h3>Currency</h3>
-                <div className="fl-curr-settings-grid">
-                  {Object.entries(CURRENCIES).map(([code, c]) => (
-                    <button key={code} className={`fl-curr-settings-btn ${currency === code ? 'active' : ''}`} onClick={() => { setCurrency(code); saveSettings(null, null, code); showToast(`Currency set to ${code}`); }}>
-                      <span style={{ fontWeight: 700, fontSize: 18 }}>{c.symbol}</span>
-                      <span style={{ fontWeight: 700, fontSize: 13 }}>{code}</span>
-                      <span style={{ fontSize: 11, color: 'var(--t1)' }}>{c.name}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <h3 style={{ marginTop: 24, marginBottom: 12 }}>Age</h3>
-                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-                  <div className="fl-fire-field" style={{ flex: 1, marginBottom: 0 }}>
-                    <label>Current Age</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">yr</span>
-                      <input className="fl-fire-input" type="number" placeholder="30" value={currentAge || ''} onChange={e => setCurrentAge(parseInt(e.target.value) || 0)} />
-                    </div>
-                  </div>
-                  <div className="fl-fire-field" style={{ flex: 1, marginBottom: 0 }}>
-                    <label>Retirement Age Goal</label>
-                    <div className="fl-fire-input-wrap">
-                      <span className="fl-input-prefix">yr</span>
-                      <input className="fl-fire-input" type="number" placeholder="45" value={retireAge || ''} onChange={e => setRetireAge(parseInt(e.target.value) || 0)} />
-                    </div>
+              <h3 style={{ marginTop: 24, marginBottom: 12 }}>Age</h3>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                <div className="fl-fire-field" style={{ flex: 1, marginBottom: 0 }}>
+                  <label>Current Age</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">yr</span>
+                    <input className="fl-fire-input" type="number" placeholder="30" value={currentAge || ''} onChange={e => setCurrentAge(parseInt(e.target.value) || 0)} />
                   </div>
                 </div>
-                <button className="fl-btn-ghost" style={{ width: '100%', marginBottom: 16 }} onClick={() => { saveSettings(null, null, null, currentAge, retireAge, null); showToast('Age settings saved'); }}>Save age settings</button>
-
-                <h3 style={{ marginTop: 8, marginBottom: 16 }}>Account</h3>
-                <div className="fl-account-row">
-                  <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
-                  <div><div style={{ fontWeight: 600, fontSize: 14 }}>{user?.email}</div><div style={{ fontSize: 12, color: 'var(--t2)', marginTop: 2 }}>{isLifetime ? 'Lifetime · Session only' : 'Pro · Cloud sync active'}</div></div>
-                </div>
-                {isLifetime && (
-                  <div className="fl-upgrade-card">
-                    <div className="fl-upgrade-card-top">
-                      <span className="fl-upgrade-card-title">Upgrade to cloud sync</span>
-                      <span className="fl-upgrade-card-badge">Save your data</span>
-                    </div>
-                    <p className="fl-upgrade-card-body">
-                      Your data clears every session on the Lifetime plan. Upgrade to Monthly or Annual to save everything permanently — transactions, settings, and history.
-                    </p>
-                    <div className="fl-upgrade-card-options">
-                      <a href="/pricing" className="fl-upgrade-option">
-                        <span className="fl-upgrade-option-price">$4.99<span>/mo</span></span>
-                        <span className="fl-upgrade-option-label">Monthly</span>
-                      </a>
-                      <a href="/pricing" className="fl-upgrade-option fl-upgrade-option-featured">
-                        <span className="fl-upgrade-option-price">$59.99<span>/yr</span></span>
-                        <span className="fl-upgrade-option-label">Annual · Best value</span>
-                      </a>
-                    </div>
+                <div className="fl-fire-field" style={{ flex: 1, marginBottom: 0 }}>
+                  <label>Retirement Age Goal</label>
+                  <div className="fl-fire-input-wrap">
+                    <span className="fl-input-prefix">yr</span>
+                    <input className="fl-fire-input" type="number" placeholder="45" value={retireAge || ''} onChange={e => setRetireAge(parseInt(e.target.value) || 0)} />
                   </div>
-                )}
-                <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 16 }} onClick={exportExcel}><Icon.Export />Download report</button>
-                <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 10 }} onClick={signOut}><Icon.LogOut />Sign out</button>
+                </div>
               </div>
+              <button className="fl-btn-ghost" style={{ width: '100%', marginBottom: 16 }} onClick={() => { saveSettings(null, null, null, currentAge, retireAge, null); showToast('Age settings saved'); }}>Save age settings</button>
+
+              <h3 style={{ marginTop: 8, marginBottom: 16 }}>Account</h3>
+              <div className="fl-account-row">
+                <div className="fl-account-avatar">{user?.email?.[0]?.toUpperCase()}</div>
+                <div><div style={{ fontWeight: 600, fontSize: 14 }}>{user?.email}</div><div style={{ fontSize: 12, color: 'var(--t2)', marginTop: 2 }}>{isLifetime ? 'Lifetime · Session only' : 'Pro · Cloud sync active'}</div></div>
+              </div>
+              {isLifetime && (
+                <div className="fl-upgrade-card">
+                  <div className="fl-upgrade-card-top">
+                    <span className="fl-upgrade-card-title">Upgrade to cloud sync</span>
+                    <span className="fl-upgrade-card-badge">Save your data</span>
+                  </div>
+                  <p className="fl-upgrade-card-body">
+                    Your data clears every session on the Lifetime plan. Upgrade to Monthly or Annual to save everything permanently — transactions, settings, and history.
+                  </p>
+                  <div className="fl-upgrade-card-options">
+                    <a href="/pricing" className="fl-upgrade-option">
+                      <span className="fl-upgrade-option-price">$4.99<span>/mo</span></span>
+                      <span className="fl-upgrade-option-label">Monthly</span>
+                    </a>
+                    <a href="/pricing" className="fl-upgrade-option fl-upgrade-option-featured">
+                      <span className="fl-upgrade-option-price">$59.99<span>/yr</span></span>
+                      <span className="fl-upgrade-option-label">Annual · Best value</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+              <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 16 }} onClick={exportExcel}><Icon.Export />Download report</button>
+              <button className="fl-btn-ghost fl-btn-icon" style={{ width: '100%', marginTop: 10 }} onClick={signOut}><Icon.LogOut />Sign out</button>
             </div>
           </div>
-        )}
-      </main>
+        </div>
+      )}
+    </main>
 
-      {/* ── ADD / EDIT TRANSACTION MODAL ── */}
-      {
-        showAdd && (
-          <div className="fl-overlay" onClick={() => setShowAdd(false)}>
-            <div className="fl-modal fl-modal-log" onClick={e => e.stopPropagation()}>
-              <div className="fl-modal-header"><h2>{editTx ? 'Edit Transaction' : 'Log Transaction'}</h2><button className="fl-modal-close" onClick={closeModal}><Icon.X /></button></div>
-              <div className="fl-modal-body">
-                <div className="fl-type-grid">
-                  {['income', 'need', 'want', 'saving'].map(t => { const cfg = typeConfig[t], active = form.type === t; return <button key={t} className={`fl-type-pill ${active ? 'active' : ''}`} style={active ? { background: cfg.bg, borderColor: cfg.border, color: cfg.color } : {}} onClick={() => setForm(p => ({ ...p, type: t }))}><span className="fl-type-pill-icon">{cfg.icon}</span><span>{cfg.label}</span></button>; })}
-                </div>
-                <div className="fl-amount-section">
-                  <div className="fl-amount-input-wrap" style={{ borderColor: typeConfig[form.type].border }}>
-                    <span className="fl-amount-prefix" style={{ color: typeConfig[form.type].color }}>{sym}</span>
-                    <input ref={addAmtRef} className="fl-amount-input" style={{ color: typeConfig[form.type].color }} type="text" inputMode="decimal" placeholder="0.00" value={rawAmt} onChange={e => { const raw = e.target.value.replace(/[^0-9.]/g, ''); setRawAmt(fmtInput(raw)); setForm(p => ({ ...p, amount: raw })); }} onKeyDown={e => { if (e.key === 'Enter') (editTx ? saveEdit : addTx)(); }} />
-                  </div>
-                  <div className="fl-quick-amounts">{[10, 25, 50, 100].map(a => <button key={a} className="fl-quick-amt" style={{ borderColor: form.amount === a.toString() ? typeConfig[form.type].border : '' }} onClick={() => { setRawAmt(fmtInput(a.toString())); setForm(p => ({ ...p, amount: a.toString() })); }}>{sym}{a}</button>)}</div>
-                </div>
-                <div className="fl-field-group"><label className="fl-field-label">Description</label><input className="fl-field-input" placeholder="e.g. Monthly rent, salary, Netflix…" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') (editTx ? saveEdit : addTx)(); }} /></div>
-                <div className="fl-field-row">
-                  <div className="fl-field-group" style={{ flex: 1 }}><label className="fl-field-label">Category</label><select className="fl-field-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}><option value="">Optional</option>{(form.type === 'income' ? [] : (cats[form.type === 'need' ? 'needs' : form.type === 'want' ? 'wants' : 'savings'] || [])).map(c => <option key={c} value={c}>{c}</option>)}</select></div>
-                  <div className="fl-field-group" style={{ flex: 1 }}><label className="fl-field-label">Date</label><input className="fl-field-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
-                </div>
-                <div className="fl-modal-footer">
-                  <label className="fl-recurring-label"><input type="checkbox" checked={form.recurring} onChange={e => setForm(p => ({ ...p, recurring: e.target.checked }))} />Recurring</label>
-                  <div className="fl-modal-actions"><span className="fl-kbd-hint">Ctrl+Enter to save</span><button className="fl-btn-primary" onClick={editTx ? saveEdit : addTx}>{editTx ? 'Save changes' : 'Log ' + TYPE_LABEL[form.type].toLowerCase()}</button></div>
-                </div>
+  {/* ── ADD / EDIT TRANSACTION MODAL ── */ }
+  {
+    showAdd && (
+      <div className="fl-overlay" onClick={() => setShowAdd(false)}>
+        <div className="fl-modal fl-modal-log" onClick={e => e.stopPropagation()}>
+          <div className="fl-modal-header"><h2>{editTx ? 'Edit Transaction' : 'Log Transaction'}</h2><button className="fl-modal-close" onClick={closeModal}><Icon.X /></button></div>
+          <div className="fl-modal-body">
+            <div className="fl-type-grid">
+              {['income', 'need', 'want', 'saving'].map(t => { const cfg = typeConfig[t], active = form.type === t; return <button key={t} className={`fl-type-pill ${active ? 'active' : ''}`} style={active ? { background: cfg.bg, borderColor: cfg.border, color: cfg.color } : {}} onClick={() => setForm(p => ({ ...p, type: t }))}><span className="fl-type-pill-icon">{cfg.icon}</span><span>{cfg.label}</span></button>; })}
+            </div>
+            <div className="fl-amount-section">
+              <div className="fl-amount-input-wrap" style={{ borderColor: typeConfig[form.type].border }}>
+                <span className="fl-amount-prefix" style={{ color: typeConfig[form.type].color }}>{sym}</span>
+                <input ref={addAmtRef} className="fl-amount-input" style={{ color: typeConfig[form.type].color }} type="text" inputMode="decimal" placeholder="0.00" value={rawAmt} onChange={e => { const raw = e.target.value.replace(/[^0-9.]/g, ''); setRawAmt(fmtInput(raw)); setForm(p => ({ ...p, amount: raw })); }} onKeyDown={e => { if (e.key === 'Enter') (editTx ? saveEdit : addTx)(); }} />
               </div>
+              <div className="fl-quick-amounts">{[10, 25, 50, 100].map(a => <button key={a} className="fl-quick-amt" style={{ borderColor: form.amount === a.toString() ? typeConfig[form.type].border : '' }} onClick={() => { setRawAmt(fmtInput(a.toString())); setForm(p => ({ ...p, amount: a.toString() })); }}>{sym}{a}</button>)}</div>
+            </div>
+            <div className="fl-field-group"><label className="fl-field-label">Description</label><input className="fl-field-input" placeholder="e.g. Monthly rent, salary, Netflix…" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') (editTx ? saveEdit : addTx)(); }} /></div>
+            <div className="fl-field-row">
+              <div className="fl-field-group" style={{ flex: 1 }}><label className="fl-field-label">Category</label><select className="fl-field-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}><option value="">Optional</option>{(form.type === 'income' ? [] : (cats[form.type === 'need' ? 'needs' : form.type === 'want' ? 'wants' : 'savings'] || [])).map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+              <div className="fl-field-group" style={{ flex: 1 }}><label className="fl-field-label">Date</label><input className="fl-field-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
+            </div>
+            <div className="fl-modal-footer">
+              <label className="fl-recurring-label"><input type="checkbox" checked={form.recurring} onChange={e => setForm(p => ({ ...p, recurring: e.target.checked }))} />Recurring</label>
+              <div className="fl-modal-actions"><span className="fl-kbd-hint">Ctrl+Enter to save</span><button className="fl-btn-primary" onClick={editTx ? saveEdit : addTx}>{editTx ? 'Save changes' : 'Log ' + TYPE_LABEL[form.type].toLowerCase()}</button></div>
             </div>
           </div>
-        )
-      }
+        </div>
+      </div>
+    )
+  }
     </div >
   );
 }
