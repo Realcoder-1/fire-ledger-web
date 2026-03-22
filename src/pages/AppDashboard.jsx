@@ -908,13 +908,7 @@ export default function AppDashboard() {
             <button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
           </div>
         </div>
-        <button className="fl-signout" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
-          {darkMode ? '☀️' : '🌙'}
-        </button>
-        <button className="fl-theme-toggle" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
-          {darkMode ? '☀️' : '🌙'}
-        </button>
-        <button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
+        
     </div>
       </aside >
 
