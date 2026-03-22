@@ -434,7 +434,7 @@ function GuidePage() {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function AppDashboard() {
   const { user, signOut, isLifetime } = useAuth();
-  const [darkMode, setDarkMode] = useState(true);
+const [darkMode, setDarkMode] = useState(true);
   const [tab, setTab] = useState('home');
   const [txs, setTxs] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -528,9 +528,9 @@ export default function AppDashboard() {
     window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAdd, form]);
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
+useEffect(() => {
+  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+}, [darkMode]);
 
   const saveSettings = async (fs, cc, cur, age, retire, fm) => {
     if (isLifetime) return;
@@ -612,10 +612,10 @@ export default function AppDashboard() {
     setFire({ annualExpenses: 40000, annualSavings: 20000, currentSavings: 50000 });
     setCats(DEFAULT_CATS);
     setDeleteConfirm(false);
-    showToast('All data deleted', 'error');
-    sessionStorage.removeItem(`fl_onboarded_${userId}`);
-    setOnboardStep(0);
-    setShowOnboard(true);
+   showToast('All data deleted', 'error');
+sessionStorage.removeItem(`fl_onboarded_${userId}`);
+setOnboardStep(0);
+setShowOnboard(true);
   };
 
   const handleImportFile = e => {
@@ -905,9 +905,9 @@ export default function AppDashboard() {
             <button className="fl-curr-btn" onClick={() => setShowCurrMenu(p => !p)}>{currency}</button>
             {showCurrMenu && <div className="fl-curr-menu">{Object.entries(CURRENCIES).map(([code, c]) => <button key={code} className={`fl-curr-opt ${currency === code ? 'active' : ''}`} onClick={() => { setCurrency(code); saveSettings(null, null, code); setShowCurrMenu(false); showToast(`Currency: ${code}`) }}>{c.symbol} {code}</button>)}</div>}
           </div>
-          <button className="fl-signout" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
-            {darkMode ? '☀️' : '🌙'}
-          </button>
+<button className="fl-signout" onClick={() => setDarkMode(p => !p)} title="Toggle theme">
+  {darkMode ? '☀️' : '🌙'}
+</button>
           <button className="fl-signout" onClick={signOut} title="Sign out"><Icon.LogOut /></button>
         </div>
       </aside>
@@ -936,13 +936,13 @@ export default function AppDashboard() {
             )}
 
             {/* Hero — reflects active FIRE mode */}
-            <div className="fl-fire-hero" style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <div className="fl-fire-hero">
               <div className="fl-fire-hero-left">
                 <div className="fl-fire-label">
                   {fireMode === 'standard' ? 'Financial Independence' : fireMode === 'lean' ? 'Lean FIRE' : fireMode === 'fat' ? 'Fat FIRE' : fireMode === 'coast' ? 'Coast FIRE' : 'Barista FIRE'}
                   {' · '}{CURRENCIES[currency].symbol} {currency}
                   {fireMode !== 'standard' && (
-                    <button className="fl-fire-mode-badge-btn" onClick={() => setTab('fire')} title="Change FIRE mode" style={{ marginBottom: 4, background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.4)', color: 'var(--purple-light)', borderRadius: 6, padding: '2px 8px', fontSize: 11, cursor: 'pointer' }}>
+                    <button className="fl-fire-mode-badge-btn" onClick={() => setTab('fire')} title="Change FIRE mode" style={{marginBottom: 4, background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.4)', color: 'var(--purple-light)', borderRadius: 6, padding: '2px 8px', fontSize: 11, cursor: 'pointer'}}>
                       {fireMode === 'lean' ? 'Lean' : fireMode === 'fat' ? 'Fat' : fireMode === 'coast' ? 'Coast' : 'Barista'}
                     </button>
                   )}
@@ -954,29 +954,29 @@ export default function AppDashboard() {
                   </span>
                 </div>
                 <div className="fl-fire-date">
-                  {fireMode === 'coast' && coastReached
-                    ? 'You have reached Coast FIRE — keep contributing and compound does the rest'
-                    : <>Projected freedom: <strong>{activeModeDate}</strong> · age <strong>{isFinite(ageAtFIRE) ? ageAtFIRE : '—'}</strong>{fireMode === 'barista' && <> · part-time {fmt(baristaPartTimeIncome)}/yr</>}</>
-                  }
-                </div>
+  {fireMode === 'coast' && coastReached
+    ? 'You have reached Coast FIRE — keep contributing and compound does the rest'
+    : <>Projected freedom: <strong>{activeModeDate}</strong> · age <strong>{isFinite(ageAtFIRE) ? ageAtFIRE : '—'}</strong>{fireMode === 'barista' && <> · part-time {fmt(baristaPartTimeIncome)}/yr</>}</>
+  }
+</div>
                 {fireMode === 'barista' && (
                   <div className="fl-fire-barista-note" style={{ marginTop: 6, fontSize: 13 }}>
                     Work part-time earning {fmt(baristaPartTimeIncome)}/yr · portfolio covers the rest
                   </div>
                 )}
                 {isFinite(activeModeYears) && activeModeYears > 0 && (
-                  <div className="fl-fire-hours-row" style={{ maxWidth: 380, width: '100%' }}>
-                    <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
-                    {' '}
-                    <span className="fl-fire-hours-label">working hours until you never have to work again</span>
-                  </div>
+               <div className="fl-fire-hours-row" style={{maxWidth: '55%'}}>
+  <span className="fl-fire-hours-num">{workingHoursLeft.toLocaleString()}</span>
+  {' '}
+  <span className="fl-fire-hours-label">working hours until you never have to work again</span>
+</div>
                 )}
                 <div className="fl-fire-progress-bar"><div className="fl-fire-progress-fill" style={{ width: `${activeModeProgress}%` }} /></div>
                 <div className="fl-fire-progress-label">{activeModeProgress.toFixed(1)}% of the way there &nbsp;·&nbsp; {fmt(fire.currentSavings)} of {fmt(activeModeNum)}</div>
               </div>
-              <div className="fl-fire-hero-right" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 180, marginLeft: 'auto' }}>
-                <svg viewBox="0 0 200 200" className="fl-fire-ring" style={{ width: 180, height: 180 }}>  <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="14" />
-                  <circle cx="100" cy="100" r="82" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="14" strokeDasharray="515" strokeDashoffset={515 - (515 * activeModeProgress / 100)} strokeLinecap="round" transform="rotate(-90 100 100)" />strokeDasharray="352" strokeDashoffset={352 - (352 * activeModeProgress / 100)} strokeLinecap="round" transform="rotate(-90 70 70)" />
+<div className="fl-fire-hero-right" style={{display:'flex', alignItems:'center', justifyContent:'center', minWidth: 200}}>
+  <svg viewBox="0 0 200 200" className="fl-fire-ring" style={{width: 180, height: 180}}>  <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="14" />
+  <circle cx="100" cy="100" r="82" fill="none" stroke="url(#hero-ring-grad)" strokeWidth="14" strokeDasharray="515" strokeDashoffset={515 - (515 * activeModeProgress / 100)} strokeLinecap="round" transform="rotate(-90 100 100)" />strokeDasharray="352" strokeDashoffset={352 - (352 * activeModeProgress / 100)} strokeLinecap="round" transform="rotate(-90 70 70)" />
                   <defs><linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="var(--purple-light)" /><stop offset="100%" stopColor="var(--purple-dark)" /></linearGradient></defs>
                 </svg>
                 <div className="fl-ring-center">
