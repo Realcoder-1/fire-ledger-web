@@ -47,25 +47,6 @@ function AnimatedHeroTitle() {
   );
 }
 
-// ── Mini ring SVG ──────────────────────────────────────
-function MiniRing({ pct, size = 90 }) {
-  const r    = 36;
-  const circ = 2 * Math.PI * r;
-  return (
-    <svg width={size} height={size} viewBox="0 0 90 90">
-      <circle cx="45" cy="45" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
-      <circle cx="45" cy="45" r={r} fill="none" stroke="url(#landing-ring-grad)"
-        strokeWidth="8" strokeDasharray={circ} strokeDashoffset={circ - circ * pct / 100}
-        strokeLinecap="round" transform="rotate(-90 45 45)" />
-      <defs>
-        <linearGradient id="landing-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#a78bfa" />
-          <stop offset="100%" stopColor="#f472b6" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
 
 // ══════════════════════════════════════════════════════
 // CONSOLIDATED DEMO  (replaces DemoReel + DashboardPreview)
