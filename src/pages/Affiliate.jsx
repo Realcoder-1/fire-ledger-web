@@ -1,0 +1,341 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Affiliate.css';
+
+const STATS = [
+  { num: '30%', label: 'Commission per sale', color: '#52c98a' },
+  { num: '$1.50', label: 'Per lifetime referral', color: '#a78bfa' },
+  { num: '$1.50', label: 'Per monthly referral', color: '#f472b6' },
+  { num: '90 days', label: 'Cookie window', color: '#fbbf24' },
+];
+
+const HOW_IT_WORKS = [
+  { step: '01', title: 'Apply below', body: 'Fill in your name, email, and how you plan to promote. We approve within 24 hours.' },
+  { step: '02', title: 'Get your link', body: 'You receive a unique referral link and access to your personal dashboard with live stats.' },
+  { step: '03', title: 'Promote', body: 'Share on YouTube, Twitter, Instagram, newsletters, blogs — wherever your audience is.' },
+  { step: '04', title: 'Get paid', body: 'Earn 30% on every paying customer you refer. Paid monthly via PayPal or bank transfer.' },
+];
+
+const PROMO_IDEAS = [
+  { icon: '▶', label: 'YouTube', desc: '"I tracked my FIRE journey for 30 days" — these videos get 50k+ views' },
+  { icon: '𝕏', label: 'Twitter / X', desc: 'Thread your savings rate progress — FIRE content goes viral regularly' },
+  { icon: '📸', label: 'Instagram', desc: 'Before/after financial transformation posts — high engagement niche' },
+  { icon: '✉', label: 'Newsletter', desc: 'Any personal finance, FIRE, or early retirement audience is a perfect fit' },
+];
+
+const FAQS = [
+  { q: 'When and how do I get paid?', a: 'Commissions are paid monthly, on the 1st of each month, for the previous month\'s conversions. Minimum payout is $20. We pay via PayPal or bank transfer.' },
+  { q: 'What counts as a conversion?', a: 'Any paying customer who signed up using your referral link within the 90-day cookie window. This includes all three plans: Lifetime ($5), Monthly ($4.99/mo), and Annual ($59.99/yr).' },
+  { q: 'Can I use paid ads?', a: 'Yes, but you cannot bid on branded keywords (FIRE Ledger, FIRELedger, fireledger.app). Violating this results in immediate termination.' },
+  { q: 'Is there a minimum audience size to apply?', a: 'No. We care more about relevance than size. A niche FIRE blog with 500 readers is a better fit than a generic finance account with 50k followers.' },
+  { q: 'Do referrals stack if the same person upgrades?', a: 'Yes. If someone buys Lifetime through your link and later upgrades to Annual, you earn commission on both transactions.' },
+];
+
+// ── Mock affiliate dashboard data ────────────────────
+const MOCK_REFERRALS = [
+  { date: 'Mar 18', plan: 'Annual', amount: '$18.00', status: 'paid' },
+  { date: 'Mar 12', plan: 'Lifetime', amount: '$1.50', status: 'paid' },
+  { date: 'Mar 9',  plan: 'Monthly', amount: '$1.50', status: 'pending' },
+  { date: 'Feb 28', plan: 'Annual',  amount: '$18.00', status: 'paid' },
+  { date: 'Feb 21', plan: 'Monthly', amount: '$1.50', status: 'paid' },
+];
+
+function MockDashboard() {
+  const [copied, setCopied] = useState(false);
+  const link = 'fireledger.app/?ref=yourname';
+
+  const handleCopy = () => {
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="aff-dash">
+      <div className="aff-dash-header">
+        <div className="aff-dash-title">Your affiliate dashboard</div>
+        <div className="aff-dash-badge">Preview — yours after approval</div>
+      </div>
+
+      {/* Stats row */}
+      <div className="aff-dash-stats">
+        {[
+          { label: 'This month', value: '$39.00', color: '#52c98a' },
+          { label: 'Total earned', value: '$214.50', color: '#a78bfa' },
+          { label: 'Referrals', value: '14', color: '#f0f0f8' },
+          { label: 'Conversion', value: '8.3%', color: '#fbbf24' },
+        ].map(s => (
+          <div key={s.label} className="aff-dash-stat">
+            <span className="aff-dash-stat-val" style={{ color: s.color }}>{s.value}</span>
+            <span className="aff-dash-stat-label">{s.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Referral link */}
+      <div className="aff-dash-link-row">
+        <div className="aff-dash-link-label">Your referral link</div>
+        <div className="aff-dash-link-box">
+          <span className="aff-dash-link-url">{link}</span>
+          <button className="aff-dash-copy-btn" onClick={handleCopy}>
+            {copied ? '✓ Copied' : 'Copy'}
+          </button>
+        </div>
+      </div>
+
+      {/* Referrals table */}
+      <div className="aff-dash-table-wrap">
+        <div className="aff-dash-table-head">
+          <span>Date</span><span>Plan</span><span>Commission</span><span>Status</span>
+        </div>
+        {MOCK_REFERRALS.map((r, i) => (
+          <div key={i} className="aff-dash-table-row">
+            <span className="aff-col-date">{r.date}</span>
+            <span className="aff-col-plan">{r.plan}</span>
+            <span className="aff-col-amt">{r.amount}</span>
+            <span className={`aff-col-status ${r.status}`}>{r.status}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function Affiliate() {
+  const navigate = useNavigate();
+  const [openFaq, setOpenFaq] = useState(null);
+  const [form, setForm] = useState({ name: '', email: '', platform: '', audience: '', notes: '' });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.platform) return;
+    setLoading(true);
+    // Simulate submission — wire to Supabase in production
+    await new Promise(r => setTimeout(r, 1200));
+    setLoading(false);
+    setSubmitted(true);
+  };
+
+  return (
+    <div className="aff-page">
+      {/* ── Background ── */}
+      <div className="aff-bg">
+        <div className="aff-orb aff-orb1" />
+        <div className="aff-orb aff-orb2" />
+        <div className="aff-grid" />
+      </div>
+
+      {/* ── Nav ── */}
+      <nav className="aff-nav">
+        <div className="aff-nav-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          FIRE<span>Ledger</span>
+        </div>
+        <div className="aff-nav-links">
+          <button className="aff-nav-link" onClick={() => navigate('/')}>Home</button>
+          <button className="aff-nav-link" onClick={() => navigate('/pricing')}>Pricing</button>
+        </div>
+        <button className="aff-nav-cta" onClick={() => { const el = document.getElementById('aff-apply'); el?.scrollIntoView({ behavior: 'smooth' }); }}>
+          Apply now →
+        </button>
+      </nav>
+
+      {/* ── Hero ── */}
+      <section className="aff-hero">
+        <div className="aff-hero-inner">
+          <div className="aff-eyebrow">Affiliate Program</div>
+          <h1 className="aff-title">
+            Earn while helping people<br />
+            <span className="aff-accent">find their freedom date.</span>
+          </h1>
+          <p className="aff-sub">
+            30% commission on every paying customer you refer. No cap. 90-day cookie. Monthly payouts.
+          </p>
+
+          {/* Stats strip */}
+          <div className="aff-stats-strip">
+            {STATS.map(s => (
+              <div key={s.label} className="aff-stat-item">
+                <span className="aff-stat-num" style={{ color: s.color }}>{s.num}</span>
+                <span className="aff-stat-label">{s.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="aff-hero-btns">
+            <button className="aff-btn-primary" onClick={() => document.getElementById('aff-apply')?.scrollIntoView({ behavior: 'smooth' })}>
+              Apply for free →
+            </button>
+            <button className="aff-btn-ghost" onClick={() => document.getElementById('aff-how')?.scrollIntoView({ behavior: 'smooth' })}>
+              See how it works
+            </button>
+          </div>
+        </div>
+
+        {/* Mock dashboard preview */}
+        <div className="aff-hero-dash">
+          <MockDashboard />
+        </div>
+      </section>
+
+      {/* ── How it works ── */}
+      <section className="aff-section" id="aff-how">
+        <div className="aff-section-inner">
+          <span className="aff-section-eyebrow">The process</span>
+          <h2 className="aff-section-title">Four steps to your first payout.</h2>
+          <div className="aff-steps-grid">
+            {HOW_IT_WORKS.map(s => (
+              <div key={s.step} className="aff-step-card">
+                <div className="aff-step-num">{s.step}</div>
+                <h3 className="aff-step-title">{s.title}</h3>
+                <p className="aff-step-body">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Commission breakdown ── */}
+      <section className="aff-section aff-section-dark">
+        <div className="aff-section-inner">
+          <span className="aff-section-eyebrow">What you earn</span>
+          <h2 className="aff-section-title">30% on every plan. Forever.</h2>
+          <p className="aff-section-sub">A single annual referral earns you $18. Refer 10 people a month and you're making $180/mo passively.</p>
+
+          <div className="aff-commission-grid">
+            {[
+              { plan: 'Lifetime', price: '$5', earn: '$1.50', tag: 'one-time', color: '#a78bfa' },
+              { plan: 'Monthly', price: '$4.99/mo', earn: '$1.50/mo', tag: 'recurring', color: '#f472b6', featured: true },
+              { plan: 'Annual', price: '$59.99/yr', earn: '$18.00/yr', tag: 'best value', color: '#52c98a' },
+            ].map(p => (
+              <div key={p.plan} className={`aff-comm-card ${p.featured ? 'aff-comm-featured' : ''}`}>
+                {p.featured && <div className="aff-comm-badge">Most referred</div>}
+                <div className="aff-comm-plan">{p.plan}</div>
+                <div className="aff-comm-price">{p.price}</div>
+                <div className="aff-comm-arrow">↓</div>
+                <div className="aff-comm-earn" style={{ color: p.color }}>{p.earn}</div>
+                <div className="aff-comm-label">you earn</div>
+                <div className="aff-comm-tag">{p.tag}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Who it's for ── */}
+      <section className="aff-section">
+        <div className="aff-section-inner">
+          <span className="aff-section-eyebrow">Who promotes us</span>
+          <h2 className="aff-section-title">If your audience cares about money,<br />they care about this.</h2>
+          <div className="aff-promo-grid">
+            {PROMO_IDEAS.map(p => (
+              <div key={p.label} className="aff-promo-card">
+                <div className="aff-promo-icon">{p.icon}</div>
+                <div className="aff-promo-label">{p.label}</div>
+                <p className="aff-promo-desc">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Apply form ── */}
+      <section className="aff-section aff-section-dark" id="aff-apply">
+        <div className="aff-section-inner aff-apply-inner">
+          <div className="aff-apply-left">
+            <span className="aff-section-eyebrow">Apply now</span>
+            <h2 className="aff-section-title" style={{ textAlign: 'left' }}>
+              Join the program.<br />Start earning.
+            </h2>
+            <p className="aff-apply-body">
+              We review every application manually. If you have an audience that overlaps with FIRE, personal finance, or early retirement — you're likely a fit. We approve within 24 hours.
+            </p>
+            <div className="aff-apply-trust">
+              <span>✓ Free to join</span>
+              <span>✓ No minimum audience</span>
+              <span>✓ 24h approval</span>
+              <span>✓ Monthly payouts</span>
+            </div>
+          </div>
+
+          <div className="aff-apply-right">
+            {submitted ? (
+              <div className="aff-apply-success">
+                <div className="aff-success-icon">✓</div>
+                <h3>Application received</h3>
+                <p>We'll review your application and get back to you within 24 hours. Check your inbox at <strong>{form.email}</strong>.</p>
+              </div>
+            ) : (
+              <form className="aff-form" onSubmit={handleSubmit}>
+                <div className="aff-form-row">
+                  <div className="aff-form-field">
+                    <label className="aff-form-label">Full name</label>
+                    <input className="aff-form-input" type="text" placeholder="Your name"
+                      value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+                  </div>
+                  <div className="aff-form-field">
+                    <label className="aff-form-label">Email address</label>
+                    <input className="aff-form-input" type="email" placeholder="you@example.com"
+                      value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
+                  </div>
+                </div>
+                <div className="aff-form-field">
+                  <label className="aff-form-label">Primary platform / channel</label>
+                  <input className="aff-form-input" type="text" placeholder="e.g. YouTube, Twitter, Newsletter, Blog"
+                    value={form.platform} onChange={e => setForm(f => ({ ...f, platform: e.target.value }))} required />
+                </div>
+                <div className="aff-form-field">
+                  <label className="aff-form-label">Audience size (approx.)</label>
+                  <input className="aff-form-input" type="text" placeholder="e.g. 2,000 subscribers"
+                    value={form.audience} onChange={e => setForm(f => ({ ...f, audience: e.target.value }))} />
+                </div>
+                <div className="aff-form-field">
+                  <label className="aff-form-label">How do you plan to promote? (optional)</label>
+                  <textarea className="aff-form-textarea" rows={3} placeholder="Brief description of your plan..."
+                    value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                </div>
+                <button className="aff-form-submit" type="submit" disabled={loading}>
+                  {loading ? 'Submitting…' : 'Submit application →'}
+                </button>
+                <p className="aff-form-fine">By applying you agree to our affiliate terms. We never spam.</p>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="aff-section">
+        <div className="aff-section-inner aff-faq-inner">
+          <span className="aff-section-eyebrow">Questions</span>
+          <h2 className="aff-section-title">Before you apply</h2>
+          <div className="aff-faq-list">
+            {FAQS.map((item, i) => (
+              <div key={i} className="aff-faq-item">
+                <button className="aff-faq-q" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                  <span>{item.q}</span>
+                  <span className="aff-faq-chevron">{openFaq === i ? '−' : '+'}</span>
+                </button>
+                {openFaq === i && <div className="aff-faq-a">{item.a}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="aff-footer">
+        <div className="aff-footer-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          FIRE<span>Ledger</span>
+        </div>
+        <p>Questions? Email us at <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a></p>
+        <div className="aff-footer-links">
+          <a href="/terms">Terms</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/pricing">Pricing</a>
+        </div>
+        <p className="aff-footer-note">© {new Date().getFullYear()} FIRE Ledger · Affiliate Program</p>
+      </footer>
+    </div>
+  );
+}
