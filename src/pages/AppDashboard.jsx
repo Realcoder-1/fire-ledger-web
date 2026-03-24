@@ -228,7 +228,7 @@ const TOUR_STEPS = [
   { tab: 'home', title: 'Dashboard', body: "Your financial independence overview. The ring shows your FIRE progress in real time. The hours metric shows exactly how much work time remains before you're free." },
   { tab: 'home', title: 'Log a Transaction', body: 'Tap "+ Log transaction" to record income, expenses, or savings. Every transaction updates your freedom date instantly — Income, Need, Want, or Saving.' },
   { tab: 'fire', title: 'FIRE Calculator', body: 'Enter your annual expenses, annual savings, and current savings. Your exact FIRE number and freedom date calculate instantly. Use the What-If slider to model extra savings.' },
-  { tab: 'projections', title: 'Wealth Projections', body: 'Your portfolio trajectory charted over time. Run 500 Monte Carlo simulations to stress-test your plan across different market scenarios.' },
+  { tab: 'projections', title: 'Financial Timeline', body: 'Your portfolio trajectory mapped across the years ahead so you can see what different ages and milestones look like on the way to freedom.' },
   { tab: 'insights', title: 'Insights & Grade', body: 'Your savings grade, 50/30/20 breakdown, and AI guidance after every transaction batch. The grade tells you exactly where you stand.' },
   { tab: 'networth', title: 'Net Worth Tracker', body: "Assets minus liabilities — see your full financial picture. Tracks your real net worth and what percentage of your FIRE number you've already reached." },
   { tab: 'export', title: 'Export & Import', body: 'Export to Excel or CSV anytime. Import from any bank CSV — the smart importer handles any column format, date style, and debit/credit split automatically.' },
@@ -262,7 +262,7 @@ function GuidePage() {
     { title: 'Getting Started', icon: <Icon.Lightning />, steps: [{ title: 'Set your FIRE numbers', body: 'Go to FIRE Calc and enter your annual expenses, annual savings, and current savings. These three numbers power every calculation in the app. Annual expenses × 25 = your FIRE number — the amount you need invested to retire.' }, { title: 'Log your first transaction', body: "Click \"+ Log\" in the top right. Choose Income, Need, Want, or Saving. Income is money coming in. Needs are essential expenses — rent, groceries, utilities. Wants are discretionary — dining, entertainment, shopping. Savings are money you're investing." }, { title: 'Check your dashboard', body: "Your dashboard updates in real time. The hero card shows years to financial independence. The four metric cards show this month's income, spending, savings, and your savings grade." }] },
     { title: 'Logging Transactions', icon: <Icon.Transactions />, steps: [{ title: 'Four transaction types', body: 'Income — salary, freelance, dividends, any money you receive. Need — rent, groceries, utilities, transport, insurance. Want — dining out, Netflix, clothing, travel, anything non-essential. Saving — index funds, pension contributions, emergency fund deposits.' }, { title: 'Quick amounts', body: 'Use the $10, $25, $50, $100 quick buttons for common amounts. For other amounts type directly into the field.' }, { title: 'Recurring transactions', body: 'Check "Recurring" for fixed monthly expenses like rent or subscriptions.' }, { title: 'Importing from a bank', body: "Go to Export & Import → Smart Import. Download a CSV from your bank's website and upload it. The importer auto-detects column names and date formats — no reformatting needed." }] },
     { title: 'Understanding FIRE', icon: <Icon.Fire />, steps: [{ title: 'The 4% rule', body: "The FIRE number is calculated using the 4% rule: your annual expenses × 25. If you can withdraw 4% of your portfolio per year and it covers your expenses, you're financially independent. A $40,000/year lifestyle needs a $1,000,000 portfolio." }, { title: 'The 7% return assumption', body: 'The calculator assumes 7% average annual investment returns — a conservative real return for a diversified index fund portfolio.' }, { title: 'Savings rate matters most', body: 'A 50% savings rate means you can retire in roughly 17 years from zero. A 10% rate takes 40+ years.' }, { title: 'The 50/30/20 rule', body: '50% of income on Needs, 30% on Wants, 20% on Savings. FIRE followers typically aim for 40/20/40 or 30/20/50.' }] },
-    { title: 'Projections & Monte Carlo', icon: <Icon.Projections />, steps: [{ title: 'What the projection chart shows', body: 'The Projections page charts your expected portfolio value over time at a steady 7% annual return. The gold dashed line is your FIRE target.' }, { title: 'Monte Carlo simulation', body: 'Monte Carlo runs 500 simulations with randomised yearly returns to model different possible futures.' }, { title: 'Reading the bands', body: 'P90 (optimistic), P50 (median), P10 (pessimistic). A 70–80% success rate is generally considered solid.' }, { title: 'Disclaimer', body: 'Simulations are illustrative only. Consult a qualified financial adviser before making retirement decisions.' }] },
+    { title: 'Financial Timeline', icon: <Icon.Projections />, steps: [{ title: 'What the timeline shows', body: 'The Timeline page charts your expected portfolio value across the years ahead at a steady 7% annual return. The gold dashed line is your FIRE target.' }, { title: 'Age-based clarity', body: 'Use it to see where your money is likely to be at different ages and when the line crosses into freedom.' }, { title: 'Scenario bands', body: 'Monte Carlo still adds probability bands so you can compare optimistic, median, and pessimistic paths.' }, { title: 'Disclaimer', body: 'Simulations are illustrative only. Consult a qualified financial adviser before making retirement decisions.' }] },
     { title: 'Exporting Your Data', icon: <Icon.Export />, steps: [{ title: 'Excel / Google Sheets report', body: 'Export & Import → Excel Report downloads a formatted CSV with your FIRE summary and all transactions.' }, { title: 'Raw CSV export', body: 'CSV Export downloads a clean transaction list compatible with any spreadsheet application.' }, { title: 'Importing data', body: 'The smart importer handles different column names, date formats, and debit/credit split columns.' }] },
   ];
   return (
@@ -584,7 +584,7 @@ export default function AppDashboard() {
     { id: 'fire', icon: <Icon.Fire />, label: 'FIRE Calc' },
     { id: 'insights', icon: <Icon.Insights />, label: 'Insights' },
     { id: 'transactions', icon: <Icon.Transactions />, label: 'Transactions' },
-    { id: 'projections', icon: <Icon.Projections />, label: 'Projections' },
+    { id: 'projections', icon: <Icon.Projections />, label: 'Timeline' },
     { id: 'networth', icon: <Icon.Wallet />, label: 'Net Worth' },
     { id: 'compound', icon: <Icon.Lightning />, label: 'Compound Growth' },
     { id: 'export', icon: <Icon.Export />, label: 'Export & Import' },
@@ -1053,7 +1053,7 @@ export default function AppDashboard() {
         {tab === 'projections' && (
           <div key="proj" className="fl-page">
             <div className="fl-page-top">
-              <div><h1 className="fl-title">Projections</h1><p className="fl-subtitle">Wealth trajectory and scenario modelling</p></div>
+              <div><h1 className="fl-title">Timeline</h1><p className="fl-subtitle">Wealth trajectory by age and path to freedom</p></div>
               <select className="fl-field-input" style={{ width: 'auto', padding: '8px 12px', fontSize: 13 }} value={projYears} onChange={e => { setProjYears(parseInt(e.target.value)); setMcResult(null); }}>
                 {[10, 15, 20, 25, 30, 35, 40].map(y => <option key={y} value={y}>{y} years</option>)}
               </select>
@@ -1061,7 +1061,7 @@ export default function AppDashboard() {
             <div className="fl-scroll-hint"><Icon.ArrowDown /><span>Scroll down to see your wealth trajectory chart</span></div>
             <div className="fl-proj-card">
               <div className="fl-proj-card-header">
-                <div><h3>Wealth Trajectory</h3><p>Deterministic projection at 7% annual return{mcResult ? ' with Monte Carlo probability bands' : ''}</p></div>
+                <div><h3>Financial Timeline</h3><p>Age-based projection at 7% annual return{mcResult ? ' with probability bands' : ''}</p></div>
                 <div className="fl-proj-legend">
                   <span className="fl-legend-item" style={{ color: 'var(--purple-light)' }}>Projected</span>
                   {mcResult && <><span className="fl-legend-item" style={{ color: 'var(--purple-light)', opacity: 0.5 }}>P90</span><span className="fl-legend-item" style={{ color: 'var(--red)', opacity: 0.5 }}>P10</span></>}

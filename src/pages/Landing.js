@@ -8,11 +8,11 @@ import { supabase } from '../lib/supabase';
 
 // ── Animated cycling caption (AnyInterview-style) ──────
 const HERO_CAPTIONS = [
-  { line1: 'You will work until',          accent: 'you die.'          },
-  { line1: 'Is this',                accent: 'what you want?'          },
-  { line1: 'Break',                  accent: 'the cycle.'              },
-  { line1: 'Find out when you can',  accent: 'stop working.'           },
-  { line1: 'Your freedom date',      accent: 'is calculable.'          },
+  { line1: 'Get a clear understanding of', accent: 'your financial future.' },
+  { line1: 'See your exact', accent: 'freedom timeline.' },
+  { line1: 'Know what every decision does to', accent: 'your future date.' },
+  { line1: 'Turn vague money goals into a', accent: 'living plan.' },
+  { line1: 'Track the path from today to', accent: 'financial independence.' },
 ];
 
 function AnimatedHeroTitle() {
@@ -45,239 +45,246 @@ function AnimatedHeroTitle() {
 // ── Constants ──────────────────────────────────────────
 const POPUP_KEY = 'fl_hours_popup_seen';
 
-// Paddle price IDs
-
-
-// ── Dashboard Nav Preview (animated tab switcher) ─────
-const PREVIEW_TABS = [
-  { id: 'dashboard',    label: 'Dashboard'      },
-  { id: 'fireCalc',     label: 'Freedom Calc'   },
-  { id: 'insights',     label: 'Insights'       },
-  { id: 'projections',  label: 'Projections'    },
-  { id: 'networth',     label: 'Net Worth'      },
-];
-
-function DashboardPreview() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-
-  const screens = {
-    dashboard: (
-      <div className="preview-screen">
-        {/* Hours left — the pain stat */}
-        <div className="prev-hours-banner">
-          <span className="prev-hours-icon">⏱</span>
-          <div className="prev-hours-body">
-            <span className="prev-hours-num">62,400</span>
-            <span className="prev-hours-label">working hours left before retirement age</span>
-          </div>
-          <span className="prev-hours-badge">30 yrs away</span>
-        </div>
-        {/* FIRE progress hero */}
-        <div className="prev-hero-card">
-          <div className="prev-hero-left">
-            <div className="prev-label">Financial Independence</div>
-            <div className="prev-years" style={{color:'#f87171'}}>30<span className="prev-years-unit"> years away</span></div>
-            <div className="prev-date">Projected freedom: <strong style={{color:'#f87171'}}>Mar 2056</strong></div>
-            <div className="prev-progress-bar"><div className="prev-progress-fill" style={{width:'12%', background:'linear-gradient(90deg,#f87171,#e05c5c)'}} /></div>
-            <div className="prev-progress-label" style={{color:'#f87171'}}>12% complete · $14k of $1,000k</div>
-          </div>
-          <div className="prev-ring-wrap">
-            <svg viewBox="0 0 100 100" className="prev-ring">
-              <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8"/>
-              <circle cx="50" cy="50" r="38" fill="none" stroke="url(#rg-pain)" strokeWidth="8"
-                strokeDasharray="239" strokeDashoffset="210" strokeLinecap="round" transform="rotate(-90 50 50)"/>
-              <defs><linearGradient id="rg-pain" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f87171"/><stop offset="100%" stopColor="#e05c5c"/>
-              </linearGradient></defs>
-            </svg>
-            <div className="prev-ring-center"><span className="prev-ring-pct" style={{color:'#f87171'}}>12%</span><span className="prev-ring-sub">to FIRE</span></div>
-          </div>
-        </div>
-        {/* Metrics */}
-        <div className="prev-metrics">
-          {[
-            {label:'Savings Rate', val:'8%',      color:'#f87171'},
-            {label:'FIRE Gap',     val:'$986k',   color:'#f87171'},
-            {label:'Saved',        val:'$14,200', color:'#fbbf24'},
-            {label:'Grade',        val:'D',       color:'#f87171'},
-          ].map(m=>(
-            <div key={m.label} className="prev-metric">
-              <div className="prev-metric-label">{m.label}</div>
-              <div className="prev-metric-val" style={{color:m.color}}>{m.val}</div>
-            </div>
-          ))}
-        </div>
-        {/* Transactions */}
-        <div className="prev-tx-list">
-          {[
-            {desc:'Salary',         amt:'+$4,800', c:'#52c98a'},
-            {desc:'Rent',           amt:'-$1,800', c:'#e05c5c'},
-            {desc:'Dining Out',     amt:'-$620',   c:'#e05c5c'},
-            {desc:'Subscriptions',  amt:'-$184',   c:'#e05c5c'},
-          ].map((t,i)=>(
-            <div key={i} className="prev-tx">
-              <span className="prev-tx-dot" style={{background:t.c}}/>
-              <span className="prev-tx-desc">{t.desc}</span>
-              <span className="prev-tx-amt" style={{color:t.c}}>{t.amt}</span>
-            </div>
-          ))}
-        </div>
-        {/* Guidance — pain */}
-        <div className="prev-guidance" style={{borderColor:'rgba(248,113,113,0.3)', background:'rgba(248,113,113,0.06)'}}>
-          <div className="prev-guidance-icon" style={{background:'rgba(248,113,113,0.2)',color:'#f87171'}}>!</div>
-          <div className="prev-guidance-text">Your dining out spending alone is costing you <strong style={{color:'#f87171'}}>4.2 years</strong> of your life. At this savings rate you retire at <strong style={{color:'#f87171'}}>age 65.</strong></div>
-        </div>
-      </div>
-    ),
-    fireCalc: (
-      <div className="preview-screen">
-        <div className="prev-fire-layout">
-          <div className="prev-fire-inputs">
-            <div className="prev-section-label">Your Freedom Numbers</div>
-            {[
-              {label:'Annual Expenses', val:'$48,000'},
-              {label:'Annual Savings',  val:'$4,800'},
-              {label:'Current Savings', val:'$14,200'},
-            ].map(f=>(
-              <div key={f.label} className="prev-field">
-                <div className="prev-field-label">{f.label}</div>
-                <div className="prev-field-val">{f.val}</div>
-              </div>
-            ))}
-            <div className="prev-divider"/>
-            <div className="prev-section-label">What If I Saved More?</div>
-            <div className="prev-slider-row">
-              <span className="prev-slider-val">+$500/mo</span>
-              <div className="prev-slider-track"><div className="prev-slider-thumb" style={{left:'25%'}}/></div>
-            </div>
-            <div className="prev-whatif-result">Saves <strong style={{color:'#52c98a'}}>8.1 years</strong> — retire in <strong style={{color:'#a78bfa'}}>21.9 years</strong></div>
-          </div>
-          <div className="prev-fire-results">
-            <div className="prev-stat-grid">
-              {[
-                {label:'Freedom Number', val:'$1,200,000', color:'#fbbf24'},
-                {label:'Years Away',     val:'30 yrs',     color:'#f87171'},
-                {label:'Freedom Date',   val:'Mar 2056',   color:'#f87171'},
-                {label:'Hours Left',     val:'62,400',     color:'#f87171'},
-              ].map(s=>(
-                <div key={s.label} className="prev-stat">
-                  <div className="prev-stat-label">{s.label}</div>
-                  <div className="prev-stat-val" style={{color:s.color, fontSize: s.label==='Freedom Number'?12:15}}>{s.val}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-    insights: (
-      <div className="preview-screen">
-        <div className="prev-section-label" style={{marginBottom:10}}>March 2026 · Needs vs Wants vs Savings</div>
-        {[
-          {label:'Income',  val:4800, color:'#52c98a', pct:100},
-          {label:'Needs',   val:2600, color:'#e05c5c', pct:54},
-          {label:'Wants',   val:1400, color:'#e0825c', pct:29},
-          {label:'Savings', val:400,  color:'#f87171', pct:8},
-        ].map(b=>(
-          <div key={b.label} className="prev-bar-row">
-            <span className="prev-bar-label">{b.label}</span>
-            <div className="prev-bar-track">
-              <div className="prev-bar-fill" style={{width:`${b.pct}%`, background:b.color}}/>
-            </div>
-            <span className="prev-bar-val" style={{color:b.color}}>${b.val.toLocaleString()}</span>
-          </div>
-        ))}
-        <div className="prev-grade-row">
-          <div className="prev-grade-label">Savings Grade</div>
-          <div className="prev-grade" style={{color:'#f87171'}}>D</div>
-          <div className="prev-grade-sub">8% savings rate · 30 yrs to FIRE</div>
-        </div>
-        <div className="prev-guidance" style={{marginTop:8,borderColor:'rgba(248,113,113,0.3)',background:'rgba(248,113,113,0.06)'}}>
-          <div className="prev-guidance-icon" style={{background:'rgba(248,113,113,0.2)',color:'#f87171'}}>!</div>
-          <div className="prev-guidance-text">Wants spending is <strong style={{color:'#f87171'}}>29% of income</strong>. Cutting to 20% moves your freedom date to <strong style={{color:'#52c98a'}}>2048</strong>.</div>
-        </div>
-      </div>
-    ),
-    projections: (
-      <div className="preview-screen">
-        <div className="prev-section-label" style={{marginBottom:12}}>Wealth Trajectory · 35 years · 500 Monte Carlo scenarios</div>
-        <svg viewBox="0 0 400 140" className="prev-proj-chart">
-          <defs>
-            <linearGradient id="pg2" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.3"/>
-              <stop offset="100%" stopColor="#a78bfa" stopOpacity="0"/>
-            </linearGradient>
-          </defs>
-          <line x1="40" y1="25" x2="390" y2="25" stroke="#fbbf24" strokeWidth="1" strokeDasharray="5 4" opacity="0.5"/>
-          <text x="393" y="29" fontSize="7" fill="#fbbf24" opacity="0.7">FIRE</text>
-          <path d="M40,128 L90,122 L140,114 L190,104 L230,90 L270,72 L310,50 L360,30 L390,22 L390,130 L40,130 Z" fill="url(#pg2)"/>
-          <path d="M40,128 L90,122 L140,114 L190,104 L230,90 L270,72 L310,50 L360,30 L390,22" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round"/>
-          <circle cx="360" cy="30" r="4" fill="#52c98a" opacity="0.9"/>
-          <line x1="360" y1="10" x2="360" y2="130" stroke="#52c98a" strokeWidth="1" strokeDasharray="3 4" opacity="0.3"/>
-          <text x="360" y="8" textAnchor="middle" fontSize="7" fill="#52c98a">Free</text>
-          {[0,5,10,15,20,25,30,35].map((y,i)=>(
-            <text key={y} x={40+i*50} y="138" textAnchor="middle" fontSize="7" fill="rgba(255,255,255,0.25)">Yr{y}</text>
-          ))}
-        </svg>
-        <div className="prev-mc-result">
-          <div className="prev-mc-pct" style={{color:'#fbbf24'}}>54%</div>
-          <div className="prev-mc-label">success rate — <strong style={{color:'#f87171'}}>46% of scenarios you run out of money</strong></div>
-        </div>
-      </div>
-    ),
-    networth: (
-      <div className="preview-screen">
-        <div className="prev-section-label" style={{marginBottom:10}}>Net Worth Tracker</div>
-        <div className="prev-nw-grid">
-          <div className="prev-nw-card" style={{borderColor:'rgba(82,201,138,0.3)'}}>
-            <div className="prev-nw-label">Total Assets</div>
-            <div className="prev-nw-val" style={{color:'#52c98a'}}>$29,200</div>
-            <div className="prev-nw-breakdown">
-              {[{l:'Savings',v:'$14,200'},{l:'401k',v:'$8,000'},{l:'Car',v:'$7,000'}].map(r=>(
-                <div key={r.l} className="prev-nw-row"><span>{r.l}</span><span style={{color:'#52c98a'}}>{r.v}</span></div>
-              ))}
-            </div>
-          </div>
-          <div className="prev-nw-card" style={{borderColor:'rgba(224,92,92,0.3)'}}>
-            <div className="prev-nw-label">Total Liabilities</div>
-            <div className="prev-nw-val" style={{color:'#e05c5c'}}>$47,000</div>
-            <div className="prev-nw-breakdown">
-              {[{l:'Student Loan',v:'$28,000'},{l:'Credit Card',v:'$4,000'},{l:'Car Loan',v:'$15,000'}].map(r=>(
-                <div key={r.l} className="prev-nw-row"><span>{r.l}</span><span style={{color:'#e05c5c'}}>{r.v}</span></div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="prev-nw-total">
-          <span>Net Worth</span>
-          <span className="prev-nw-total-val" style={{color:'#f87171'}}>-$17,800</span>
-        </div>
-        <div className="prev-nw-bar-wrap">
-          <div className="prev-nw-bar-fill" style={{width:'2%', background:'rgba(248,113,113,0.5)'}}/>
-          <div className="prev-nw-bar-text" style={{color:'#f87171'}}>Negative net worth · $1,217,800 from FIRE</div>
-        </div>
-      </div>
-    ),
-  };
+function MiniRing({ pct, size = 90 }) {
+  const r = 36;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (circ * pct / 100);
 
   return (
-    <div className="dashboard-preview">
-      <div className="preview-nav">
-        {PREVIEW_TABS.map(t=>(
-          <button
-            key={t.id}
-            className={`prev-nav-tab ${activeTab===t.id?'active':''}`}
-            onClick={()=>setActiveTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
+    <svg width={size} height={size} viewBox="0 0 90 90">
+      <circle cx="45" cy="45" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+      <circle
+        cx="45"
+        cy="45"
+        r={r}
+        fill="none"
+        stroke="url(#landing-ring-grad)"
+        strokeWidth="8"
+        strokeDasharray={circ}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform="rotate(-90 45 45)"
+      />
+      <defs>
+        <linearGradient id="landing-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#a78bfa" />
+          <stop offset="100%" stopColor="#f472b6" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function DashboardPreview() {
+  const navItems = [
+    { label: 'Dashboard', active: true },
+    { label: 'Transactions' },
+    { label: 'Insights' },
+    { label: 'FIRE Calc' },
+    { label: 'Timeline' },
+    { label: 'Net Worth' },
+    { label: 'Guide' },
+    { label: 'Export & Import' },
+    { label: 'Settings' },
+  ];
+
+  const timelinePoints = [
+    { age: 30, value: '$124k' },
+    { age: 35, value: '$212k' },
+    { age: 40, value: '$338k' },
+    { age: 45, value: '$486k' },
+    { age: 47, value: 'Freedom' },
+  ];
+
+  return (
+    <div className="preview-frame">
+      <div className="preview-chrome">
+        <div className="chrome-dot red" />
+        <div className="chrome-dot yellow" />
+        <div className="chrome-dot green" />
+        <span className="chrome-url">app.fireledger.app/dashboard</span>
       </div>
-      <div className="preview-body">
-        {screens[activeTab]}
+      <div className="preview-dashboard">
+        <div className="preview-sidebar">
+          <div className="preview-brand">FIRELedger</div>
+          {navItems.map((item) => (
+            <div key={item.label} className={`preview-nav-item ${item.active ? 'active' : ''}`}>
+              <div className="preview-nav-dot" />
+              {item.label}
+            </div>
+          ))}
+        </div>
+        <div className="preview-main">
+          <div className="preview-page-title">Good morning</div>
+          <div className="preview-page-sub">$142 spent today · 12-day streak</div>
+
+          <div className="preview-fire-card">
+            <div className="preview-fire-left">
+              <div className="preview-fire-eyebrow">Financial Independence</div>
+              <div className="preview-fire-years">18 <span className="preview-fire-years-sub">years away</span></div>
+              <div className="preview-fire-date">Projected freedom: <strong>Mar 2043</strong></div>
+              <div className="preview-fire-hours">37,440 working hours remaining</div>
+              <div className="preview-progress-bar">
+                <div className="preview-progress-fill" />
+              </div>
+              <div className="preview-progress-copy">23.1% complete · $115,500 of $500,000</div>
+            </div>
+            <div className="preview-fire-right">
+              <MiniRing pct={23} />
+              <div className="preview-ring-label">
+                <span className="preview-ring-pct">23%</span>
+                <span className="preview-ring-sub">to FIRE</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="preview-metrics-grid">
+            {[
+              { label: 'Income', value: '$5,200', sub: 'This month', color: '#52c98a' },
+              { label: 'Spent', value: '$3,140', sub: '60% of income', color: '#e05c5c' },
+              { label: 'Saved', value: '$1,200', sub: '23% savings rate', color: '#fbbf24' },
+              { label: 'Grade', value: 'C', sub: 'Monthly score', color: '#a78bfa' },
+            ].map((metric) => (
+              <div key={metric.label} className="preview-metric-card">
+                <div className="preview-metric-label">{metric.label}</div>
+                <div className="preview-metric-value" style={{ color: metric.color }}>{metric.value}</div>
+                <div className="preview-metric-sub">{metric.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="preview-lower-grid">
+            <div className="preview-panel">
+              <div className="preview-panel-head">
+                <span>Recent Transactions</span>
+                <span>View all →</span>
+              </div>
+              <div className="preview-tx-list-static">
+                {[
+                  { desc: 'Monthly salary', meta: 'Income', amt: '+$5,200.00', color: '#52c98a' },
+                  { desc: 'Rent - March', meta: 'Need · 2d', amt: '-$1,400.00', color: '#e05c5c' },
+                  { desc: 'Index fund - ISA', meta: 'Saving · 3d', amt: '+$800.00', color: '#fbbf24' },
+                  { desc: 'Groceries', meta: 'Need · 4d', amt: '-$142.00', color: '#e05c5c' },
+                ].map((tx, index) => (
+                  <div key={index} className="preview-tx-row-static">
+                    <div className="preview-tx-dot" style={{ background: tx.color }} />
+                    <span className="preview-tx-desc-static">{tx.desc}</span>
+                    <span className="preview-tx-meta-static">{tx.meta}</span>
+                    <span className="preview-tx-amt-static" style={{ color: tx.color }}>{tx.amt}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="preview-panel">
+              <div className="preview-panel-head">
+                <span>Financial Timeline</span>
+                <span>Age-based view</span>
+              </div>
+              <div className="preview-timeline-chart">
+                <svg viewBox="0 0 320 110" className="preview-proj-chart">
+                  <defs>
+                    <linearGradient id="preview-timeline-fill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.24" />
+                      <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <line x1="16" y1="24" x2="304" y2="24" stroke="#fbbf24" strokeWidth="1" strokeDasharray="5 4" opacity="0.45" />
+                  <text x="304" y="18" textAnchor="end" fontSize="8" fill="#fbbf24" opacity="0.8">FIRE line</text>
+                  <path d="M16,94 L80,88 L144,72 L208,52 L248,36 L288,22 L288,96 L16,96 Z" fill="url(#preview-timeline-fill)" />
+                  <path d="M16,94 L80,88 L144,72 L208,52 L248,36 L288,22" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round" />
+                  <circle cx="288" cy="22" r="4" fill="#52c98a" />
+                  <line x1="288" y1="14" x2="288" y2="96" stroke="#52c98a" strokeWidth="1" strokeDasharray="3 4" opacity="0.35" />
+                  <text x="288" y="10" textAnchor="middle" fontSize="8" fill="#52c98a">Free</text>
+                </svg>
+              </div>
+              <div className="preview-timeline-points">
+                {timelinePoints.map((point) => (
+                  <div key={point.age} className="preview-timeline-point">
+                    <span className="preview-timeline-age">Age {point.age}</span>
+                    <span className={`preview-timeline-value ${point.value === 'Freedom' ? 'success' : ''}`}>{point.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="preview-guidance-banner">
+            Wants spending is costing you <strong>2.4 years</strong>. Cutting it by $300/month moves your freedom date to <strong>November 2040</strong>.
+          </div>
+        </div>
       </div>
-      <div className="preview-footer">
-        <span className="preview-footer-badge">Live preview · All data is yours</span>
+    </div>
+  );
+}
+
+function DemoReel() {
+  const scenes = [
+    {
+      eyebrow: 'Dashboard overview',
+      title: 'See the full picture instantly',
+      body: 'Income, spending, savings rate, freedom progress, and your projected date in one place.',
+      badge: '00:04',
+      accent: 'Mar 2043',
+    },
+    {
+      eyebrow: 'Timeline',
+      title: 'Watch the path to financial independence',
+      body: 'See where your portfolio is heading by age, and when the line crosses into freedom.',
+      badge: '00:08',
+      accent: 'Age 47',
+    },
+    {
+      eyebrow: 'Guidance',
+      title: 'See what is slowing you down',
+      body: 'The system points out which habits are delaying freedom and what changes move the date forward.',
+      badge: '00:12',
+      accent: '2.4 years saved',
+    },
+    {
+      eyebrow: 'Tracking',
+      title: 'Log once. Update everything.',
+      body: 'Each transaction feeds the dashboard, timeline, and guidance layer so the plan stays current.',
+      badge: '00:16',
+      accent: 'Live sync',
+    },
+  ];
+
+  const [sceneIndex, setSceneIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSceneIndex((current) => (current + 1) % scenes.length);
+    }, 2200);
+
+    return () => clearInterval(interval);
+  }, [scenes.length]);
+
+  const current = scenes[sceneIndex];
+
+  return (
+    <div className="demo-reel" aria-label="Autoplay product demo">
+      <div className="demo-reel-copy">
+        <div className="demo-reel-head">
+          <span className="demo-reel-badge">Autoplay demo</span>
+          <span className="demo-reel-timer">{current.badge}</span>
+        </div>
+        <div className="demo-reel-step">{current.eyebrow}</div>
+        <h3>{current.title}</h3>
+        <p>{current.body}</p>
+        <div className="demo-reel-accent">{current.accent}</div>
+        <div className="demo-reel-progress">
+          {scenes.map((scene, index) => (
+            <span
+              key={scene.eyebrow}
+              className={`demo-reel-dot ${index === sceneIndex ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="demo-reel-frame">
+        <DashboardPreview />
       </div>
     </div>
   );
@@ -398,47 +405,40 @@ const [waitlistMessage, setWaitlistMessage] = useState('');
           <div className="grid-overlay" />
         </div>
         <div className="hero-content">
-          <div className="hero-badge">The question nobody asks — until it's too late.</div>
+          <div className="hero-badge">Outcome-first financial guidance</div>
           <AnimatedHeroTitle />
           <p className="hero-sub">
-            Unless you know this number.<br />
-            Most people never calculate it. The ones who do retire a decade early.
+            A guided dashboard that shows where you are, where you are headed, and what to change to get there faster.
           </p>
           <div className="hero-actions">
-            <button
-  className="btn-primary"
-  onClick={() => {
-    console.log('clicked');
-    navigate('/signup');
-  }}
->
-              Find my freedom date →
+            <button className="btn-primary" onClick={() => scrollTo('preview')}>
+              Watch the demo
             </button>
             <button className="btn-ghost" onClick={() => scrollTo('preview')}>
               See the dashboard
             </button>
           </div>
           <div className="hero-trust">
-            <span>✓ From $5 once</span>
+            <span>✓ Clear timeline</span>
             <span>·</span>
-            <span>✓ No subscription needed</span>
+            <span>✓ Ongoing guidance</span>
             <span>·</span>
-            <span>✓ Cancel monthly anytime</span>
+            <span>✓ Cloud-backed progress tracking</span>
           </div>
           <div className="hero-stat-strip">
   <div className="hero-stat-item">
-    <span className="hero-stat-num">$5</span>
-    <span className="hero-stat-label">see when you never have to work again</span>
+    <span className="hero-stat-num">1 dashboard</span>
+    <span className="hero-stat-label">to see your current position, next moves, and freedom date</span>
   </div>
   <div className="hero-stat-div" />
   <div className="hero-stat-item">
-    <span className="hero-stat-num">90,000</span>
-    <span className="hero-stat-label">avg lifetime work hours — how many are yours?</span>
+    <span className="hero-stat-num">Live guidance</span>
+    <span className="hero-stat-label">not just a calculator, a system that reacts to your inputs</span>
   </div>
   <div className="hero-stat-div" />
   <div className="hero-stat-item">
-    <span className="hero-stat-num">25×</span>
-    <span className="hero-stat-label">your annual expenses = your FIRE number</span>
+    <span className="hero-stat-num">Timeline clarity</span>
+    <span className="hero-stat-label">see how today’s decisions change your financial future</span>
   </div>
 </div>
           <SmartScrollHint text="Scroll to see the dashboard" />
@@ -500,8 +500,9 @@ const [waitlistMessage, setWaitlistMessage] = useState('');
       <section className="preview-section" id="preview">
         <div className="preview-section-inner">
           <span className="section-eyebrow">Live product preview</span>
-          <h2 className="section-title">This is what clarity looks like.</h2>
-          <p className="section-sub">Every number you need. No noise. Updated in real time as you log.</p>
+          <h2 className="section-title">Understand your financial future in minutes.</h2>
+          <p className="section-sub">A fast walkthrough of the internal dashboard, the timeline, and the guidance layer that keeps the plan current.</p>
+          <DemoReel />
           <DashboardPreview />
           <SmartScrollHint text="Continue reading" />
         </div>
@@ -603,21 +604,17 @@ const [waitlistMessage, setWaitlistMessage] = useState('');
       <section className="features" id="features">
         <div className="features-inner">
           <span className="section-eyebrow">What's inside</span>
-          <h2 className="section-title">Six tools.<br/>One freedom date.</h2>
+          <h2 className="section-title">Four tools.<br/>One freedom date.</h2>
           <div className="features-grid">
             {[
               { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="9" stroke="currentColor" strokeWidth="1.6"/><path d="M11 6v5l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="11" cy="11" r="1.5" fill="currentColor"/></svg>,
-                num:'01', title:'Freedom Date Calculator',   desc:'Your exact independence date — updated in real time. Standard, Lean, Fat, and Coast FIRE modes. The one number that changes how you see every purchase.' },
-              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h10M3 16h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M17 13l-2.5 2.5L17 18M14.5 15.5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-                num:'02', title:'Needs vs Wants Tracker',    desc:'Categorise every transaction. See which spending builds wealth and which costs you years — broken down monthly with a savings grade.' },
+                num:'01', title:'Your Freedom Date', desc:'A precise date tied to your actual numbers. It updates as you log, so you always know how far away freedom really is.' },
               { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 17L7.5 11l4 3L16 7l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 17h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="19" cy="6" r="2" stroke="currentColor" strokeWidth="1.4"/></svg>,
-                num:'03', title:'Monte Carlo Simulation',    desc:'500 market scenarios stress-tested against your plan. Know the probability your portfolio survives before it matters.' },
-              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="13" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M3 9h16" stroke="currentColor" strokeWidth="1.6"/><circle cx="15.5" cy="13.5" r="1.2" fill="currentColor"/><path d="M7 5V3M15 5V3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
-                num:'04', title:'Net Worth Tracker',         desc:'Assets minus liabilities, auto-updated on import. Tracks your real financial position and your FIRE number proximity in one view.' },
+                num:'02', title:'Your Financial Timeline', desc:'See how your portfolio compounds across different ages on the way to retirement. The path becomes visible, not abstract.' },
               { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.6"/><path d="M11 7v4.5l2.5 2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 2.5L11 5l4-2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-                num:'05', title:'Financial Guidance System', desc:'After every transaction batch, the app analyses your patterns and tells you what is costing you years — in plain language, with exact numbers.' },
-              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3v11M7 10l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 15v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
-                num:'06', title:'Smart Bank Import',         desc:'Upload any bank CSV. Auto-detects columns, date formats, debit/credit splits. No reformatting. Net worth syncs automatically on import.' },
+                num:'03', title:'Deviation Guidance', desc:'When spending or saving pushes you off track, the app tells you what changed, what it cost, and what would move the date back.' },
+              { icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h10M3 16h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M17 13l-2.5 2.5L17 18M14.5 15.5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                num:'04', title:'Live Transaction Tracking', desc:'Every income, expense, and savings entry feeds the timeline. This is what turns a calculator into an ongoing decision system.' },
             ].map((f,i) => (
               <div key={i} className="feature-card">
                 <div className="feature-icon-svg">{f.icon}</div>
