@@ -827,8 +827,8 @@ export default function Landing() {
           <div className="footer-links-col" id="contact">
             <div className="footer-col-title">Contact</div>
             <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a>
-            <a href="https://instagram.com/fireledger.app" target="_blank" rel="noreferrer">Instagram → @fireledger.app</a>
-            <a href="https://twitter.com/fireledgerapp" target="_blank" rel="noreferrer">Twitter → @fireledgerapp</a>
+            <a href="https://www.instagram.com/fire_ledger/" target="_blank" rel="noreferrer">Instagram → @fire_ledger</a>
+            <a href="https://x.com/Fireledger01" target="_blank" rel="noreferrer">X.com → @fireledger01</a>
           </div>
           <div className="footer-links-col">
             <div className="footer-col-title">Affiliate</div>
