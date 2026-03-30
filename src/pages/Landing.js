@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import HoursPopup from '../components/HoursPopup';
-import ScrollHint from '../components/ScrollHint';
 import './Landing.css';
 import { supabase } from '../lib/supabase';
 
@@ -228,18 +227,6 @@ function ConsolidatedDemo() {
       </div>
     </div>
   );
-}
-
-// ── Scroll hint ─────────────────────────────────────────────────────────────
-function SmartScrollHint({ text }) {
-  const [show, setShow] = useState(true);
-  useEffect(() => {
-    const fn = () => { if (window.scrollY > 60) setShow(false); };
-    window.addEventListener('scroll', fn, { passive: true });
-    return () => window.removeEventListener('scroll', fn);
-  }, []);
-  if (!show) return null;
-  return <ScrollHint text={text}/>;
 }
 
 // ── Affiliate banner ────────────────────────────────────────────────────────
