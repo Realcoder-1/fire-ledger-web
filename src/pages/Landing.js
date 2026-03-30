@@ -347,7 +347,7 @@ export default function Landing() {
           <div className="hero-badge">Your financial future starts with one number</div>
           <AnimatedHeroTitle/>
           <p className="hero-sub">
-            Most people will retire at 65 not because they planned to — but because they never had a system that showed them they could leave earlier. FIRE Ledger changes that. One dashboard. Your exact date. Updated every time you log.
+            Most people never calculate it. The ones who do retire a decade early.
           </p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={()=>navigate('/signup')}>Let me join →</button>
@@ -366,7 +366,7 @@ export default function Landing() {
             <div className="hero-stat-div"/>
             <div className="hero-stat-item">
               <span className="hero-stat-num">25×</span>
-              <span className="hero-stat-label">your annual expenses — that is your freedom number. Most people never calculate it.</span>
+              <span className="hero-stat-label">your annual expenses. That is your freedom number.</span>
             </div>
             <div className="hero-stat-div"/>
             <div className="hero-stat-item">

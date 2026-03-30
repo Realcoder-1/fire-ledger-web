@@ -101,7 +101,7 @@ export default function HoursPopup({ onClose }) {
           <p className="hp-statement">That's how long the average person spends at work over their lifetime.</p>
           <div className="hp-divider" />
           <p className="hp-question">When will you stop working?</p>
-          <p className="hp-sub">Most people never calculate it.<br />The ones who do — retire a decade earlier.</p>
+          <p className="hp-sub">Most people never calculate it.<br />The ones who do retire a decade early.</p>
           <button className="hp-cta" onClick={() => setStep('when')}>Calculate mine →</button>
           <button className="hp-skip" onClick={handleClose}>I'd rather not know</button>
         </>)}
