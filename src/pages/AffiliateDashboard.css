@@ -390,6 +390,19 @@
   color: var(--afd-t3);
   font-style: italic;
 }
+.afd-code-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--afd-t1);
+  padding: 9px 10px;
+  border-radius: 6px;
+  font-family: var(--afd-mono);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  outline: none;
+}
+.afd-code-input:focus { border-color: rgba(167,139,250,0.4); }
 .afd-copy-btn {
   background: rgba(167,139,250,0.1);
   border: 1px solid rgba(167,139,250,0.3);
@@ -406,6 +419,7 @@
   width: 100%;
 }
 .afd-copy-btn:hover { background: rgba(167,139,250,0.18); }
+.afd-copy-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .afd-sidebar-footer { margin-top: auto; padding: 12px; }
 .afd-support-link {

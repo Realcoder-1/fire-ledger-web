@@ -9,6 +9,7 @@ import Privacy from './pages/Privacy';
 import Refund from './pages/Refund';
 import SignUp from './pages/SignUp';
 import Affiliate from './pages/Affiliate';
+import AffiliateDashboard from './pages/AffiliateDashboard';
 
 function ProtectedRoute({ children }) {
   const { user, loading, hasSubscription } = useAuth();
@@ -35,6 +36,7 @@ function AppRoutes() {
       <Route path="/privacy"   element={<Privacy />} />
       <Route path="/refund"    element={<Refund />} />
       <Route path="/affiliate" element={<Affiliate />} />
+      <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
     </Routes>
   );
 }

@@ -10,8 +10,8 @@ const STATS = [
 ];
 
 const HOW_IT_WORKS = [
-  { step: '01', title: 'Apply below', body: 'Fill in your name, email, and how you plan to promote. We approve within 24 hours.' },
-  { step: '02', title: 'Get your link', body: 'You receive a unique referral link and access to your personal dashboard with live stats.' },
+  { step: '01', title: 'Create your account', body: 'Set up your affiliate login directly and enter the dashboard immediately.' },
+  { step: '02', title: 'Get your link', body: 'Your unique referral link is generated inside your dashboard as soon as your profile is created.' },
   { step: '03', title: 'Promote', body: 'Share on YouTube, Twitter, Instagram, newsletters, blogs — wherever your audience is.' },
   { step: '04', title: 'Get paid', body: 'Earn 30% on every paying customer you refer. Paid monthly via PayPal or bank transfer.' },
 ];
@@ -104,17 +104,11 @@ export default function Affiliate() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', platform: '', audience: '', notes: '' });
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.platform) return;
-    setLoading(true);
-    // Simulate submission — wire to Supabase in production
-    await new Promise(r => setTimeout(r, 1200));
-    setLoading(false);
-    setSubmitted(true);
+    navigate('/affiliate/dashboard');
   };
 
   return (
@@ -136,7 +130,7 @@ export default function Affiliate() {
           <button className="aff-nav-link" onClick={() => navigate('/pricing')}>Pricing</button>
         </div>
         <button className="aff-nav-cta" onClick={() => { const el = document.getElementById('aff-apply'); el?.scrollIntoView({ behavior: 'smooth' }); }}>
-          Apply now →
+          Create account →
         </button>
       </nav>
 
@@ -163,8 +157,8 @@ export default function Affiliate() {
           </div>
 
           <div className="aff-hero-btns">
-            <button className="aff-btn-primary" onClick={() => document.getElementById('aff-apply')?.scrollIntoView({ behavior: 'smooth' })}>
-              Apply for free →
+            <button className="aff-btn-primary" onClick={() => navigate('/affiliate/dashboard')}>
+              Create affiliate account →
             </button>
             <button className="aff-btn-ghost" onClick={() => document.getElementById('aff-how')?.scrollIntoView({ behavior: 'smooth' })}>
               See how it works
@@ -248,7 +242,7 @@ export default function Affiliate() {
               Join the program.<br />Start earning.
             </h2>
             <p className="aff-apply-body">
-              We review every application manually. If you have an audience that overlaps with FIRE, personal finance, or early retirement — you're likely a fit. We approve within 24 hours.
+              Create your affiliate account directly, get your referral link, and start promoting immediately. Your dashboard gives you your code, link, and payout visibility in one place.
             </p>
             <div className="aff-apply-trust">
               <span>✓ Free to join</span>
@@ -259,47 +253,39 @@ export default function Affiliate() {
           </div>
 
           <div className="aff-apply-right">
-            {submitted ? (
-              <div className="aff-apply-success">
-                <div className="aff-success-icon">✓</div>
-                <h3>Application received</h3>
-                <p>We'll review your application and get back to you within 24 hours. Check your inbox at <strong>{form.email}</strong>.</p>
+            <form className="aff-form" onSubmit={handleSubmit}>
+              <div className="aff-form-row">
+                <div className="aff-form-field">
+                  <label className="aff-form-label">Full name</label>
+                  <input className="aff-form-input" type="text" placeholder="Your name"
+                    value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+                </div>
+                <div className="aff-form-field">
+                  <label className="aff-form-label">Email address</label>
+                  <input className="aff-form-input" type="email" placeholder="you@example.com"
+                    value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
+                </div>
               </div>
-            ) : (
-              <form className="aff-form" onSubmit={handleSubmit}>
-                <div className="aff-form-row">
-                  <div className="aff-form-field">
-                    <label className="aff-form-label">Full name</label>
-                    <input className="aff-form-input" type="text" placeholder="Your name"
-                      value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
-                  </div>
-                  <div className="aff-form-field">
-                    <label className="aff-form-label">Email address</label>
-                    <input className="aff-form-input" type="email" placeholder="you@example.com"
-                      value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
-                  </div>
-                </div>
-                <div className="aff-form-field">
-                  <label className="aff-form-label">Primary platform / channel</label>
-                  <input className="aff-form-input" type="text" placeholder="e.g. YouTube, Twitter, Newsletter, Blog"
-                    value={form.platform} onChange={e => setForm(f => ({ ...f, platform: e.target.value }))} required />
-                </div>
-                <div className="aff-form-field">
-                  <label className="aff-form-label">Audience size (approx.)</label>
-                  <input className="aff-form-input" type="text" placeholder="e.g. 2,000 subscribers"
-                    value={form.audience} onChange={e => setForm(f => ({ ...f, audience: e.target.value }))} />
-                </div>
-                <div className="aff-form-field">
-                  <label className="aff-form-label">How do you plan to promote? (optional)</label>
-                  <textarea className="aff-form-textarea" rows={3} placeholder="Brief description of your plan..."
-                    value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-                </div>
-                <button className="aff-form-submit" type="submit" disabled={loading}>
-                  {loading ? 'Submitting…' : 'Submit application →'}
-                </button>
-                <p className="aff-form-fine">By applying you agree to our affiliate terms. We never spam.</p>
-              </form>
-            )}
+              <div className="aff-form-field">
+                <label className="aff-form-label">Primary platform / channel</label>
+                <input className="aff-form-input" type="text" placeholder="e.g. YouTube, Twitter, Newsletter, Blog"
+                  value={form.platform} onChange={e => setForm(f => ({ ...f, platform: e.target.value }))} required />
+              </div>
+              <div className="aff-form-field">
+                <label className="aff-form-label">Audience size (approx.)</label>
+                <input className="aff-form-input" type="text" placeholder="e.g. 2,000 subscribers"
+                  value={form.audience} onChange={e => setForm(f => ({ ...f, audience: e.target.value }))} />
+              </div>
+              <div className="aff-form-field">
+                <label className="aff-form-label">How do you plan to promote? (optional)</label>
+                <textarea className="aff-form-textarea" rows={3} placeholder="Brief description of your plan..."
+                  value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+              <button className="aff-form-submit" type="submit">
+                Create account →
+              </button>
+              <p className="aff-form-fine">You will finish account creation in the affiliate dashboard.</p>
+            </form>
           </div>
         </div>
       </section>

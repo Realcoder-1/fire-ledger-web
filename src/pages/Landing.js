@@ -10,7 +10,7 @@ const POPUP_KEY = 'fl_hours_popup_seen';
 
 // ── Animated hero title ─────────────────────────────────────────────────────
 const HERO_CAPTIONS = [
-  { line1: 'Most people will never know', accent: 'when they can stop working.' },
+  { line1: 'Unless you know this number.', accent: 'Most people never calculate it. The ones who do retire a decade early.' },
   { line1: 'Every day without a plan is a day', accent: 'working for someone else.' },
   { line1: 'Your future is being shaped right now', accent: 'by numbers you are not tracking.' },
   { line1: 'The people who retire early', accent: 'started tracking before you did.' },

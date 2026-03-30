@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib/supabase';
 import './AffiliateDashboard.css';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -17,6 +17,12 @@ const maskEmail = (email) => {
 const fmtDate = (iso) => {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+const sanitizeCode = (value = '') => value.toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 32);
+const createAffiliateCode = (name = '', email = '') => {
+  const seed = sanitizeCode(name || email.split('@')[0] || 'FIRE');
+  const base = (seed || 'FIRELEDGER').slice(0, 12);
+  return `${base}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 };
 
 // ── Auth screen ──────────────────────────────────────────────────────────────
@@ -43,6 +49,7 @@ function AffiliateAuth({ onAuth }) {
         if (err) setError(err.message);
         else setMsg('Password reset link sent. Check your inbox.');
       } else if (mode === 'signup') {
+        const referralCode = createAffiliateCode(name, email);
         const { data, error: err } = await supabase.auth.signUp({
           email,
           password,
@@ -50,18 +57,28 @@ function AffiliateAuth({ onAuth }) {
         });
         if (err) { setError(err.message); }
         else {
-          // Create pending affiliate profile
           if (data?.user) {
-            await supabase.from('affiliate_profiles').insert({
+            const { error: profileErr } = await supabase.from('affiliate_profiles').upsert({
               user_id:        data.user.id,
               email:          email,
               full_name:      name,
-              status:         'pending',
-              referral_code:  null,
+              status:         'active',
+              referral_code:  referralCode,
               created_at:     new Date().toISOString(),
-            });
+              updated_at:     new Date().toISOString(),
+            }, { onConflict: 'user_id' });
+            if (profileErr) {
+              setError(profileErr.message);
+              setLoading(false);
+              return;
+            }
+            if (data.session) {
+              onAuth(data.user);
+              setLoading(false);
+              return;
+            }
           }
-          setMsg('Account created. Your application is under review — we approve within 24 hours. You will receive an email once approved.');
+          setMsg(`Account created. Your referral code is ${referralCode}. If email confirmation is enabled in Supabase, confirm your email and then sign in.`);
           setMode('signin');
         }
       } else {
@@ -86,16 +103,16 @@ function AffiliateAuth({ onAuth }) {
 
         <div className="afd-auth-toggle">
           <button className={`afd-toggle-btn ${mode==='signin'?'active':''}`} onClick={()=>{setMode('signin');clear();}}>Sign in</button>
-          <button className={`afd-toggle-btn ${mode==='signup'?'active':''}`} onClick={()=>{setMode('signup');clear();}}>Apply</button>
+          <button className={`afd-toggle-btn ${mode==='signup'?'active':''}`} onClick={()=>{setMode('signup');clear();}}>Create account</button>
         </div>
 
         <h2 className="afd-auth-title">
-          {mode==='signin'?'Affiliate sign in':mode==='forgot'?'Reset password':'Apply to join'}
+          {mode==='signin'?'Affiliate sign in':mode==='forgot'?'Reset password':'Create affiliate account'}
         </h2>
         <p className="afd-auth-sub">
           {mode==='signin'?'Access your referral dashboard and earnings.':
            mode==='forgot'?'Enter your email and we will send a reset link.':
-           'Fill in your details. We review and approve within 24 hours.'}
+           'Create your affiliate account now and get your referral link immediately.'}
         </p>
 
         <form className="afd-auth-form" onSubmit={handleSubmit}>
@@ -123,7 +140,7 @@ function AffiliateAuth({ onAuth }) {
           {msg   && <div className="afd-msg">{msg}</div>}
 
           <button className="afd-submit" type="submit" disabled={loading}>
-            {loading?'Please wait…':mode==='signup'?'Submit application →':mode==='forgot'?'Send reset link →':'Sign in →'}
+            {loading?'Please wait…':mode==='signup'?'Create account →':mode==='forgot'?'Send reset link →':'Sign in →'}
           </button>
         </form>
 
@@ -131,14 +148,14 @@ function AffiliateAuth({ onAuth }) {
           {mode==='signin' && <>
             <button className="afd-link" onClick={()=>{setMode('forgot');clear();}}>Forgot password?</button>
             <span className="afd-dot">·</span>
-            <button className="afd-link" onClick={()=>{setMode('signup');clear();}}>Apply to join</button>
+            <button className="afd-link" onClick={()=>{setMode('signup');clear();}}>Create account</button>
           </>}
           {mode==='signup' && <button className="afd-link" onClick={()=>{setMode('signin');clear();}}>Already have an account? Sign in</button>}
           {mode==='forgot' && <button className="afd-link" onClick={()=>{setMode('signin');clear();}}>← Back to sign in</button>}
         </div>
 
         <p className="afd-auth-fine">
-          This portal is for approved affiliates only.
+          Create your affiliate account, then sign in to manage your link, payouts, and code setup.
           Questions? <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a>
         </p>
       </div>
@@ -146,34 +163,19 @@ function AffiliateAuth({ onAuth }) {
   );
 }
 
-// ── Pending approval screen ──────────────────────────────────────────────────
-function PendingScreen({ email, onSignOut }) {
-  return (
-    <div className="afd-auth-page">
-      <div className="afd-auth-bg"><div className="afd-auth-orb afd-auth-orb1"/><div className="afd-auth-orb afd-auth-orb2"/></div>
-      <div className="afd-auth-card" style={{ textAlign:'center' }}>
-        <div className="afd-auth-logo">FIRE<span>Ledger</span> <span className="afd-auth-tag">Affiliate Portal</span></div>
-        <div className="afd-pending-icon">⏳</div>
-        <h2 className="afd-auth-title">Application under review</h2>
-        <p className="afd-auth-sub" style={{ marginBottom:24 }}>
-          Your application for <strong>{email}</strong> is being reviewed. We approve within 24 hours and will email you when your account is active.
-        </p>
-        <button className="afd-submit" onClick={onSignOut}>Sign out</button>
-      </div>
-    </div>
-  );
-}
-
 // ── Main dashboard ───────────────────────────────────────────────────────────
-function Dashboard({ user, profile, onSignOut }) {
+function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
   const [referrals, setReferrals]   = useState([]);
   const [loading,   setLoading]     = useState(true);
   const [copied,    setCopied]      = useState(false);
+  const [codeDraft, setCodeDraft]   = useState(profile?.paddle_discount_code || profile?.referral_code || '');
+  const [savingCode, setSavingCode] = useState(false);
   const [tab,       setTab]         = useState('overview'); // overview | ledger | payouts
 
   const refLink = profile?.referral_code
     ? `https://fireledger.app/?ref=${profile.referral_code}`
     : null;
+  const activeCode = profile?.paddle_discount_code || profile?.referral_code || '';
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -214,6 +216,22 @@ function Dashboard({ user, profile, onSignOut }) {
 
   const handleCopy = () => {
     if (refLink) { navigator.clipboard.writeText(refLink); setCopied(true); setTimeout(()=>setCopied(false),2000); }
+  };
+
+  const saveCustomCode = async () => {
+    const nextCode = sanitizeCode(codeDraft);
+    if (!nextCode) return;
+    setSavingCode(true);
+    const { error } = await supabase
+      .from('affiliate_profiles')
+      .update({ paddle_discount_code: nextCode, updated_at: new Date().toISOString() })
+      .eq('id', profile.id);
+    setSavingCode(false);
+    if (error) {
+      alert('To persist custom Paddle codes, add a `paddle_discount_code` text column to your `affiliate_profiles` table first.');
+      return;
+    }
+    onProfileUpdate({ ...profile, paddle_discount_code: nextCode });
   };
 
   return (
@@ -258,8 +276,24 @@ function Dashboard({ user, profile, onSignOut }) {
                 </button>
               </>
             ) : (
-              <div className="afd-sidebar-link-pending">Link assigned after approval</div>
+              <div className="afd-sidebar-link-pending">Referral link will appear after your profile is created.</div>
             )}
+          </div>
+          <div className="afd-sidebar-link-section">
+            <div className="afd-sidebar-link-label">YOUR PADDLE CODE</div>
+            <input
+              className="afd-code-input"
+              type="text"
+              placeholder="YOURCODE"
+              value={codeDraft}
+              onChange={e => setCodeDraft(sanitizeCode(e.target.value))}
+            />
+            <button className="afd-copy-btn" onClick={saveCustomCode} disabled={savingCode || !sanitizeCode(codeDraft)}>
+              {savingCode ? 'SAVING…' : 'SAVE CODE'}
+            </button>
+            <div className="afd-sidebar-link-pending">
+              Active code: {activeCode || 'Use your referral code or create a custom Paddle code here.'}
+            </div>
           </div>
           <div className="afd-sidebar-footer">
             <a href="mailto:thimbleforgeapps@gmail.com" className="afd-support-link">Support</a>
@@ -431,9 +465,16 @@ function Dashboard({ user, profile, onSignOut }) {
                     <span className="afd-payout-method-label">PAYOUT SCHEDULE</span>
                     <span className="afd-payout-method-val">Monthly — 1st of each month</span>
                   </div>
+                  <div className="afd-payout-method-row">
+                    <span className="afd-payout-method-label">ACTIVE PADDLE CODE</span>
+                    <span className="afd-payout-method-val">{activeCode || 'Set a custom code in the sidebar'}</span>
+                  </div>
                 </div>
                 <p className="afd-payout-note">
                   To update your payout method or details, contact <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a> with your registered email.
+                </p>
+                <p className="afd-payout-note">
+                  On your side: create the matching discount/code in Paddle, then make sure your webhook or checkout flow maps that code back to this affiliate profile.
                 </p>
               </div>
 
@@ -502,6 +543,10 @@ export default function AffiliateDashboard() {
     await loadProfile(u);
   };
 
+  const handleProfileUpdate = nextProfile => {
+    setProfile(nextProfile);
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -515,7 +560,6 @@ export default function AffiliateDashboard() {
   );
 
   if (!user || !profile) return <AffiliateAuth onAuth={handleAuth}/>;
-  if (profile.status === 'pending') return <PendingScreen email={user.email} onSignOut={handleSignOut}/>;
 
-  return <Dashboard user={user} profile={profile} onSignOut={handleSignOut}/>;
+  return <Dashboard user={user} profile={profile} onSignOut={handleSignOut} onProfileUpdate={handleProfileUpdate}/>;
 }
