@@ -126,6 +126,196 @@ function parseAmount(raw) {
   return Math.abs(parseFloat(raw.toString().replace(/[^0-9.-]/g, ''))) || 0;
 }
 
+const IMPORT_FIELD_OPTIONS = [
+  { key: '', label: 'Ignore' },
+  { key: 'date', label: 'Date' },
+  { key: 'description', label: 'Description' },
+  { key: 'amount', label: 'Amount' },
+  { key: 'debit', label: 'Debit' },
+  { key: 'credit', label: 'Credit' },
+  { key: 'type', label: 'Type' },
+  { key: 'category', label: 'Category' },
+  { key: 'recurring', label: 'Recurring' },
+];
+
+const IMPORT_HEADER_ALIASES = {
+  date: ['date', 'dt', 'time', 'transactiondate', 'valuedate', 'postingdate', 'bookdate', 'bookingdate', 'posteddate', 'effectivedate', 'period'],
+  description: ['description', 'desc', 'details', 'detail', 'memo', 'narration', 'narrative', 'payee', 'merchant', 'transaction', 'transactiondetails', 'reference', 'remarks', 'particulars', 'note', 'name'],
+  amount: ['amount', 'amt', 'value', 'sum', 'total', 'transactionamount', 'netamount'],
+  debit: ['debit', 'withdrawal', 'withdrawals', 'moneyout', 'outflow', 'expense', 'debitamount', 'paidout', 'dr'],
+  credit: ['credit', 'deposit', 'deposits', 'moneyin', 'inflow', 'creditamount', 'paidin', 'received', 'cr'],
+  type: ['type', 'transactiontype', 'entrytype', 'nature', 'flow', 'direction'],
+  category: ['category', 'cat', 'subcategory', 'classification', 'group', 'bucket', 'label'],
+  recurring: ['recurring', 'repeat', 'isrecurring', 'autopay'],
+};
+
+const normalizeImportHeader = (value = '') => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+const collapseWhitespace = (value = '') => value.toString().replace(/\s+/g, ' ').trim();
+const toTitleCase = (value = '') => collapseWhitespace(value).toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+const normalizeDescriptionFingerprint = (value = '') => collapseWhitespace(value).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+function parseSignedAmount(raw) {
+  if (raw === null || raw === undefined) return 0;
+  const original = raw.toString().trim();
+  if (!original) return 0;
+  const upper = original.toUpperCase();
+  const negative = (original.includes('(') && original.includes(')')) || /^-/.test(original) || /-$/.test(original) || /\bDR\b/.test(upper);
+  const positive = /\bCR\b/.test(upper);
+  const cleaned = original.replace(/[^0-9.,-]/g, '').replace(/,/g, '');
+  const parsed = parseFloat(cleaned);
+  if (Number.isNaN(parsed)) return 0;
+  if (positive) return Math.abs(parsed);
+  return negative ? -Math.abs(parsed) : parsed;
+}
+
+function parseDelimitedText(text) {
+  const rawLines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (rawLines.length < 2) return { headers: [], rows: [], error: 'File appears empty.' };
+  const sampleLine = rawLines.find(line => /[,;\t]/.test(line)) || rawLines[0];
+  const delimiter = sampleLine.includes('\t') ? '\t' : sampleLine.includes(';') ? ';' : ',';
+  const parseLine = line => {
+    const cols = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      const next = line[i + 1];
+      if (ch === '"' && inQuotes && next === '"') {
+        cur += '"';
+        i++;
+        continue;
+      }
+      if (ch === '"') {
+        inQuotes = !inQuotes;
+        continue;
+      }
+      if (ch === delimiter && !inQuotes) {
+        cols.push(cur.trim());
+        cur = '';
+        continue;
+      }
+      cur += ch;
+    }
+    cols.push(cur.trim());
+    return cols.map(col => col.replace(/^["']|["']$/g, '').trim());
+  };
+
+  let headerIdx = 0;
+  for (let i = 0; i < Math.min(8, rawLines.length); i++) {
+    const cols = parseLine(rawLines[i]);
+    if (cols.filter(c => /[a-zA-Z]{2,}/.test(c)).length >= 2) {
+      headerIdx = i;
+      break;
+    }
+  }
+
+  const headers = parseLine(rawLines[headerIdx]);
+  const rows = rawLines.slice(headerIdx + 1).map((line, index) => ({
+    lineNumber: headerIdx + index + 2,
+    values: parseLine(line),
+  })).filter(row => row.values.some(Boolean));
+
+  return { headers, rows, delimiter };
+}
+
+function detectImportMapping(headers) {
+  const normalizedHeaders = headers.map(normalizeImportHeader);
+  const used = new Set();
+  const mapping = {};
+
+  Object.entries(IMPORT_HEADER_ALIASES).forEach(([field, aliases]) => {
+    const idx = normalizedHeaders.findIndex((header, headerIndex) => !used.has(headerIndex) && aliases.some(alias => header.includes(alias)));
+    if (idx !== -1) {
+      mapping[field] = headers[idx];
+      used.add(idx);
+    }
+  });
+
+  return mapping;
+}
+
+function normalizeImportedRows(rawRows, mapping, existingTransactions = []) {
+  const existingFingerprints = new Set(existingTransactions.map(tx => `${tx.date}|${normalizeDescriptionFingerprint(tx.description)}|${Math.round((parseFloat(tx.amount) || 0) * 100)}|${tx.type}`));
+  const seenInImport = new Set();
+  const rows = rawRows.map((row, index) => {
+    const valuesByHeader = Object.fromEntries(row.values.map((value, valueIndex) => [row.headers[valueIndex] || `Column ${valueIndex + 1}`, value]));
+    const read = field => {
+      const header = mapping[field];
+      return header ? collapseWhitespace(valuesByHeader[header] || '') : '';
+    };
+
+    const rawDate = read('date');
+    const rawDescription = read('description');
+    const rawCategory = read('category');
+    const rawType = read('type');
+    const rawRecurring = read('recurring');
+    const amountSigned = parseSignedAmount(read('amount'));
+    const debitAmount = parseAmount(read('debit'));
+    const creditAmount = parseAmount(read('credit'));
+
+    let amount = 0;
+    let inferredFlow = '';
+
+    if (amountSigned) {
+      amount = Math.abs(amountSigned);
+      inferredFlow = amountSigned > 0 ? 'income' : 'expense';
+    } else if (creditAmount || debitAmount) {
+      if (creditAmount && !debitAmount) {
+        amount = creditAmount;
+        inferredFlow = 'income';
+      } else if (debitAmount && !creditAmount) {
+        amount = debitAmount;
+        inferredFlow = 'expense';
+      } else if (creditAmount || debitAmount) {
+        amount = Math.max(creditAmount, debitAmount);
+        inferredFlow = creditAmount >= debitAmount ? 'income' : 'expense';
+      }
+    }
+
+    const description = collapseWhitespace(rawDescription || rawCategory || `Transaction ${index + 1}`).slice(0, 100);
+    const normalizedCategory = rawCategory ? toTitleCase(rawCategory).slice(0, 50) : '';
+    let type = detectType(description, normalizedCategory, rawType);
+    if (inferredFlow === 'income') type = 'income';
+    if (inferredFlow === 'expense' && type === 'income') type = 'need';
+
+    const normalized = {
+      date: parseDateStr(rawDate),
+      description,
+      type,
+      category: normalizedCategory,
+      amount,
+      recurring: /^(yes|y|true|1|monthly|weekly)$/i.test(rawRecurring),
+    };
+
+    const fingerprint = `${normalized.date}|${normalizeDescriptionFingerprint(normalized.description)}|${Math.round(normalized.amount * 100)}|${normalized.type}`;
+    const duplicateExisting = existingFingerprints.has(fingerprint);
+    const duplicateImported = seenInImport.has(fingerprint);
+    const missingRequired = !rawDate || !amount || !normalized.description;
+    if (!missingRequired) seenInImport.add(fingerprint);
+
+    return {
+      id: `${row.lineNumber}-${index}`,
+      sourceLine: row.lineNumber,
+      valuesByHeader,
+      normalized,
+      duplicateExisting,
+      duplicateImported,
+      status: missingRequired ? 'skipped' : duplicateExisting || duplicateImported ? 'duplicate' : 'ready',
+      reason: missingRequired ? 'Missing a date, description, or amount.' : duplicateExisting ? 'Matches an existing transaction.' : duplicateImported ? 'Duplicate within this import file.' : '',
+    };
+  });
+
+  const stats = rows.reduce((acc, row) => {
+    acc.total++;
+    if (row.status === 'ready') acc.ready++;
+    if (row.status === 'duplicate') acc.duplicates++;
+    if (row.status === 'skipped') acc.skipped++;
+    return acc;
+  }, { total: 0, ready: 0, duplicates: 0, skipped: 0 });
+
+  return { rows, stats };
+}
+
 function detectType(desc, cat, rawType) {
   const t = (desc + ' ' + cat + ' ' + rawType).toLowerCase();
   const typeMap = {
@@ -138,60 +328,6 @@ function detectType(desc, cat, rawType) {
     if (words.some(w => t.includes(w))) return type;
   }
   return 'need';
-}
-
-function smartParseCSV(text) {
-  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  if (rawLines.length < 2) return { rows: [], error: 'File appears empty.' };
-  const sample = rawLines[0];
-  const delim = sample.includes('\t') ? '\t' : sample.includes(';') ? ';' : ',';
-  const parseLine = line => {
-    const cols = []; let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') { inQ = !inQ; continue; }
-      if (ch === delim && !inQ) { cols.push(cur.trim()); cur = ''; continue; }
-      cur += ch;
-    }
-    cols.push(cur.trim());
-    return cols;
-  };
-  let headerIdx = 0;
-  for (let i = 0; i < Math.min(8, rawLines.length); i++) {
-    const cols = parseLine(rawLines[i]);
-    if (cols.filter(c => /[a-zA-Z]{2,}/.test(c)).length >= 2) { headerIdx = i; break; }
-  }
-  const headers = parseLine(rawLines[headerIdx]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
-  const detect = (...kws) => { for (const kw of kws) { const idx = headers.findIndex(h => h.includes(kw)); if (idx !== -1) return idx; } return -1; };
-  const dateIdx = detect('date', 'dt', 'time', 'transactiondate', 'valuedate', 'postingdate', 'period');
-  const descIdx = detect('description', 'desc', 'narrative', 'memo', 'narration', 'payee', 'detail', 'particulars', 'name', 'reference', 'merchant', 'transaction', 'note', 'remarks');
-  const amtIdx = detect('amount', 'amt', 'value', 'sum', 'total');
-  const debitIdx = detect('debit', 'withdrawal', 'dr', 'withdrawals', 'expense', 'debitamount');
-  const creditIdx = detect('credit', 'deposit', 'cr', 'deposits', 'creditamount');
-  const catIdx = detect('category', 'cat', 'type', 'subcategory', 'group', 'classification');
-  const rows = rawLines.slice(headerIdx + 1).map((line, lineNum) => {
-    if (!line.trim()) return null;
-    const cols = parseLine(line);
-    const get = idx => (idx >= 0 && idx < cols.length) ? cols[idx].replace(/^["']|["']$/g, '').trim() : '';
-    const rawDesc = get(descIdx); const rawCat = get(catIdx); const rawDate = get(dateIdx);
-    let amount = 0; let type = 'need';
-    if (amtIdx !== -1) {
-      const raw = get(amtIdx);
-      const signed = parseFloat(raw.replace(/[^0-9.-]/g, ''));
-      amount = Math.abs(signed);
-      if (!isNaN(signed) && signed > 0) type = 'income';
-    } else if (debitIdx !== -1 || creditIdx !== -1) {
-      const debit = parseAmount(get(debitIdx)); const credit = parseAmount(get(creditIdx));
-      if (credit > 0 && debit === 0) { amount = credit; type = 'income'; }
-      else if (debit > 0) { amount = debit; type = 'need'; }
-      else { amount = Math.max(credit, debit); }
-    }
-    if (!amount || amount <= 0) return null;
-    const detectedType = detectType(rawDesc, rawCat, type === 'income' ? 'income' : '');
-    if (type !== 'income') type = detectedType;
-    return { date: parseDateStr(rawDate), description: (rawDesc || rawCat || `Transaction ${lineNum + 1}`).slice(0, 100), type, category: rawCat.slice(0, 50), amount, recurring: false };
-  }).filter(Boolean);
-  return { rows };
 }
 
 function ProjectionChart({ points, fireNum, sym, mcResult }) {
@@ -338,6 +474,11 @@ export default function AppDashboard() {
   const [importModal, setImportModal] = useState(false);
   const [importPreview, setImportPrev] = useState([]);
   const [importAll, setImportAll] = useState([]);
+  const [importRawRows, setImportRawRows] = useState([]);
+  const [importHeaders, setImportHeaders] = useState([]);
+  const [importMapping, setImportMapping] = useState({});
+  const [importStats, setImportStats] = useState({ total: 0, ready: 0, duplicates: 0, skipped: 0 });
+  const [importFileName, setImportFileName] = useState('');
   const [milestone, setMilestone] = useState(null);
   const [rawAmt, setRawAmt] = useState('');
   const [currency, setCurrency] = useState('USD');
@@ -360,6 +501,14 @@ export default function AppDashboard() {
   const fileRef = useRef(null);
   const userId = user?.id;
   const { fmt, fmtD, sym } = makeFmt(currency);
+
+  const refreshImportPreview = useCallback((headers, rows, mapping) => {
+    const normalizedRows = rows.map(row => ({ ...row, headers }));
+    const { rows: processedRows, stats } = normalizeImportedRows(normalizedRows, mapping, txs);
+    setImportAll(processedRows);
+    setImportPrev(processedRows.slice(0, 6));
+    setImportStats(stats);
+  }, [txs]);
 
   const showToast = (msg, type = 'success') => { setToast({ msg, type }); setTimeout(() => setToast(null), 2800); };
 
@@ -486,9 +635,22 @@ export default function AppDashboard() {
     e.target.value = '';
     const reader = new FileReader();
     const processText = text => {
-      const { rows, error } = smartParseCSV(text);
-      if (error || !rows || rows.length === 0) { showToast('No transactions detected — check your file has date and amount columns', 'error'); return; }
-      setImportAll(rows); setImportPrev(rows.slice(0, 5)); setImportModal(true);
+      const parsed = parseDelimitedText(text);
+      if (parsed.error || !parsed.rows.length) {
+        showToast('No transactions detected — check your file has date and amount columns', 'error');
+        return;
+      }
+      const mapping = detectImportMapping(parsed.headers);
+      if (!mapping.date || !(mapping.amount || mapping.debit || mapping.credit)) {
+        showToast('We found the file, but need a date and amount/debit/credit column to import it.', 'error');
+        return;
+      }
+      setImportFileName(file.name);
+      setImportRawRows(parsed.rows);
+      setImportHeaders(parsed.headers);
+      setImportMapping(mapping);
+      refreshImportPreview(parsed.headers, parsed.rows, mapping);
+      setImportModal(true);
     };
     if (file.name.toLowerCase().endsWith('.pdf')) {
       reader.onload = ev => {
@@ -507,14 +669,19 @@ export default function AppDashboard() {
   };
 
   const confirmImport = async () => {
+    const readyRows = importAll.filter(row => row.status === 'ready').map(row => row.normalized);
+    if (readyRows.length === 0) {
+      showToast('Nothing new to import — duplicates and incomplete rows were skipped.', 'error');
+      return;
+    }
     if (isLifetime) {
-      const rows = importAll.map((t, i) => ({ ...t, id: Date.now() + i }));
+      const rows = readyRows.map((t, i) => ({ ...t, id: Date.now() + i }));
       setTxs(p => [...rows, ...p]); showToast(`${rows.length} transactions imported (session only)`);
     } else {
-      const { data } = await supabase.from('transactions').insert(importAll.map(t => ({ ...t, user_id: userId }))).select();
+      const { data } = await supabase.from('transactions').insert(readyRows.map(t => ({ ...t, user_id: userId }))).select();
       if (data) { setTxs(p => [...data, ...p]); showToast(`${data.length} transactions imported`); }
     }
-    setImportModal(false); setImportPrev([]); setImportAll([]);
+    setImportModal(false); setImportPrev([]); setImportAll([]); setImportRawRows([]); setImportHeaders([]); setImportMapping({}); setImportStats({ total: 0, ready: 0, duplicates: 0, skipped: 0 }); setImportFileName('');
   };
 
   const exportCSV = () => {
@@ -649,14 +816,82 @@ export default function AppDashboard() {
       )}
 
       {importModal && (
-        <div className="fl-overlay" onClick={() => setImportModal(false)}>
-          <div className="fl-modal" onClick={e => e.stopPropagation()}>
-            <div className="fl-modal-header"><div><h2>Import Preview</h2><p style={{ fontSize: 12, color: 'var(--t2)', marginTop: 3 }}>{importAll.length} transactions detected</p></div><button className="fl-modal-close" onClick={() => setImportModal(false)}><Icon.X /></button></div>
+        <div className="fl-overlay" onClick={() => { setImportModal(false); setImportPrev([]); setImportAll([]); setImportRawRows([]); setImportHeaders([]); setImportMapping({}); setImportStats({ total: 0, ready: 0, duplicates: 0, skipped: 0 }); setImportFileName(''); }}>
+          <div className="fl-modal fl-modal-import" onClick={e => e.stopPropagation()}>
+            <div className="fl-modal-header">
+              <div>
+                <h2>Import Preview</h2>
+                <p style={{ fontSize: 12, color: 'var(--t2)', marginTop: 3 }}>
+                  {importFileName ? `${importFileName} · ` : ''}{importStats.total} rows scanned
+                </p>
+              </div>
+              <button className="fl-modal-close" onClick={() => { setImportModal(false); setImportPrev([]); setImportAll([]); setImportRawRows([]); setImportHeaders([]); setImportMapping({}); setImportStats({ total: 0, ready: 0, duplicates: 0, skipped: 0 }); setImportFileName(''); }}><Icon.X /></button>
+            </div>
             <div className="fl-modal-body">
-              {importPreview.length === 0 ? <div className="fl-empty"><p>No transactions detected.</p></div> : importPreview.map((t, i) => (
-                <div key={i} className="fl-tx-card"><div className="fl-tx-card-badge" style={{ background: amtColor(t.type) + '18', color: amtColor(t.type) }}>{TYPE_LABEL[t.type]}</div><div className="fl-tx-card-body"><span className="fl-tx-card-desc">{t.description}</span><span className="fl-tx-card-meta">{t.date}{t.category ? ` · ${t.category}` : ''}</span></div><span className="fl-tx-card-amount" style={{ color: amtColor(t.type) }}>{fmtD(t.amount)}</span></div>
+              <div className="fl-import-summary-grid">
+                <div className="fl-import-summary-card">
+                  <span className="fl-import-summary-label">Ready to import</span>
+                  <strong className="fl-import-summary-value" style={{ color: 'var(--green)' }}>{importStats.ready}</strong>
+                </div>
+                <div className="fl-import-summary-card">
+                  <span className="fl-import-summary-label">Duplicates</span>
+                  <strong className="fl-import-summary-value" style={{ color: 'var(--gold)' }}>{importStats.duplicates}</strong>
+                </div>
+                <div className="fl-import-summary-card">
+                  <span className="fl-import-summary-label">Skipped</span>
+                  <strong className="fl-import-summary-value" style={{ color: 'var(--red)' }}>{importStats.skipped}</strong>
+                </div>
+              </div>
+
+              {importHeaders.length > 0 && (
+                <div className="fl-import-mapping">
+                  <div className="fl-import-mapping-head">
+                    <h3>Map your columns</h3>
+                    <p>We guessed these from your file headers. Adjust anything that looks off before importing.</p>
+                  </div>
+                  <div className="fl-import-mapping-grid">
+                    {importHeaders.map(header => (
+                      <label key={header} className="fl-import-map-row">
+                        <span className="fl-import-map-header">{header}</span>
+                        <select
+                          className="fl-field-input"
+                          value={Object.entries(importMapping).find(([, value]) => value === header)?.[0] || ''}
+                          onChange={e => {
+                            const field = e.target.value;
+                            const nextMapping = Object.fromEntries(Object.entries(importMapping).filter(([, value]) => value !== header && value !== importMapping[field]));
+                            if (field) nextMapping[field] = header;
+                            setImportMapping(nextMapping);
+                            refreshImportPreview(importHeaders, importRawRows, nextMapping);
+                          }}
+                        >
+                          {IMPORT_FIELD_OPTIONS.map(option => <option key={`${header}-${option.key || 'ignore'}`} value={option.key}>{option.label}</option>)}
+                        </select>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="fl-import-preview-head">
+                <h3>Preview</h3>
+                <p>Duplicates are automatically excluded. We only import the rows marked ready.</p>
+              </div>
+              {importPreview.length === 0 ? <div className="fl-empty"><p>No transactions detected.</p></div> : importPreview.map(row => (
+                <div key={row.id} className="fl-tx-card fl-import-preview-card">
+                  <div className="fl-tx-card-badge" style={{ background: amtColor(row.normalized.type) + '18', color: amtColor(row.normalized.type) }}>{TYPE_LABEL[row.normalized.type]}</div>
+                  <div className="fl-tx-card-body">
+                    <span className="fl-tx-card-desc">{row.normalized.description}</span>
+                    <span className="fl-tx-card-meta">{row.normalized.date}{row.normalized.category ? ` · ${row.normalized.category}` : ''} · line {row.sourceLine}</span>
+                  </div>
+                  <div className="fl-import-preview-right">
+                    <span className="fl-tx-card-amount" style={{ color: amtColor(row.normalized.type) }}>{fmtD(row.normalized.amount)}</span>
+                    <span className={`fl-import-status fl-import-status-${row.status}`}>{row.status === 'ready' ? 'Ready' : row.status === 'duplicate' ? 'Duplicate' : 'Skipped'}</span>
+                  </div>
+                </div>
               ))}
-              {importPreview.length > 0 && <button className="fl-btn-primary" style={{ width: '100%', marginTop: 8 }} onClick={confirmImport}>Import {importAll.length} transactions</button>}
+              {importAll.length > importPreview.length && <div className="fl-import-preview-note">Showing the first {importPreview.length} rows out of {importAll.length}.</div>}
+              {importPreview.some(row => row.reason) && <div className="fl-import-preview-note">Some rows were skipped because they matched existing transactions or were missing required values.</div>}
+              <button className="fl-btn-primary" style={{ width: '100%', marginTop: 8 }} onClick={confirmImport} disabled={importStats.ready === 0}>Import {importStats.ready} transactions</button>
             </div>
           </div>
         </div>
