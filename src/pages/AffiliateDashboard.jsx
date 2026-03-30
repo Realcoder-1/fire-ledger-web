@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { sanitizeAffiliateCode } from '../lib/affiliateReferral';
 import './AffiliateDashboard.css';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -18,12 +19,22 @@ const fmtDate = (iso) => {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 };
-const sanitizeCode = (value = '') => value.toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 32);
+const sanitizeCode = sanitizeAffiliateCode;
 const createAffiliateCode = (name = '', email = '') => {
   const seed = sanitizeCode(name || email.split('@')[0] || 'FIRE');
   const base = (seed || 'FIRELEDGER').slice(0, 12);
-  return `${base}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  return `${base}${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 };
+async function provisionAffiliateCode(payload) {
+  const res = await fetch('/api/create-affiliate-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || 'Could not create affiliate code.');
+  return json;
+}
 
 // ── Auth screen ──────────────────────────────────────────────────────────────
 function AffiliateAuth({ onAuth }) {
@@ -58,17 +69,15 @@ function AffiliateAuth({ onAuth }) {
         if (err) { setError(err.message); }
         else {
           if (data?.user) {
-            const { error: profileErr } = await supabase.from('affiliate_profiles').upsert({
-              user_id:        data.user.id,
-              email:          email,
-              full_name:      name,
-              status:         'active',
-              referral_code:  referralCode,
-              created_at:     new Date().toISOString(),
-              updated_at:     new Date().toISOString(),
-            }, { onConflict: 'user_id' });
-            if (profileErr) {
-              setError(profileErr.message);
+            try {
+              await provisionAffiliateCode({
+                userId: data.user.id,
+                email,
+                fullName: name,
+                preferredCode: referralCode,
+              });
+            } catch (provisionErr) {
+              setError(provisionErr.message);
               setLoading(false);
               return;
             }
@@ -177,6 +186,10 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
     : null;
   const activeCode = profile?.paddle_discount_code || profile?.referral_code || '';
 
+  useEffect(() => {
+    setCodeDraft(profile?.paddle_discount_code || profile?.referral_code || '');
+  }, [profile?.paddle_discount_code, profile?.referral_code]);
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
@@ -222,16 +235,25 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
     const nextCode = sanitizeCode(codeDraft);
     if (!nextCode) return;
     setSavingCode(true);
-    const { error } = await supabase
-      .from('affiliate_profiles')
-      .update({ paddle_discount_code: nextCode, updated_at: new Date().toISOString() })
-      .eq('id', profile.id);
-    setSavingCode(false);
-    if (error) {
-      alert('To persist custom Paddle codes, add a `paddle_discount_code` text column to your `affiliate_profiles` table first.');
+    try {
+      const result = await provisionAffiliateCode({
+        userId: user.id,
+        email: user.email,
+        fullName: profile?.full_name || user.email,
+        preferredCode: nextCode,
+      });
+      onProfileUpdate({
+        ...profile,
+        referral_code: result.profile?.referral_code || profile.referral_code,
+        paddle_discount_code: result.profile?.paddle_discount_code || nextCode,
+        paddle_discount_id: result.profile?.paddle_discount_id || profile?.paddle_discount_id,
+      });
+    } catch (error) {
+      alert(error.message);
       return;
+    } finally {
+      setSavingCode(false);
     }
-    onProfileUpdate({ ...profile, paddle_discount_code: nextCode });
   };
 
   return (
@@ -474,7 +496,7 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                   To update your payout method or details, contact <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a> with your registered email.
                 </p>
                 <p className="afd-payout-note">
-                  On your side: create the matching discount/code in Paddle, then make sure your webhook or checkout flow maps that code back to this affiliate profile.
+                  Your code is provisioned automatically in Paddle and attached to your affiliate profile for checkout and webhook attribution.
                 </p>
               </div>
 

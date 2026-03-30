@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './Pricing.css';
+import {
+  captureAffiliateCodeFromSearch,
+  clearStoredAffiliateCode,
+  persistAffiliateCode,
+  readStoredAffiliateCode,
+  sanitizeAffiliateCode,
+} from '../lib/affiliateReferral';
 
 const LIFETIME_PRICE_ID = 'pri_01km5hzemdp93p7d4mgpky8qz0'; // $5 one-time
 const MONTHLY_PRICE_ID  = 'pri_01kkk53619cxb49atjaykftcn7'; // $4.99/mo
@@ -16,6 +23,15 @@ export default function Pricing() {
   const [coupon,      setCoupon]      = useState('');
   const [couponValid, setCouponValid] = useState(false);
   const [activePlan,  setActivePlan]  = useState(null);
+
+  useEffect(() => {
+    const capturedCode = captureAffiliateCodeFromSearch(window.location.search);
+    const storedCode = capturedCode || readStoredAffiliateCode();
+    if (!storedCode) return;
+    setCouponInput(storedCode);
+    setCoupon(storedCode);
+    setCouponValid(true);
+  }, []);
 
   useEffect(() => {
     const init = () => {
@@ -50,13 +66,16 @@ export default function Pricing() {
   }, []);
 
   const applyCode = () => {
-    const code = couponInput.trim().toUpperCase();
+    const code = sanitizeAffiliateCode(couponInput);
     if (!code) return;
+    persistAffiliateCode(code);
     setCoupon(code);
+    setCouponInput(code);
     setCouponValid(true);
   };
 
   const removeCode = () => {
+    clearStoredAffiliateCode();
     setCoupon('');
     setCouponInput('');
     setCouponValid(false);
@@ -70,8 +89,15 @@ export default function Pricing() {
     setActivePlan(planKey);
     const opts = { items: [{ priceId, quantity: 1 }] };
     if (user?.email) opts.customer = { email: user.email };
+    const affiliateCode = sanitizeAffiliateCode(coupon || readStoredAffiliateCode());
+    if (affiliateCode || user?.id) {
+      opts.customData = {
+        ...(affiliateCode ? { affiliate_code: affiliateCode } : {}),
+        ...(user?.id ? { fireledger_user_id: user.id } : {}),
+      };
+    }
     // Only apply discount to Monthly / Annual — not Lifetime
-    if (coupon && planKey !== 'lifetime') opts.discountCode = coupon;
+    if (affiliateCode && planKey !== 'lifetime') opts.discountCode = affiliateCode;
 
     try {
       window.Paddle.Checkout.open(opts);

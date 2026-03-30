@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Landing from './pages/Landing';
 import SignIn from './pages/SignIn';
@@ -10,6 +11,17 @@ import Refund from './pages/Refund';
 import SignUp from './pages/SignUp';
 import Affiliate from './pages/Affiliate';
 import AffiliateDashboard from './pages/AffiliateDashboard';
+import { captureAffiliateCodeFromSearch } from './lib/affiliateReferral';
+
+function ReferralCapture() {
+  const location = useLocation();
+
+  useEffect(() => {
+    captureAffiliateCodeFromSearch(location.search);
+  }, [location.search]);
+
+  return null;
+}
 
 function ProtectedRoute({ children }) {
   const { user, loading, hasSubscription } = useAuth();
@@ -26,18 +38,21 @@ function ProtectedRoute({ children }) {
 function AppRoutes() {
   const { user, hasSubscription } = useAuth();
   return (
-    <Routes>
-      <Route path="/signup"    element={<SignUp />} />
-      <Route path="/"          element={user && hasSubscription ? <Navigate to="/app" /> : <Landing />} />
-      <Route path="/signin"    element={user ? (hasSubscription ? <Navigate to="/app" /> : <Navigate to="/pricing" />) : <SignIn />} />
-      <Route path="/pricing"   element={hasSubscription ? <Navigate to="/app" /> : <Pricing />} />
-      <Route path="/app"       element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
-      <Route path="/terms"     element={<Terms />} />
-      <Route path="/privacy"   element={<Privacy />} />
-      <Route path="/refund"    element={<Refund />} />
-      <Route path="/affiliate" element={<Affiliate />} />
-      <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
-    </Routes>
+    <>
+      <ReferralCapture />
+      <Routes>
+        <Route path="/signup"    element={<SignUp />} />
+        <Route path="/"          element={user && hasSubscription ? <Navigate to="/app" /> : <Landing />} />
+        <Route path="/signin"    element={user ? (hasSubscription ? <Navigate to="/app" /> : <Navigate to="/pricing" />) : <SignIn />} />
+        <Route path="/pricing"   element={hasSubscription ? <Navigate to="/app" /> : <Pricing />} />
+        <Route path="/app"       element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
+        <Route path="/terms"     element={<Terms />} />
+        <Route path="/privacy"   element={<Privacy />} />
+        <Route path="/refund"    element={<Refund />} />
+        <Route path="/affiliate" element={<Affiliate />} />
+        <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
+      </Routes>
+    </>
   );
 }
 

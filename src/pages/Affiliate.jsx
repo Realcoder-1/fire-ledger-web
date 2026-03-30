@@ -27,7 +27,7 @@ const FAQS = [
   { q: 'When and how do I get paid?', a: 'Commissions are paid monthly, on the 1st of each month, for the previous month\'s conversions. Minimum payout is $20. We pay via PayPal or bank transfer.' },
   { q: 'What counts as a conversion?', a: 'Any paying customer who signed up using your referral link within the 90-day cookie window. This includes all three plans: Lifetime ($5), Monthly ($4.99/mo), and Annual ($59.99/yr).' },
   { q: 'Can I use paid ads?', a: 'Yes, but you cannot bid on branded keywords (FIRE Ledger, FIRELedger, fireledger.app). Violating this results in immediate termination.' },
-  { q: 'Is there a minimum audience size to apply?', a: 'No. We care more about relevance than size. A niche FIRE blog with 500 readers is a better fit than a generic finance account with 50k followers.' },
+  { q: 'Is there a minimum audience size to join?', a: 'No. We care more about relevance than size. A niche FIRE blog with 500 readers is a better fit than a generic finance account with 50k followers.' },
   { q: 'Do referrals stack if the same person upgrades?', a: 'Yes. If someone buys Lifetime through your link and later upgrades to Annual, you earn commission on both transactions.' },
 ];
 
@@ -53,7 +53,7 @@ function MockDashboard() {
     <div className="aff-dash">
       <div className="aff-dash-header">
         <div className="aff-dash-title">Your affiliate dashboard</div>
-        <div className="aff-dash-badge">Preview — yours after approval</div>
+        <div className="aff-dash-badge">Preview — live after signup</div>
       </div>
 
       {/* Stats row */}
@@ -233,11 +233,11 @@ export default function Affiliate() {
         </div>
       </section>
 
-      {/* ── Apply form ── */}
+      {/* ── Join form ── */}
       <section className="aff-section aff-section-dark" id="aff-apply">
         <div className="aff-section-inner aff-apply-inner">
           <div className="aff-apply-left">
-            <span className="aff-section-eyebrow">Apply now</span>
+            <span className="aff-section-eyebrow">Join now</span>
             <h2 className="aff-section-title" style={{ textAlign: 'left' }}>
               Join the program.<br />Start earning.
             </h2>
@@ -247,7 +247,7 @@ export default function Affiliate() {
             <div className="aff-apply-trust">
               <span>✓ Free to join</span>
               <span>✓ No minimum audience</span>
-              <span>✓ 24h approval</span>
+              <span>✓ Instant access</span>
               <span>✓ Monthly payouts</span>
             </div>
           </div>
@@ -294,7 +294,7 @@ export default function Affiliate() {
       <section className="aff-section">
         <div className="aff-section-inner aff-faq-inner">
           <span className="aff-section-eyebrow">Questions</span>
-          <h2 className="aff-section-title">Before you apply</h2>
+          <h2 className="aff-section-title">Before you join</h2>
           <div className="aff-faq-list">
             {FAQS.map((item, i) => (
               <div key={i} className="aff-faq-item">

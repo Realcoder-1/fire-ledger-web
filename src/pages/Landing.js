@@ -267,7 +267,7 @@ function AffiliateBanner() {
               <span style={{ fontSize:11,color:'#a78bfa',fontFamily:'monospace' }}>fireledger.app/?ref=yourname</span>
             </div>
           </div>
-          <a href="/affiliate" className="affbanner-cta">Apply for free — 24h approval →</a>
+          <a href="/affiliate" className="affbanner-cta">Create affiliate account →</a>
           <p className="affbanner-fine">Free to join · No minimum audience · Monthly payouts</p>
         </div>
       </div>
@@ -759,7 +759,7 @@ export default function Landing() {
             <div className="footer-col-title">Affiliate</div>
             <a href="/affiliate">Join the program</a>
             <a href="/affiliate#aff-how">How it works</a>
-            <a href="/affiliate#aff-apply">Apply now</a>
+            <a href="/affiliate#aff-apply">Create account</a>
             <a href="/affiliate/dashboard">Affiliate login</a>
           </div>
           <div className="footer-links-col">
