@@ -101,7 +101,7 @@ function buildDiscountPayload({ code, email, fullName, userId }) {
   };
 }
 
-async function upsertProfile(supabase, profile, { userId, email, fullName, code, paddleDiscount }) {
+async function saveProfile(supabase, profile, { userId, email, fullName, code, paddleDiscount }) {
   const now = new Date().toISOString();
   const nextProfile = {
     user_id: userId,
@@ -114,15 +114,21 @@ async function upsertProfile(supabase, profile, { userId, email, fullName, code,
     updated_at: now,
   };
 
-  const query = supabase
-    .from('affiliate_profiles')
-    .upsert(nextProfile, { onConflict: 'user_id' })
-    .select('*')
-    .single();
+  const query = profile
+    ? supabase
+        .from('affiliate_profiles')
+        .update(nextProfile)
+        .eq('user_id', userId)
+        .select('*')
+    : supabase
+        .from('affiliate_profiles')
+        .insert(nextProfile)
+        .select('*')
+        .single();
 
   const { data, error } = await query;
   if (error) throw error;
-  return data;
+  return Array.isArray(data) ? data[0] || null : data;
 }
 
 module.exports = async function handler(req, res) {
@@ -165,7 +171,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    const profile = await upsertProfile(supabase, existingProfile, {
+    const profile = await saveProfile(supabase, existingProfile, {
       userId,
       email,
       fullName,
