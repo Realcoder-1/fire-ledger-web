@@ -264,7 +264,7 @@ function AffiliateBanner() {
               ))}
             </div>
             <div className="affbanner-link-preview">
-              <span style={{ fontSize:11,color:'#a78bfa',fontFamily:'monospace' }}>fireledger.app/?ref=yourname</span>
+              <span style={{ fontSize:11,color:'#a78bfa',fontFamily:'monospace' }}>fire-ledger-web.vercel.app/?ref=YOURCODE</span>
             </div>
           </div>
           <a href="/affiliate" className="affbanner-cta">Create affiliate account →</a>
@@ -331,7 +331,7 @@ export default function Landing() {
           <button className="nav-link" onClick={()=>scrollTo('pricing')}>Pricing</button>
           <button className="nav-link" onClick={()=>scrollTo('faq')}>FAQ</button>
           <button className="nav-link" onClick={()=>scrollTo('contact')}>Contact</button>
-          <button className="nav-link" onClick={()=>navigate('/affiliate')}>Affiliate</button>
+          <button className="nav-link" onClick={()=>navigate('/affiliate#aff-apply')}>Affiliate</button>
         </div>
         <button className="nav-cta" onClick={()=>navigate('/signup')}>Let me join →</button>
         {!user && <button className="nav-signin" onClick={()=>navigate('/signin')}>Sign in</button>}

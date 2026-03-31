@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Affiliate.css';
 import { markAffiliateAuthIntent } from '../lib/affiliateReferral';
 
@@ -32,6 +32,12 @@ const FAQS = [
   { q: 'Do referrals stack if the same person upgrades?', a: 'Yes. If someone buys Lifetime through your link and later upgrades to Annual, you earn commission on both transactions.' },
 ];
 
+const PLAN_PAYOUTS = [
+  { key: 'lifetime', label: 'If they choose lifetime', amount: 1.5, suffix: 'per sale', color: '#a78bfa' },
+  { key: 'monthly', label: 'If they choose monthly', amount: 1.5, suffix: 'per customer / mo', color: '#f472b6' },
+  { key: 'annual', label: 'If they choose annual', amount: 18, suffix: 'per sale', color: '#52c98a' },
+];
+
 // ── Mock affiliate dashboard data ────────────────────
 const MOCK_REFERRALS = [
   { date: 'Mar 18', plan: 'Annual', amount: '$18.00', status: 'paid' },
@@ -43,7 +49,7 @@ const MOCK_REFERRALS = [
 
 function MockDashboard() {
   const [copied, setCopied] = useState(false);
-  const link = 'fireledger.app/?ref=yourname';
+  const link = 'fire-ledger-web.vercel.app/?ref=YOURCODE';
 
   const handleCopy = () => {
     setCopied(true);
@@ -103,15 +109,40 @@ function MockDashboard() {
 
 export default function Affiliate() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [openFaq, setOpenFaq] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', platform: '', audience: '', notes: '' });
+  const [monthlyReferrals, setMonthlyReferrals] = useState(12);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.name || !form.email || !form.platform) return;
+  useEffect(() => {
+    const targetId = location.hash.replace('#', '');
+    const scrollTarget = () => {
+      if (!targetId) {
+        window.scrollTo(0, 0);
+        return;
+      }
+      const element = document.getElementById(targetId);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    const timer = setTimeout(scrollTarget, 60);
+    return () => clearTimeout(timer);
+  }, [location.hash]);
+
+  const goToAffiliateSignup = () => {
     markAffiliateAuthIntent();
     navigate('/affiliate/dashboard');
   };
+
+  const scrollToJoin = () => {
+    const el = document.getElementById('aff-apply');
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const lifetimeProjection = monthlyReferrals * 1.5;
+  const monthlyProjection = monthlyReferrals * 1.5;
+  const annualProjection = monthlyReferrals * 18;
+  const blendedMonthly = (monthlyReferrals * 0.5 * 1.5) + (monthlyReferrals * 0.35 * 18) + (monthlyReferrals * 0.15 * 1.5);
+  const blendedAnnual = blendedMonthly * 12;
 
   return (
     <div className="aff-page">
@@ -131,7 +162,7 @@ export default function Affiliate() {
           <button className="aff-nav-link" onClick={() => navigate('/')}>Home</button>
           <button className="aff-nav-link" onClick={() => navigate('/pricing')}>Pricing</button>
         </div>
-        <button className="aff-nav-cta" onClick={() => { markAffiliateAuthIntent(); const el = document.getElementById('aff-apply'); el?.scrollIntoView({ behavior: 'smooth' }); }}>
+        <button className="aff-nav-cta" onClick={scrollToJoin}>
           Create account →
         </button>
       </nav>
@@ -159,7 +190,7 @@ export default function Affiliate() {
           </div>
 
           <div className="aff-hero-btns">
-            <button className="aff-btn-primary" onClick={() => { markAffiliateAuthIntent(); navigate('/affiliate/dashboard'); }}>
+            <button className="aff-btn-primary" id="aff-cta" onClick={goToAffiliateSignup}>
               Create affiliate account →
             </button>
             <button className="aff-btn-ghost" onClick={() => document.getElementById('aff-how')?.scrollIntoView({ behavior: 'smooth' })}>
@@ -215,6 +246,57 @@ export default function Affiliate() {
               </div>
             ))}
           </div>
+
+          <div className="aff-earnings-lab">
+            <div className="aff-earnings-head">
+              <div>
+                <span className="aff-section-eyebrow">Scale it up</span>
+                <h3 className="aff-earnings-title">Move the regulator and see what this can become.</h3>
+              </div>
+              <div className="aff-earnings-highlight">
+                <span className="aff-earnings-highlight-label">Blended example</span>
+                <span className="aff-earnings-highlight-value">${blendedMonthly.toFixed(2)}/mo</span>
+                <span className="aff-earnings-highlight-sub">${blendedAnnual.toFixed(0)}/yr at this pace</span>
+              </div>
+            </div>
+
+            <div className="aff-earnings-slider-card">
+              <div className="aff-earnings-slider-top">
+                <span className="aff-earnings-slider-label">Paying referrals per month</span>
+                <span className="aff-earnings-slider-value">{monthlyReferrals}</span>
+              </div>
+              <input
+                className="aff-earnings-slider"
+                type="range"
+                min="1"
+                max="100"
+                step="1"
+                value={monthlyReferrals}
+                onChange={e => setMonthlyReferrals(Number(e.target.value))}
+              />
+              <div className="aff-earnings-slider-scale">
+                <span>1</span>
+                <span>25</span>
+                <span>50</span>
+                <span>75</span>
+                <span>100</span>
+              </div>
+            </div>
+
+            <div className="aff-earnings-grid">
+              {[
+                { label: PLAN_PAYOUTS[0].label, value: `$${lifetimeProjection.toFixed(2)}`, sub: PLAN_PAYOUTS[0].suffix, color: PLAN_PAYOUTS[0].color },
+                { label: PLAN_PAYOUTS[1].label, value: `$${monthlyProjection.toFixed(2)}/mo`, sub: PLAN_PAYOUTS[1].suffix, color: PLAN_PAYOUTS[1].color },
+                { label: PLAN_PAYOUTS[2].label, value: `$${annualProjection.toFixed(2)}`, sub: PLAN_PAYOUTS[2].suffix, color: PLAN_PAYOUTS[2].color },
+              ].map(card => (
+                <div key={card.label} className="aff-earnings-card">
+                  <span className="aff-earnings-card-label">{card.label}</span>
+                  <span className="aff-earnings-card-value" style={{ color: card.color }}>{card.value}</span>
+                  <span className="aff-earnings-card-sub">{card.sub}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -235,7 +317,7 @@ export default function Affiliate() {
         </div>
       </section>
 
-      {/* ── Join form ── */}
+      {/* ── Join CTA ── */}
       <section className="aff-section aff-section-dark" id="aff-apply">
         <div className="aff-section-inner aff-apply-inner">
           <div className="aff-apply-left">
@@ -255,39 +337,33 @@ export default function Affiliate() {
           </div>
 
           <div className="aff-apply-right">
-            <form className="aff-form" onSubmit={handleSubmit}>
-              <div className="aff-form-row">
-                <div className="aff-form-field">
-                  <label className="aff-form-label">Full name</label>
-                  <input className="aff-form-input" type="text" placeholder="Your name"
-                    value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
-                </div>
-                <div className="aff-form-field">
-                  <label className="aff-form-label">Email address</label>
-                  <input className="aff-form-input" type="email" placeholder="you@example.com"
-                    value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
-                </div>
+            <div className="aff-apply-visual">
+              <div className="aff-apply-visual-head">
+                <span className="aff-apply-visual-eyebrow">What opens immediately</span>
+                <span className="aff-apply-visual-badge">Live after signup</span>
               </div>
-              <div className="aff-form-field">
-                <label className="aff-form-label">Primary platform / channel</label>
-                <input className="aff-form-input" type="text" placeholder="e.g. YouTube, Twitter, Newsletter, Blog"
-                  value={form.platform} onChange={e => setForm(f => ({ ...f, platform: e.target.value }))} required />
+              <div className="aff-apply-visual-grid">
+                {[
+                  { label: 'Your referral link', value: 'Generated instantly' },
+                  { label: 'Your custom code', value: 'Saved into Paddle' },
+                  { label: 'Your payout details', value: 'Ready in dashboard' },
+                  { label: 'Your conversion ledger', value: 'Tracks every referral' },
+                ].map(item => (
+                  <div key={item.label} className="aff-apply-visual-card">
+                    <span className="aff-apply-visual-card-label">{item.label}</span>
+                    <span className="aff-apply-visual-card-value">{item.value}</span>
+                  </div>
+                ))}
               </div>
-              <div className="aff-form-field">
-                <label className="aff-form-label">Audience size (approx.)</label>
-                <input className="aff-form-input" type="text" placeholder="e.g. 2,000 subscribers"
-                  value={form.audience} onChange={e => setForm(f => ({ ...f, audience: e.target.value }))} />
+              <div className="aff-apply-visual-link">
+                <span className="aff-apply-visual-link-label">Sample link</span>
+                <span className="aff-apply-visual-link-url">fire-ledger-web.vercel.app/?ref=YOURCODE</span>
               </div>
-              <div className="aff-form-field">
-                <label className="aff-form-label">How do you plan to promote? (optional)</label>
-                <textarea className="aff-form-textarea" rows={3} placeholder="Brief description of your plan..."
-                  value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-              </div>
-              <button className="aff-form-submit" type="submit">
+              <button className="aff-form-submit" type="button" onClick={goToAffiliateSignup}>
                 Create account →
               </button>
-              <p className="aff-form-fine">You will finish account creation in the affiliate dashboard.</p>
-            </form>
+              <p className="aff-form-fine">You will create your login in the affiliate dashboard and get your link immediately.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -308,6 +384,17 @@ export default function Affiliate() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="aff-section aff-bottom-cta-section">
+        <div className="aff-section-inner aff-bottom-cta-inner">
+          <span className="aff-section-eyebrow">Ready to start</span>
+          <h2 className="aff-section-title">When you are ready, go straight to the account button.</h2>
+          <p className="aff-section-sub">No long application. No waiting room. Jump back up and create the affiliate account when you want to start.</p>
+          <button className="aff-btn-primary aff-bottom-cta-btn" type="button" onClick={scrollToJoin}>
+            Take me back to create account →
+          </button>
         </div>
       </section>
 

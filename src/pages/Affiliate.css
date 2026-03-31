@@ -285,6 +285,128 @@
   padding: 3px 10px; border-radius: 100px; margin-top: 4px;
 }
 
+.aff-earnings-lab {
+  margin-top: 32px;
+  padding: 26px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.aff-earnings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.aff-earnings-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.15;
+}
+.aff-earnings-highlight {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(167,139,250,0.08);
+  border: 1px solid rgba(167,139,250,0.2);
+}
+.aff-earnings-highlight-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #55557a;
+}
+.aff-earnings-highlight-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: #f0f0f8;
+  line-height: 1;
+}
+.aff-earnings-highlight-sub {
+  font-size: 11px;
+  color: #8888aa;
+}
+.aff-earnings-slider-card {
+  padding: 18px 18px 16px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.aff-earnings-slider-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.aff-earnings-slider-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #55557a;
+}
+.aff-earnings-slider-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: #f0f0f8;
+  line-height: 1;
+}
+.aff-earnings-slider {
+  width: 100%;
+  accent-color: #a78bfa;
+}
+.aff-earnings-slider-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #55557a;
+}
+.aff-earnings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+.aff-earnings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.aff-earnings-card-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #55557a;
+}
+.aff-earnings-card-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.aff-earnings-card-sub {
+  font-size: 11px;
+  color: #8888aa;
+}
+
 /* ── Promo ideas grid ────────────────────────────────── */
 .aff-promo-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 48px;
@@ -314,6 +436,83 @@
   background: #0e0e1a; border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px; padding: 32px 28px;
   box-shadow: 0 40px 80px rgba(0,0,0,0.3);
+}
+.aff-apply-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.aff-apply-visual-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.aff-apply-visual-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #55557a;
+}
+.aff-apply-visual-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #a78bfa;
+  background: rgba(167,139,250,0.1);
+  border: 1px solid rgba(167,139,250,0.24);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.aff-apply-visual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.aff-apply-visual-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.aff-apply-visual-card-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #55557a;
+}
+.aff-apply-visual-card-value {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #f0f0f8;
+}
+.aff-apply-visual-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(167,139,250,0.06);
+  border: 1px solid rgba(167,139,250,0.16);
+}
+.aff-apply-visual-link-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #55557a;
+}
+.aff-apply-visual-link-url {
+  font-size: 13px;
+  color: #a78bfa;
+  font-family: monospace;
+  word-break: break-all;
 }
 .aff-form { display: flex; flex-direction: column; gap: 16px; }
 .aff-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -371,6 +570,16 @@
 .aff-faq-chevron { font-size: 20px; font-weight: 300; color: #55557a; flex-shrink: 0; }
 .aff-faq-a { font-size: 14px; color: #8888aa; line-height: 1.85; padding: 0 0 22px; max-width: 600px; }
 
+.aff-bottom-cta-section {
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.aff-bottom-cta-inner {
+  text-align: center;
+}
+.aff-bottom-cta-btn {
+  margin: 0 auto;
+}
+
 /* ── Footer ──────────────────────────────────────────── */
 .aff-footer {
   position: relative; z-index: 1; text-align: center;
@@ -402,8 +611,11 @@
   .aff-section { padding: 60px 24px; }
   .aff-steps-grid { grid-template-columns: 1fr 1fr; }
   .aff-commission-grid { grid-template-columns: 1fr; max-width: 340px; margin-left: auto; margin-right: auto; }
+  .aff-earnings-head { flex-direction: column; }
+  .aff-earnings-grid { grid-template-columns: 1fr; }
   .aff-promo-grid { grid-template-columns: 1fr 1fr; }
   .aff-apply-inner { grid-template-columns: 1fr; gap: 40px; }
+  .aff-apply-visual-grid { grid-template-columns: 1fr; }
   .aff-form-row { grid-template-columns: 1fr; }
   .aff-dash-stats { grid-template-columns: repeat(2, 1fr); }
   .aff-dash-table-head, .aff-dash-table-row { grid-template-columns: 70px 1fr 80px 70px; }
