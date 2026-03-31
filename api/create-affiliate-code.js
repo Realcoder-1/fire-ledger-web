@@ -109,7 +109,7 @@ async function upsertProfile(supabase, profile, { userId, email, fullName, code,
     full_name: fullName || profile?.full_name || email,
     status: profile?.status || 'active',
     referral_code: code,
-    paddle_discount_code: paddleDiscount?.code || code,
+    paddle_discount_code: paddleDiscount?.code || profile?.paddle_discount_code || null,
     paddle_discount_id: paddleDiscount?.id || profile?.paddle_discount_id || null,
     updated_at: now,
   };
@@ -144,23 +144,25 @@ module.exports = async function handler(req, res) {
     await ensureCodeAvailable(supabase, requestedCode, userId);
 
     let paddleDiscount;
-    const discountPayload = buildDiscountPayload({
-      code: requestedCode,
-      email,
-      fullName,
-      userId,
-    });
+    if (getPaddleApiKey()) {
+      const discountPayload = buildDiscountPayload({
+        code: requestedCode,
+        email,
+        fullName,
+        userId,
+      });
 
-    if (existingProfile?.paddle_discount_id) {
-      paddleDiscount = await paddleRequest(`/discounts/${existingProfile.paddle_discount_id}`, {
-        method: 'PATCH',
-        body: discountPayload,
-      });
-    } else {
-      paddleDiscount = await paddleRequest('/discounts', {
-        method: 'POST',
-        body: discountPayload,
-      });
+      if (existingProfile?.paddle_discount_id) {
+        paddleDiscount = await paddleRequest(`/discounts/${existingProfile.paddle_discount_id}`, {
+          method: 'PATCH',
+          body: discountPayload,
+        });
+      } else {
+        paddleDiscount = await paddleRequest('/discounts', {
+          method: 'POST',
+          body: discountPayload,
+        });
+      }
     }
 
     const profile = await upsertProfile(supabase, existingProfile, {
@@ -175,6 +177,7 @@ module.exports = async function handler(req, res) {
       ok: true,
       profile,
       paddleDiscount,
+      paddleConfigured: Boolean(getPaddleApiKey()),
     });
   } catch (error) {
     console.error('create-affiliate-code error:', error);

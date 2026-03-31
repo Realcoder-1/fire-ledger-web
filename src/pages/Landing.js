@@ -10,11 +10,11 @@ const POPUP_KEY = 'fl_hours_popup_seen';
 
 // ── Animated hero title ─────────────────────────────────────────────────────
 const HERO_CAPTIONS = [
-  { line1: 'Unless you know this number.', accent: 'Most people never calculate it. The ones who do retire a decade early.' },
-  { line1: 'Every day without a plan is a day', accent: 'working for someone else.' },
-  { line1: 'Your future is being shaped right now', accent: 'by numbers you are not tracking.' },
-  { line1: 'The people who retire early', accent: 'started tracking before you did.' },
-  { line1: 'Financial independence is not luck.', accent: "It's a number. Know yours." },
+  { line1: 'You will work until you die.', accent: 'Unless you make a change.' },
+  { line1: 'Most people never know', accent: 'when they could stop working.' },
+  { line1: 'Every year without a plan', accent: 'is another year you sell away.' },
+  { line1: 'Your freedom date is moving.', accent: 'You are just not tracking it.' },
+  { line1: 'The people who retire early', accent: 'faced the number before you did.' },
 ];
 
 function AnimatedHeroTitle() {
@@ -347,7 +347,7 @@ export default function Landing() {
           <div className="hero-badge">Your financial future starts with one number</div>
           <AnimatedHeroTitle/>
           <p className="hero-sub">
-            Most people never calculate it. The ones who do retire a decade early.
+            Track the number that decides when work becomes optional.
           </p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={()=>navigate('/signup')}>Let me join →</button>
