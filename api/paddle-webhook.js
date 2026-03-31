@@ -94,15 +94,30 @@ function getPlanDetails(entity) {
   return { planType: entity?.subscription_id ? 'recurring' : 'purchase', planPrice: null, priceId };
 }
 
-function extractAffiliateCode(entity) {
+function extractAppliedDiscountCode(entity) {
   return sanitizeCode(
-    entity?.custom_data?.affiliate_code ||
+    entity?.custom_data?.checkout_discount_code ||
       entity?.discount?.code ||
       entity?.discount_code ||
       entity?.discounts?.[0]?.code ||
       entity?.discounts?.[0]?.discount?.code ||
       ''
   );
+}
+
+function extractAffiliateAttribution(entity) {
+  const linkCode = sanitizeCode(
+    entity?.custom_data?.affiliate_code ||
+      entity?.custom_data?.affiliate_referral_code ||
+      ''
+  );
+  const appliedDiscountCode = extractAppliedDiscountCode(entity);
+
+  return {
+    affiliateCode: linkCode || appliedDiscountCode,
+    attributionSource: linkCode ? 'link' : appliedDiscountCode ? 'discount' : null,
+    appliedDiscountCode,
+  };
 }
 
 async function resolveUserId(supabase, entity) {
@@ -149,7 +164,8 @@ async function upsertSubscription(supabase, entity, statusOverride) {
 }
 
 async function upsertAffiliateReferral(supabase, entity) {
-  const affiliateCode = extractAffiliateCode(entity);
+  const attribution = extractAffiliateAttribution(entity);
+  const affiliateCode = attribution.affiliateCode;
   const customerEmail = getCustomerEmail(entity);
   if (!affiliateCode || !customerEmail) return;
 
@@ -167,6 +183,8 @@ async function upsertAffiliateReferral(supabase, entity) {
   const row = {
     affiliate_id: affiliateProfile.id,
     affiliate_code: affiliateCode,
+    attribution_source: attribution.attributionSource,
+    applied_discount_code: attribution.appliedDiscountCode || null,
     referred_email: customerEmail,
     plan_type: plan.planType,
     plan_price: planPrice,
@@ -182,7 +200,32 @@ async function upsertAffiliateReferral(supabase, entity) {
     .from('affiliate_referrals')
     .upsert(row, { onConflict: 'paddle_transaction_id' });
 
-  if (error) throw error;
+  if (error) {
+    if (/attribution_source|applied_discount_code/i.test(error.message || '')) {
+      const fallbackRow = {
+        affiliate_id: row.affiliate_id,
+        affiliate_code: row.affiliate_code,
+        referred_email: row.referred_email,
+        plan_type: row.plan_type,
+        plan_price: row.plan_price,
+        commission_amount: row.commission_amount,
+        status: row.status,
+        payout_status: row.payout_status,
+        paddle_transaction_id: row.paddle_transaction_id,
+        paddle_subscription_id: row.paddle_subscription_id,
+        updated_at: row.updated_at,
+      };
+
+      const { error: fallbackError } = await supabase
+        .from('affiliate_referrals')
+        .upsert(fallbackRow, { onConflict: 'paddle_transaction_id' });
+
+      if (fallbackError) throw fallbackError;
+      return;
+    }
+
+    throw error;
+  }
 }
 
 async function updateReferralSubscriptionStatus(supabase, subscriptionId, status) {

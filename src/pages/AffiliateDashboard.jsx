@@ -24,6 +24,15 @@ const fmtDate = (iso) => {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 };
+const getNextPayoutDateLabel = () => {
+  const next = new Date();
+  next.setDate(1);
+  next.setHours(0, 0, 0, 0);
+  if (new Date().getDate() >= 1) {
+    next.setMonth(next.getMonth() + 1);
+  }
+  return next.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+};
 const sanitizeCode = sanitizeAffiliateCode;
 const createAffiliateCode = (name = '', email = '') => {
   const seed = sanitizeCode(name || email.split('@')[0] || 'FIRE');
@@ -341,6 +350,31 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
   const pendingEarnings  = referrals.filter(r=>r.payout_status==='pending').reduce((s,r)=>s+(r.commission_amount||0),0);
   const totalReferrals   = referrals.length;
   const trackedConversions = discountStats?.trackedConversions ?? totalReferrals;
+  const linkAttributedConversions = discountStats?.linkAttributedConversions ?? referrals.filter(r => r.attribution_source === 'link').length;
+  const discountedConversions = discountStats?.discountedConversions ?? referrals.filter(r => Boolean(r.applied_discount_code)).length;
+  const payoutThreshold = 20;
+  const nextPayoutDateLabel = getNextPayoutDateLabel();
+  const payoutDestination = (profile?.payout_email || '').trim();
+  const payoutMethodLabel = profile?.payout_method || 'PayPal';
+  const hasPayoutDestination = Boolean(payoutDestination);
+  const payoutShortfall = Math.max(0, payoutThreshold - pendingEarnings);
+  const payoutReadiness = !hasPayoutDestination
+    ? {
+        label: 'ADD PAYPAL OR WIRE DESTINATION',
+        tone: 'pending',
+        detail: 'Your referrals are being tracked, but payouts stay blocked until a destination is saved.',
+      }
+    : pendingEarnings >= payoutThreshold
+      ? {
+          label: 'READY FOR NEXT PAYOUT RUN',
+          tone: 'active',
+          detail: `Your account has cleared the $${fmt(payoutThreshold)} threshold and is ready for the next payout cycle.`,
+        }
+      : {
+          label: 'BELOW PAYOUT MINIMUM',
+          tone: 'pending',
+          detail: `$${fmt(payoutShortfall)} more in pending commissions is needed before the next payout run.`,
+        };
 
   // Rolling 6-month breakdown
   const monthlyData = (() => {
@@ -507,8 +541,8 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
             </div>
             <div className="afd-code-metrics">
               <div className="afd-code-metric">
-                <span className="afd-code-metric-label">Paddle uses</span>
-                <span className="afd-code-metric-value">{fmtInt(codeUsageCount)}</span>
+                <span className="afd-code-metric-label">Link credits</span>
+                <span className="afd-code-metric-value">{fmtInt(linkAttributedConversions)}</span>
               </div>
               <div className="afd-code-metric">
                 <span className="afd-code-metric-label">Unique buyers</span>
@@ -681,13 +715,19 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                 <div className="afd-payout-callout">
                   <div className="afd-payout-callout-title">How this page works</div>
                   <p className="afd-payout-callout-body">
-                    Add the payout destination you want us to use, check what has already been paid, and review what is still pending for the next payout run. Your active affiliate code stays attached here so payouts and attribution stay tied to the same profile.
+                    Your unique referral link is the primary attribution source. If someone lands through that link and completes checkout, the purchase is credited back to your affiliate profile automatically, with or without a typed code.
                   </p>
                 </div>
                 <div className="afd-payout-callout">
-                  <div className="afd-payout-callout-title">Code usage on your profile</div>
+                  <div className="afd-payout-callout-title">Link and offer usage</div>
                   <p className="afd-payout-callout-body">
-                    Your active code <strong>{activeCode || '—'}</strong> has been redeemed <strong>{fmtInt(codeUsageCount)}</strong> time(s) in Paddle and is currently tied to <strong>{fmtInt(uniqueCustomers)}</strong> unique buyer(s) in your tracked affiliate ledger.
+                    Your link has already credited <strong>{fmtInt(linkAttributedConversions)}</strong> tracked conversion(s), reached <strong>{fmtInt(uniqueCustomers)}</strong> unique buyer(s), and applied a checkout discount <strong>{fmtInt(discountedConversions)}</strong> time(s). Your current offer code is <strong>{activeCode || '—'}</strong>.
+                  </p>
+                </div>
+                <div className="afd-payout-callout">
+                  <div className="afd-payout-callout-title">Payout readiness</div>
+                  <p className="afd-payout-callout-body">
+                    {payoutReadiness.detail} The next payout cycle is <strong>{nextPayoutDateLabel}</strong>, and the current method on file is <strong>{payoutMethodLabel}</strong>.
                   </p>
                 </div>
                 <div className="afd-section-head">
@@ -700,7 +740,7 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                   </div>
                   <div className="afd-payout-method-row">
                     <span className="afd-payout-method-label">PAYOUT VIA</span>
-                    <span className="afd-payout-method-val">{profile?.payout_method || 'PayPal / Bank Transfer'}</span>
+                    <span className="afd-payout-method-val">{profile?.payout_method || 'PayPal / Wire Transfer'}</span>
                   </div>
                   <div className="afd-payout-method-row">
                     <span className="afd-payout-method-label">PAYOUT DESTINATION</span>
@@ -711,8 +751,18 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                     <span className="afd-payout-method-val">Monthly — 1st of each month</span>
                   </div>
                   <div className="afd-payout-method-row">
+                    <span className="afd-payout-method-label">PAYOUT READINESS</span>
+                    <span className="afd-payout-method-val">
+                      <span className={`afd-status-tag afd-status-${payoutReadiness.tone}`}>{payoutReadiness.label}</span>
+                    </span>
+                  </div>
+                  <div className="afd-payout-method-row">
+                    <span className="afd-payout-method-label">PRIMARY ATTRIBUTION</span>
+                    <span className="afd-payout-method-val">Unique referral link ({profile?.referral_code ? `?ref=${profile.referral_code}` : 'not set yet'})</span>
+                  </div>
+                  <div className="afd-payout-method-row">
                     <span className="afd-payout-method-label">ACTIVE PADDLE CODE</span>
-                    <span className="afd-payout-method-val">{activeCode || 'Set a custom code in the sidebar'}</span>
+                    <span className="afd-payout-method-val">{activeCode || 'Optional checkout offer not configured yet'}</span>
                   </div>
                 </div>
                 <div className="afd-payout-settings">
@@ -729,17 +779,17 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                       >
                         <option value="PayPal">PayPal</option>
                         <option value="Wise">Wise</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Wire Transfer">Wire Transfer</option>
                       </select>
                     </div>
                     <div className="afd-field">
-                      <label className="afd-label">Payout email or account</label>
+                      <label className="afd-label">Payout email or wire destination</label>
                       <input
                         className="afd-input"
                         type="text"
                         value={payoutForm.payout_email}
                         onChange={e => setPayoutForm(prev => ({ ...prev, payout_email: e.target.value }))}
-                        placeholder="PayPal email or bank reference"
+                        placeholder="PayPal email, Wise handle, or wire destination"
                       />
                     </div>
                     <div className="afd-field">
@@ -749,7 +799,7 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                         rows={3}
                         value={payoutForm.notes || ''}
                         onChange={e => setPayoutForm(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder="Bank name, routing reference, Wise handle, or payout notes"
+                        placeholder="Wire instructions, routing reference, Wise handle, or payout notes"
                       />
                     </div>
                     <button className="afd-submit afd-inline-submit" type="button" onClick={savePayoutDetails} disabled={savingPayout}>
@@ -758,10 +808,10 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                   </div>
                 </div>
                 <p className="afd-payout-note">
-                  Save your payout method here so your affiliate account is ready when payouts are processed. Contact <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a> only if you need payout support.
+                  Save your payout method here so affiliate credit from your link can roll straight into the next payout cycle once the $20 minimum is reached. Contact <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a> only if you need payout support.
                 </p>
                 <p className="afd-payout-note">
-                  Your code is provisioned automatically in Paddle and attached to your affiliate profile for checkout and webhook attribution.
+                  The referral link drives attribution automatically. The Paddle offer code is optional on top of that, and only affects buyer discounting at checkout.
                 </p>
               </div>
 

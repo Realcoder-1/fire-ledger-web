@@ -764,6 +764,7 @@
 .afd-status-paid     { background: rgba(167,139,250,0.1);  color: var(--afd-accent2);  border: 1px solid rgba(167,139,250,0.2); }
 .afd-status-pending  { background: rgba(255,255,255,0.03); color: var(--afd-t2);       border: 1px solid var(--afd-border); }
 .afd-status-active   { background: rgba(167,139,250,0.08); color: var(--afd-accent2);  border: 1px solid rgba(167,139,250,0.18); }
+.afd-status-inactive { background: rgba(248,113,113,0.08); color: var(--afd-red);      border: 1px solid rgba(248,113,113,0.2); }
 .afd-status-cancelled{ background: rgba(248,113,113,0.1); color: var(--afd-red);    border: 1px solid rgba(248,113,113,0.2); }
 .afd-status-null, .afd-status-undefined { background: rgba(255,255,255,0.03); color: var(--afd-t3); border: 1px solid var(--afd-border); }
 
@@ -839,6 +840,7 @@
   color: var(--afd-t1);
   letter-spacing: 0.3px;
 }
+.afd-payout-method-val .afd-status-tag { vertical-align: middle; }
 
 .afd-payout-note {
   font-size: 12.5px;

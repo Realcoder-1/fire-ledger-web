@@ -84,21 +84,36 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ error: 'Affiliate profile not found.' });
     }
 
-    const { data: referrals, error: referralsError } = await supabase
+    let referrals = [];
+    const { data: richReferrals, error: richReferralsError } = await supabase
       .from('affiliate_referrals')
-      .select('referred_email, affiliate_code, payout_status, status, commission_amount')
+      .select('referred_email, affiliate_code, attribution_source, applied_discount_code, payout_status, status, commission_amount')
       .eq('affiliate_id', profile.id);
 
-    if (referralsError) throw referralsError;
+    if (richReferralsError && /attribution_source|applied_discount_code/i.test(richReferralsError.message || '')) {
+      const { data: fallbackReferrals, error: fallbackError } = await supabase
+        .from('affiliate_referrals')
+        .select('referred_email, affiliate_code, payout_status, status, commission_amount')
+        .eq('affiliate_id', profile.id);
+
+      if (fallbackError) throw fallbackError;
+      referrals = fallbackReferrals || [];
+    } else if (richReferralsError) {
+      throw richReferralsError;
+    } else {
+      referrals = richReferrals || [];
+    }
 
     const uniqueCustomers = new Set(
-      (referrals || [])
+      referrals
         .map((row) => String(row.referred_email || '').toLowerCase())
         .filter(Boolean)
     ).size;
 
-    const paidCount = (referrals || []).filter((row) => row.payout_status === 'paid').length;
-    const pendingCount = (referrals || []).filter((row) => row.payout_status === 'pending').length;
+    const paidCount = referrals.filter((row) => row.payout_status === 'paid').length;
+    const pendingCount = referrals.filter((row) => row.payout_status === 'pending').length;
+    const linkAttributedConversions = referrals.filter((row) => row.attribution_source === 'link').length;
+    const discountedConversions = referrals.filter((row) => Boolean(row.applied_discount_code)).length;
 
     let paddleDiscount = null;
     try {
@@ -115,10 +130,12 @@ module.exports = async function handler(req, res) {
         paddleRedemptions: Number(paddleDiscount?.times_used || 0),
         enabledForCheckout: Boolean(paddleDiscount?.enabled_for_checkout),
         discountStatus: paddleDiscount?.status || null,
-        trackedConversions: (referrals || []).length,
+        trackedConversions: referrals.length,
         uniqueCustomers,
         paidConversions: paidCount,
         pendingConversions: pendingCount,
+        linkAttributedConversions,
+        discountedConversions,
       },
     });
   } catch (error) {

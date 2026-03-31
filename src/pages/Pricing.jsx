@@ -19,15 +19,63 @@ export default function Pricing() {
   const { user, signOut } = useAuth();
   const [paddleReady, setPaddleReady] = useState(false);
   const [paddleError, setPaddleError] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
   const [couponInput, setCouponInput] = useState('');
   const [coupon,      setCoupon]      = useState('');
   const [couponValid, setCouponValid] = useState(false);
   const [couponChecking, setCouponChecking] = useState(false);
   const [activePlan,  setActivePlan]  = useState(null);
 
+  const resolveAffiliateLink = useCallback(async (rawCode, { showAlert = false } = {}) => {
+    const code = sanitizeAffiliateCode(rawCode);
+    if (!code) return false;
+
+    setCouponChecking(true);
+    try {
+      const response = await fetch('/api/resolve-affiliate-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.active) {
+        throw new Error(payload?.error || 'This affiliate link is not active.');
+      }
+
+      const nextReferralCode = sanitizeAffiliateCode(payload?.referralCode || code);
+      persistAffiliateCode(nextReferralCode);
+      setReferralCode(nextReferralCode);
+
+      const nextCheckoutCode = sanitizeAffiliateCode(payload?.checkoutDiscountCode || '');
+      if (nextCheckoutCode) {
+        setCouponInput(nextCheckoutCode);
+        setCoupon(nextCheckoutCode);
+        setCouponValid(true);
+      } else {
+        setCoupon('');
+        setCouponValid(false);
+        setCouponInput('');
+      }
+
+      return true;
+    } catch (error) {
+      clearStoredAffiliateCode();
+      setReferralCode('');
+      setCoupon('');
+      setCouponValid(false);
+      if (showAlert) {
+        alert(error.message || 'This affiliate link is not active.');
+      }
+      return false;
+    } finally {
+      setCouponChecking(false);
+    }
+  }, []);
+
   const validateCouponCode = useCallback(async (rawCode, { showAlert = true } = {}) => {
     const code = sanitizeAffiliateCode(rawCode);
     if (!code) return false;
+    const existingReferralCode = sanitizeAffiliateCode(referralCode || readStoredAffiliateCode());
 
     setCouponChecking(true);
     try {
@@ -41,12 +89,18 @@ export default function Pricing() {
         throw new Error(payload?.error || 'This affiliate code is not live yet.');
       }
       persistAffiliateCode(code);
+      setReferralCode(code);
       setCouponInput(code);
       setCoupon(code);
       setCouponValid(true);
       return true;
     } catch (error) {
-      clearStoredAffiliateCode();
+      if (!existingReferralCode || existingReferralCode === code) {
+        clearStoredAffiliateCode();
+        setReferralCode('');
+      } else {
+        setReferralCode(existingReferralCode);
+      }
       setCoupon('');
       setCouponInput(code);
       setCouponValid(false);
@@ -57,15 +111,15 @@ export default function Pricing() {
     } finally {
       setCouponChecking(false);
     }
-  }, []);
+  }, [referralCode]);
 
   useEffect(() => {
     const capturedCode = captureAffiliateCodeFromSearch(window.location.search);
     const storedCode = capturedCode || readStoredAffiliateCode();
     if (!storedCode) return;
-    setCouponInput(storedCode);
-    validateCouponCode(storedCode, { showAlert: false });
-  }, [validateCouponCode]);
+    setReferralCode(storedCode);
+    resolveAffiliateLink(storedCode, { showAlert: false });
+  }, [resolveAffiliateLink]);
 
   useEffect(() => {
     const init = () => {
@@ -105,6 +159,7 @@ export default function Pricing() {
 
   const removeCode = () => {
     clearStoredAffiliateCode();
+    setReferralCode('');
     setCoupon('');
     setCouponInput('');
     setCouponValid(false);
@@ -118,24 +173,29 @@ export default function Pricing() {
     setActivePlan(planKey);
     const opts = { items: [{ priceId, quantity: 1 }] };
     if (user?.email) opts.customer = { email: user.email };
-    const affiliateCode = sanitizeAffiliateCode(coupon || readStoredAffiliateCode());
+    const affiliateCode = sanitizeAffiliateCode(referralCode || readStoredAffiliateCode());
+    const checkoutDiscountCode = sanitizeAffiliateCode(coupon);
     if (affiliateCode || user?.id) {
       opts.customData = {
         ...(affiliateCode ? { affiliate_code: affiliateCode } : {}),
+        ...(affiliateCode ? { affiliate_referral_code: affiliateCode } : {}),
+        ...(checkoutDiscountCode ? { checkout_discount_code: checkoutDiscountCode } : {}),
         ...(user?.id ? { fireledger_user_id: user.id } : {}),
       };
     }
     // Only apply discount to Monthly / Annual — not Lifetime
-    if (affiliateCode && planKey !== 'lifetime') opts.discountCode = affiliateCode;
+    if (checkoutDiscountCode && planKey !== 'lifetime') opts.discountCode = checkoutDiscountCode;
 
     try {
       window.Paddle.Checkout.open(opts);
     } catch (err) {
       console.error('Checkout error:', err);
       setActivePlan(null);
-      if (coupon) {
-        removeCode();
-        alert('Discount code could not be applied. Please try again.');
+      if (checkoutDiscountCode) {
+        setCoupon('');
+        setCouponValid(false);
+        setCouponInput('');
+        alert('There was an error applying your discount. Your affiliate link will still be credited if you continue from the referral page.');
       }
     }
     // Reset activePlan after a short delay so button doesn't stay stuck
