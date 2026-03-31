@@ -52,6 +52,17 @@ async function saveAffiliatePayout(payload) {
   return json;
 }
 
+async function loadAffiliateDiscountStats(userId) {
+  const res = await fetch('/api/affiliate-discount-stats', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || 'Could not load discount stats.');
+  return json?.stats || null;
+}
+
 async function ensureAffiliateProfile(user) {
   if (!user?.id || !user?.email) {
     throw new Error('Missing user details for affiliate setup.');
@@ -273,6 +284,7 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
   const [referrals, setReferrals]   = useState([]);
   const [loading,   setLoading]     = useState(true);
   const [copied,    setCopied]      = useState(false);
+  const [discountStats, setDiscountStats] = useState(null);
   const [codeDraft, setCodeDraft]   = useState(profile?.paddle_discount_code || profile?.referral_code || '');
   const [savingCode, setSavingCode] = useState(false);
   const [savingPayout, setSavingPayout] = useState(false);
@@ -291,6 +303,8 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
     : null;
   const activeCode = profile?.paddle_discount_code || profile?.referral_code || '';
   const paddleReady = Boolean(profile?.paddle_discount_code && profile?.paddle_discount_id);
+  const codeUsageCount = discountStats?.paddleRedemptions ?? 0;
+  const uniqueCustomers = discountStats?.uniqueCustomers ?? 0;
 
   useEffect(() => {
     setCodeDraft(profile?.paddle_discount_code || profile?.referral_code || '');
@@ -306,14 +320,18 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('affiliate_referrals')
-      .select('*')
-      .eq('affiliate_id', profile.id)
-      .order('created_at', { ascending: false });
+    const [{ data }, usageStats] = await Promise.all([
+      supabase
+        .from('affiliate_referrals')
+        .select('*')
+        .eq('affiliate_id', profile.id)
+        .order('created_at', { ascending: false }),
+      loadAffiliateDiscountStats(user.id).catch(() => null),
+    ]);
     setReferrals(data || []);
+    setDiscountStats(usageStats);
     setLoading(false);
-  }, [profile.id]);
+  }, [profile.id, user.id]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -322,7 +340,7 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
   const paidEarnings     = referrals.filter(r=>r.payout_status==='paid').reduce((s,r)=>s+(r.commission_amount||0),0);
   const pendingEarnings  = referrals.filter(r=>r.payout_status==='pending').reduce((s,r)=>s+(r.commission_amount||0),0);
   const totalReferrals   = referrals.length;
-  const activeReferrals  = referrals.filter(r=>r.status==='active').length;
+  const trackedConversions = discountStats?.trackedConversions ?? totalReferrals;
 
   // Rolling 6-month breakdown
   const monthlyData = (() => {
@@ -487,6 +505,16 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
             <div className="afd-sidebar-link-pending">
               Active code: {activeCode || 'Use your referral code or create a custom Paddle code here.'}
             </div>
+            <div className="afd-code-metrics">
+              <div className="afd-code-metric">
+                <span className="afd-code-metric-label">Paddle uses</span>
+                <span className="afd-code-metric-value">{fmtInt(codeUsageCount)}</span>
+              </div>
+              <div className="afd-code-metric">
+                <span className="afd-code-metric-label">Unique buyers</span>
+                <span className="afd-code-metric-value">{fmtInt(uniqueCustomers)}</span>
+              </div>
+            </div>
             <div className={`afd-provision-state ${paddleReady ? 'ready' : 'pending'}`}>
               {paddleReady ? 'Paddle discount active' : 'Paddle discount not live yet'}
             </div>
@@ -518,9 +546,9 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                   { label:'TOTAL EARNINGS',   value:`$${fmt(totalEarnings)}`,   accent:'var(--afd-accent2)' },
                   { label:'PAID OUT',          value:`$${fmt(paidEarnings)}`,    accent:'var(--afd-accent2)' },
                   { label:'PENDING',           value:`$${fmt(pendingEarnings)}`, accent:'var(--afd-accent2)' },
-                  { label:'TOTAL REFERRALS',   value:fmtInt(totalReferrals),    accent:'#f0f0f8' },
-                  { label:'ACTIVE SUBSCRIBERS',value:fmtInt(activeReferrals),  accent:'#f0f0f8' },
-                  { label:'COMMISSION RATE',   value:'30.00%',                   accent:'#f0f0f8' },
+                  { label:'TRACKED CONVERSIONS', value:fmtInt(trackedConversions), accent:'#f0f0f8' },
+                  { label:'UNIQUE BUYERS',     value:fmtInt(uniqueCustomers),   accent:'#f0f0f8' },
+                  { label:'CODE REDEMPTIONS',  value:fmtInt(codeUsageCount),    accent:'#f0f0f8' },
                 ].map(k=>(
                   <div key={k.label} className="afd-kpi">
                     <span className="afd-kpi-label">{k.label}</span>
@@ -654,6 +682,12 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                   <div className="afd-payout-callout-title">How this page works</div>
                   <p className="afd-payout-callout-body">
                     Add the payout destination you want us to use, check what has already been paid, and review what is still pending for the next payout run. Your active affiliate code stays attached here so payouts and attribution stay tied to the same profile.
+                  </p>
+                </div>
+                <div className="afd-payout-callout">
+                  <div className="afd-payout-callout-title">Code usage on your profile</div>
+                  <p className="afd-payout-callout-body">
+                    Your active code <strong>{activeCode || '—'}</strong> has been redeemed <strong>{fmtInt(codeUsageCount)}</strong> time(s) in Paddle and is currently tied to <strong>{fmtInt(uniqueCustomers)}</strong> unique buyer(s) in your tracked affiliate ledger.
                   </p>
                 </div>
                 <div className="afd-section-head">

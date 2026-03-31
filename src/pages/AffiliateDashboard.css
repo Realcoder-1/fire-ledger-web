@@ -462,6 +462,33 @@
   color: var(--afd-t3);
   font-style: italic;
 }
+.afd-code-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.afd-code-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--afd-border);
+}
+.afd-code-metric-label {
+  font-family: var(--afd-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--afd-t3);
+}
+.afd-code-metric-value {
+  font-family: var(--afd-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--afd-t1);
+}
 .afd-code-input {
   width: 100%;
   background: rgba(255,255,255,0.04);
