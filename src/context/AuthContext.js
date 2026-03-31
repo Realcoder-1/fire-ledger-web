@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { getAuthRedirectPath } from '../lib/affiliateReferral';
 
 const AuthContext = createContext({});
 
@@ -35,10 +36,21 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = () => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/app' } });
+  const buildRedirectUrl = (path) => `${window.location.origin}${path}`;
+
+  const signInWithGoogle = () => supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: buildRedirectUrl(getAuthRedirectPath('/app')) },
+  });
   const signInWithEmail = (email, password) => supabase.auth.signInWithPassword({ email, password });
-  const signUpWithEmail = (email, password) => supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + '/app' } });
-  const resetPassword = (email) => supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' });
+  const signUpWithEmail = (email, password) => supabase.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: buildRedirectUrl(getAuthRedirectPath('/app')) },
+  });
+  const resetPassword = (email) => supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: buildRedirectUrl(getAuthRedirectPath('/pricing')),
+  });
   const signOut = () => supabase.auth.signOut();
   const refreshSubscription = () => user && checkAccess(user);
 

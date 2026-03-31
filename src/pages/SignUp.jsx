@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getSignedInDestination } from '../lib/affiliateReferral';
 import './SignUp.css';
 
 export default function SignUp() {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail, user } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, user, hasSubscription } = useAuth();
   const navigate = useNavigate();
 
   const [mode,     setMode]     = useState('signup'); // signup | signin | forgot
@@ -15,10 +16,11 @@ export default function SignUp() {
   const [msg,      setMsg]      = useState('');
   const [loading,  setLoading]  = useState(false);
 
-  // Already signed in → go to pricing
+  // Already signed in → go to the correct destination for this auth flow
   useEffect(() => {
-    if (user) navigate('/pricing');
-  }, [user, navigate]);
+    if (!user) return;
+    navigate(getSignedInDestination({ hasSubscription }), { replace: true });
+  }, [user, hasSubscription, navigate]);
 
   const clearMessages = () => { setError(''); setMsg(''); };
 

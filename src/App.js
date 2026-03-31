@@ -11,7 +11,11 @@ import Refund from './pages/Refund';
 import SignUp from './pages/SignUp';
 import Affiliate from './pages/Affiliate';
 import AffiliateDashboard from './pages/AffiliateDashboard';
-import { captureAffiliateCodeFromSearch, hasAffiliateAuthIntent } from './lib/affiliateReferral';
+import {
+  captureAffiliateCodeFromSearch,
+  getSignedInDestination,
+  hasAffiliateAuthIntent,
+} from './lib/affiliateReferral';
 
 function ReferralCapture() {
   const location = useLocation();
@@ -39,14 +43,15 @@ function AppRoutes() {
   const { user, hasSubscription } = useAuth();
   const location = useLocation();
   const affiliateIntent = location.pathname.startsWith('/affiliate') || hasAffiliateAuthIntent();
+  const signedInDestination = getSignedInDestination({ hasSubscription, affiliateIntent });
   return (
     <>
       <ReferralCapture />
       <Routes>
         <Route path="/signup"    element={<SignUp />} />
-        <Route path="/"          element={user && hasSubscription ? <Navigate to={affiliateIntent ? "/affiliate/dashboard" : "/app"} /> : <Landing />} />
-        <Route path="/signin"    element={user ? <Navigate to={affiliateIntent ? "/affiliate/dashboard" : hasSubscription ? "/app" : "/pricing"} /> : <SignIn />} />
-        <Route path="/pricing"   element={hasSubscription ? <Navigate to={affiliateIntent ? "/affiliate/dashboard" : "/app"} /> : <Pricing />} />
+        <Route path="/"          element={user ? <Navigate to={signedInDestination} /> : <Landing />} />
+        <Route path="/signin"    element={user ? <Navigate to={signedInDestination} /> : <SignIn />} />
+        <Route path="/pricing"   element={user && hasSubscription ? <Navigate to={signedInDestination} /> : <Pricing />} />
         <Route path="/app"       element={<ProtectedRoute><AppDashboard /></ProtectedRoute>} />
         <Route path="/terms"     element={<Terms />} />
         <Route path="/privacy"   element={<Privacy />} />

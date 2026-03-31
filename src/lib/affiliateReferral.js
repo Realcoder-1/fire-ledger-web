@@ -48,3 +48,14 @@ export const clearAffiliateAuthIntent = () => {
   if (typeof window === 'undefined') return;
   window.sessionStorage.removeItem(AUTH_DESTINATION_KEY);
 };
+
+export const getAuthRedirectPath = (fallbackPath = '/app') =>
+  hasAffiliateAuthIntent() ? '/affiliate/dashboard' : fallbackPath;
+
+export const getSignedInDestination = ({ hasSubscription = false, affiliateIntent } = {}) => {
+  const wantsAffiliate =
+    typeof affiliateIntent === 'boolean' ? affiliateIntent : hasAffiliateAuthIntent();
+
+  if (wantsAffiliate) return '/affiliate/dashboard';
+  return hasSubscription ? '/app' : '/pricing';
+};

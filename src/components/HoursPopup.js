@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getSignedInDestination } from '../lib/affiliateReferral';
 import './HoursPopup.css';
 
 const WORK_HRS_PER_YEAR = 2080;
 
 export default function HoursPopup({ onClose }) {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, user } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, user, hasSubscription } = useAuth();
   const navigate = useNavigate();
 
   const [visible,    setVisible]    = useState(false);
@@ -33,9 +34,9 @@ export default function HoursPopup({ onClose }) {
   useEffect(() => {
     if (user && step === 'signin') {
       handleClose();
-      navigate('/pricing');
+      navigate(getSignedInDestination({ hasSubscription }), { replace: true });
     }
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hasSubscription, navigate, step, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClose = () => {
     setVisible(false);
@@ -55,7 +56,7 @@ export default function HoursPopup({ onClose }) {
   };
 
   const handleResultCTA = () => {
-    if (user) { handleClose(); navigate('/pricing'); }
+    if (user) { handleClose(); navigate(getSignedInDestination({ hasSubscription }), { replace: true }); }
     else setStep('signin');
   };
 

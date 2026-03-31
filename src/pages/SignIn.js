@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getSignedInDestination } from '../lib/affiliateReferral';
 
 import './SignIn.css';
 
@@ -17,8 +18,8 @@ export default function SignIn() {
   const [success,  setSuccess]  = useState('');
 
   useEffect(() => {
-    if (user && hasSubscription) navigate('/app');
-    else if (user) navigate('/pricing');
+    if (!user) return;
+    navigate(getSignedInDestination({ hasSubscription }), { replace: true });
   }, [user, hasSubscription, navigate]);
 
   const handleSubmit = async () => {
