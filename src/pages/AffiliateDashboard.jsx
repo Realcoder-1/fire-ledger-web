@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { sanitizeAffiliateCode } from '../lib/affiliateReferral';
+import {
+  clearAffiliateAuthIntent,
+  markAffiliateAuthIntent,
+  sanitizeAffiliateCode,
+} from '../lib/affiliateReferral';
 import './AffiliateDashboard.css';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -57,6 +62,7 @@ async function ensureAffiliateProfile(user) {
 
 // ── Auth screen ──────────────────────────────────────────────────────────────
 function AffiliateAuth({ onAuth }) {
+  const navigate = useNavigate();
   const [mode,     setMode]     = useState('signin'); // signin | signup | forgot
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -70,6 +76,7 @@ function AffiliateAuth({ onAuth }) {
   const handleGoogle = async () => {
     clear();
     setLoading(true);
+    markAffiliateAuthIntent();
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin + '/affiliate/dashboard' },
@@ -92,6 +99,7 @@ function AffiliateAuth({ onAuth }) {
         if (err) setError(err.message);
         else setMsg('Password reset link sent. Check your inbox.');
       } else if (mode === 'signup') {
+        markAffiliateAuthIntent();
         const referralCode = createAffiliateCode(name, email);
         const { data, error: err } = await supabase.auth.signUp({
           email,
@@ -115,6 +123,7 @@ function AffiliateAuth({ onAuth }) {
             }
             if (data.session) {
               onAuth(data.user);
+              navigate('/affiliate/dashboard', { replace: true });
               setLoading(false);
               return;
             }
@@ -123,9 +132,13 @@ function AffiliateAuth({ onAuth }) {
           setMode('signin');
         }
       } else {
+        markAffiliateAuthIntent();
         const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) { setError('Invalid email or password.'); }
-        else if (data?.user) { onAuth(data.user); }
+        else if (data?.user) {
+          onAuth(data.user);
+          navigate('/affiliate/dashboard', { replace: true });
+        }
       }
     } catch {
       setError('Something went wrong. Please try again.');
@@ -610,6 +623,7 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
 
 // ── Root component ───────────────────────────────────────────────────────────
 export default function AffiliateDashboard() {
+  const navigate = useNavigate();
   const [user,    setUser]    = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -617,6 +631,7 @@ export default function AffiliateDashboard() {
   const [setupError, setSetupError] = useState('');
 
   useEffect(() => {
+    markAffiliateAuthIntent();
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         await loadProfile(session.user);
@@ -667,9 +682,11 @@ export default function AffiliateDashboard() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    clearAffiliateAuthIntent();
     setUser(null);
     setProfile(null);
     setSetupError('');
+    navigate('/affiliate/dashboard', { replace: true });
   };
 
   if (loading || provisioning) return (

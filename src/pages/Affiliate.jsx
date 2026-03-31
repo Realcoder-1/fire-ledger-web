@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Affiliate.css';
+import { markAffiliateAuthIntent } from '../lib/affiliateReferral';
 
 const STATS = [
   { num: '30%', label: 'Commission per sale', color: '#52c98a' },
@@ -108,6 +109,7 @@ export default function Affiliate() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.platform) return;
+    markAffiliateAuthIntent();
     navigate('/affiliate/dashboard');
   };
 
@@ -129,7 +131,7 @@ export default function Affiliate() {
           <button className="aff-nav-link" onClick={() => navigate('/')}>Home</button>
           <button className="aff-nav-link" onClick={() => navigate('/pricing')}>Pricing</button>
         </div>
-        <button className="aff-nav-cta" onClick={() => { const el = document.getElementById('aff-apply'); el?.scrollIntoView({ behavior: 'smooth' }); }}>
+        <button className="aff-nav-cta" onClick={() => { markAffiliateAuthIntent(); const el = document.getElementById('aff-apply'); el?.scrollIntoView({ behavior: 'smooth' }); }}>
           Create account →
         </button>
       </nav>
@@ -157,7 +159,7 @@ export default function Affiliate() {
           </div>
 
           <div className="aff-hero-btns">
-            <button className="aff-btn-primary" onClick={() => navigate('/affiliate/dashboard')}>
+            <button className="aff-btn-primary" onClick={() => { markAffiliateAuthIntent(); navigate('/affiliate/dashboard'); }}>
               Create affiliate account →
             </button>
             <button className="aff-btn-ghost" onClick={() => document.getElementById('aff-how')?.scrollIntoView({ behavior: 'smooth' })}>
