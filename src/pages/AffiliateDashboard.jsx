@@ -515,12 +515,12 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
               {/* KPI row */}
               <div className="afd-kpi-grid">
                 {[
-                  { label:'TOTAL EARNINGS',   value:`$${fmt(totalEarnings)}`,   accent:'#52c98a' },
-                  { label:'PAID OUT',          value:`$${fmt(paidEarnings)}`,    accent:'#a78bfa' },
-                  { label:'PENDING',           value:`$${fmt(pendingEarnings)}`, accent:'#fbbf24' },
+                  { label:'TOTAL EARNINGS',   value:`$${fmt(totalEarnings)}`,   accent:'var(--afd-accent2)' },
+                  { label:'PAID OUT',          value:`$${fmt(paidEarnings)}`,    accent:'var(--afd-accent2)' },
+                  { label:'PENDING',           value:`$${fmt(pendingEarnings)}`, accent:'var(--afd-accent2)' },
                   { label:'TOTAL REFERRALS',   value:fmtInt(totalReferrals),    accent:'#f0f0f8' },
-                  { label:'ACTIVE SUBSCRIBERS',value:fmtInt(activeReferrals),  accent:'#60a5fa' },
-                  { label:'COMMISSION RATE',   value:'30.00%',                   accent:'#f472b6' },
+                  { label:'ACTIVE SUBSCRIBERS',value:fmtInt(activeReferrals),  accent:'#f0f0f8' },
+                  { label:'COMMISSION RATE',   value:'30.00%',                   accent:'#f0f0f8' },
                 ].map(k=>(
                   <div key={k.label} className="afd-kpi">
                     <span className="afd-kpi-label">{k.label}</span>
@@ -629,19 +629,19 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
           {tab==='payouts' && (
             <>
               <div className="afd-page-head">
-                <h1 className="afd-page-title">Payout History</h1>
-                <span className="afd-page-meta">Paid monthly on the 1st</span>
+                <h1 className="afd-page-title">Payouts</h1>
+                <span className="afd-page-meta">Store your payout destination and review what is next</span>
               </div>
 
               {/* Payout summary */}
               <div className="afd-kpi-grid" style={{ gridTemplateColumns:'repeat(3,1fr)' }}>
                 <div className="afd-kpi">
                   <span className="afd-kpi-label">TOTAL PAID</span>
-                  <span className="afd-kpi-value" style={{ color:'#52c98a' }}>${fmt(paidEarnings)}</span>
+                  <span className="afd-kpi-value" style={{ color:'var(--afd-accent2)' }}>${fmt(paidEarnings)}</span>
                 </div>
                 <div className="afd-kpi">
                   <span className="afd-kpi-label">PENDING (NEXT PAYOUT)</span>
-                  <span className="afd-kpi-value" style={{ color:'#fbbf24' }}>${fmt(pendingEarnings)}</span>
+                  <span className="afd-kpi-value" style={{ color:'var(--afd-accent2)' }}>${fmt(pendingEarnings)}</span>
                 </div>
                 <div className="afd-kpi">
                   <span className="afd-kpi-label">MINIMUM PAYOUT THRESHOLD</span>
@@ -650,6 +650,12 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
               </div>
 
               <div className="afd-section">
+                <div className="afd-payout-callout">
+                  <div className="afd-payout-callout-title">How this page works</div>
+                  <p className="afd-payout-callout-body">
+                    Add the payout destination you want us to use, check what has already been paid, and review what is still pending for the next payout run. Your active affiliate code stays attached here so payouts and attribution stay tied to the same profile.
+                  </p>
+                </div>
                 <div className="afd-section-head">
                   <span className="afd-section-title">PAYOUT METHOD</span>
                 </div>

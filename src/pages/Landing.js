@@ -258,7 +258,7 @@ function AffiliateBanner() {
             <div className="affbanner-card-stats">
               {[{val:'$214',label:'total earned',color:'#52c98a'},{val:'14',label:'referrals',color:'#a78bfa'},{val:'8.3%',label:'conversion',color:'#fbbf24'}].map(s=>(
                 <div key={s.label} className="affbanner-card-stat">
-                  <span style={{ color:s.color,fontFamily:'Playfair Display,serif',fontSize:20,fontWeight:900 }}>{s.val}</span>
+                  <span style={{ color:s.color,fontFamily:'IBM Plex Sans, sans-serif',fontSize:20,fontWeight:700,letterSpacing:'-0.4px' }}>{s.val}</span>
                   <span style={{ fontSize:10,color:'#55557a' }}>{s.label}</span>
                 </div>
               ))}
@@ -541,6 +541,7 @@ export default function Landing() {
             <p>A few years ago, I sat down and tried to answer a simple question: <strong>when can I actually stop working?</strong></p>
             <p>Not a vague number. Not a retirement calculator that assumed I'd spend 40 years at one salary. The real answer — based on what I actually earn, what I actually spend, and what I've actually saved.</p>
             <p>Every tool I found either required a finance degree to understand, gave me a number with no context, or was so generic it was useless. None of them told me whether I was on pace. None told me what my discretionary spending was costing me in years of my life.</p>
+            <p>As someone working professionally in finance and accountable to a certified professional body, I wanted the logic behind it to be rigorous enough to stand up beyond internet-level advice.</p>
             <p>So I built FIRE Ledger. For myself. Then I realised others had been asking the same question for years — and had no honest answer. So I decided to share it.</p>
           </div>
           <div className="story-quote">

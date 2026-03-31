@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* ── Root ───────────────────────────────────────────── */
 .aff-page {
@@ -116,8 +116,8 @@
   display: flex; flex-direction: column; gap: 4px;
 }
 .aff-stat-num {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px; font-weight: 900; letter-spacing: -0.5px; line-height: 1;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 24px; font-weight: 700; letter-spacing: -0.6px; line-height: 1;
 }
 .aff-stat-label { font-size: 11px; color: #55557a; line-height: 1.4; }
 
@@ -143,17 +143,18 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   gap: 10px;
+  width: min(1200px, calc(100% - 96px));
   margin: -22px auto 0;
-  width: fit-content;
+  padding-right: 44px;
 }
 .aff-funnel-arrow-btn {
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   border-radius: 999px;
-  border: 1px solid rgba(167,139,250,0.24);
-  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(167,139,250,0.42);
+  background: rgba(167,139,250,0.08);
   color: #a78bfa;
   display: flex;
   align-items: center;
@@ -161,25 +162,25 @@
   position: relative;
   cursor: pointer;
   transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 0 18px rgba(167,139,250,0.08);
+  box-shadow: 0 0 28px rgba(167,139,250,0.18);
 }
 .aff-funnel-arrow-btn:hover {
   transform: translateY(2px);
-  border-color: rgba(167,139,250,0.5);
-  background: rgba(167,139,250,0.08);
-  box-shadow: 0 0 30px rgba(167,139,250,0.16);
+  border-color: rgba(167,139,250,0.7);
+  background: rgba(167,139,250,0.14);
+  box-shadow: 0 0 40px rgba(167,139,250,0.28);
 }
 .aff-funnel-arrow-line {
   position: absolute;
-  top: -38px;
+  top: -46px;
   left: 50%;
   transform: translateX(-50%);
   width: 1px;
-  height: 32px;
+  height: 38px;
   background: linear-gradient(180deg, rgba(167,139,250,0), rgba(167,139,250,0.4));
 }
 .aff-funnel-arrow-icon {
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1;
 }
 .aff-funnel-arrow-label {
@@ -187,8 +188,9 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: #55557a;
-  text-align: center;
+  color: #7f74ad;
+  text-align: right;
+  max-width: 180px;
 }
 
 /* ── Mock Dashboard ──────────────────────────────────── */
@@ -227,8 +229,8 @@
   display: flex; flex-direction: column; gap: 4px;
 }
 .aff-dash-stat-val {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px; font-weight: 900; letter-spacing: -0.5px; line-height: 1;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 19px; font-weight: 700; letter-spacing: -0.4px; line-height: 1;
 }
 .aff-dash-stat-label { font-size: 10px; color: #55557a; }
 
@@ -328,9 +330,15 @@
   padding: 3px 14px; border-radius: 100px; white-space: nowrap;
 }
 .aff-comm-plan { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #55557a; }
-.aff-comm-price { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; letter-spacing: -1px; color: #f0f0f8; }
+.aff-comm-price {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  color: #f0f0f8;
+}
 .aff-comm-arrow { font-size: 16px; color: #55557a; }
-.aff-comm-earn { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+.aff-comm-earn { font-family: 'IBM Plex Sans', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.6px; }
 .aff-comm-label { font-size: 11px; color: #55557a; text-transform: uppercase; letter-spacing: 0.8px; }
 .aff-comm-tag {
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
@@ -377,10 +385,10 @@
   color: #55557a;
 }
 .aff-earnings-highlight-value {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: -1px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
   color: #f0f0f8;
   line-height: 1;
 }
@@ -409,9 +417,9 @@
   color: #55557a;
 }
 .aff-earnings-slider-value {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 900;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
   color: #f0f0f8;
   line-height: 1;
 }
@@ -449,10 +457,10 @@
   color: #55557a;
 }
 .aff-earnings-card-value {
-  font-family: 'Playfair Display', serif;
-  font-size: 30px;
-  font-weight: 900;
-  letter-spacing: -1px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.7px;
   line-height: 1;
 }
 .aff-earnings-card-sub {
@@ -663,6 +671,7 @@
   .aff-nav { padding: 16px 24px; }
   .aff-nav-links { display: none; }
   .aff-hero { padding: 40px 24px 56px; }
+  .aff-funnel-arrow-wrap { width: calc(100% - 48px); padding-right: 0; }
   .aff-section { padding: 60px 24px; }
   .aff-steps-grid { grid-template-columns: 1fr 1fr; }
   .aff-commission-grid { grid-template-columns: 1fr; max-width: 340px; margin-left: auto; margin-right: auto; }
@@ -679,7 +688,8 @@
   .aff-stats-strip { grid-template-columns: 1fr 1fr; }
   .aff-steps-grid { grid-template-columns: 1fr; }
   .aff-promo-grid { grid-template-columns: 1fr; }
-  .aff-funnel-arrow-label { max-width: 180px; }
+  .aff-funnel-arrow-wrap { align-items: center; }
+  .aff-funnel-arrow-label { max-width: 180px; text-align: center; }
 }/* ═══════════════════════════════════════════════════════
    APPEND TO BOTTOM OF Landing.css
    New sections: scroll arrow, when-section, sixmonth,
