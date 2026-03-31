@@ -150,24 +150,29 @@ module.exports = async function handler(req, res) {
     await ensureCodeAvailable(supabase, requestedCode, userId);
 
     let paddleDiscount;
+    let paddleError = null;
     if (getPaddleApiKey()) {
-      const discountPayload = buildDiscountPayload({
-        code: requestedCode,
-        email,
-        fullName,
-        userId,
-      });
+      try {
+        const discountPayload = buildDiscountPayload({
+          code: requestedCode,
+          email,
+          fullName,
+          userId,
+        });
 
-      if (existingProfile?.paddle_discount_id) {
-        paddleDiscount = await paddleRequest(`/discounts/${existingProfile.paddle_discount_id}`, {
-          method: 'PATCH',
-          body: discountPayload,
-        });
-      } else {
-        paddleDiscount = await paddleRequest('/discounts', {
-          method: 'POST',
-          body: discountPayload,
-        });
+        if (existingProfile?.paddle_discount_id) {
+          paddleDiscount = await paddleRequest(`/discounts/${existingProfile.paddle_discount_id}`, {
+            method: 'PATCH',
+            body: discountPayload,
+          });
+        } else {
+          paddleDiscount = await paddleRequest('/discounts', {
+            method: 'POST',
+            body: discountPayload,
+          });
+        }
+      } catch (error) {
+        paddleError = error.message || 'Paddle discount provisioning failed.';
       }
     }
 
@@ -184,6 +189,7 @@ module.exports = async function handler(req, res) {
       profile,
       paddleDiscount,
       paddleConfigured: Boolean(getPaddleApiKey()),
+      paddleError,
     });
   } catch (error) {
     console.error('create-affiliate-code error:', error);

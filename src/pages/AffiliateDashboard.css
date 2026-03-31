@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* ═══════════════════════════════════════════════════
    FIRE Ledger — Affiliate Portal
    Aesthetic: institutional terminal · precision data
-   Font logic: Playfair for brand · DM Sans for UI ·
+   Font logic: IBM Plex Sans for brand + UI ·
                IBM Plex Mono for all numbers + codes
    ═══════════════════════════════════════════════════ */
 
@@ -23,8 +23,8 @@
   --afd-blue:      #60a5fa;
   --afd-pink:      #f472b6;
   --afd-mono:      'IBM Plex Mono', monospace;
-  --afd-sans:      'DM Sans', sans-serif;
-  --afd-serif:     'Playfair Display', serif;
+  --afd-sans:      'IBM Plex Sans', sans-serif;
+  --afd-serif:     'IBM Plex Sans', sans-serif;
   --afd-sidebar-w: 220px;
   --afd-header-h:  52px;
 }
@@ -69,6 +69,7 @@
   font-family: var(--afd-serif);
   font-size: 18px;
   font-weight: 700;
+  letter-spacing: -0.3px;
   color: var(--afd-t1);
   margin-bottom: 24px;
   display: flex;
@@ -121,7 +122,7 @@
   font-size: 22px;
   font-weight: 700;
   color: var(--afd-t1);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.8px;
   margin-bottom: 6px;
 }
 .afd-auth-sub {
@@ -329,6 +330,7 @@
   font-family: var(--afd-serif);
   font-size: 16px;
   font-weight: 700;
+  letter-spacing: -0.3px;
   color: var(--afd-t1);
 }
 .afd-logo span { color: var(--afd-purple); }
@@ -489,6 +491,25 @@
 .afd-copy-btn:hover { background: rgba(167,139,250,0.18); }
 .afd-copy-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
+.afd-provision-state {
+  font-family: var(--afd-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--afd-border);
+}
+.afd-provision-state.ready {
+  color: var(--afd-green);
+  background: rgba(82,201,138,0.08);
+  border-color: rgba(82,201,138,0.22);
+}
+.afd-provision-state.pending {
+  color: var(--afd-yellow);
+  background: rgba(251,191,36,0.08);
+  border-color: rgba(251,191,36,0.22);
+}
+
 .afd-sidebar-footer { margin-top: auto; padding: 12px; }
 .afd-support-link {
   font-family: var(--afd-mono);
@@ -519,9 +540,9 @@
 }
 .afd-page-title {
   font-family: var(--afd-serif);
-  font-size: 26px;
+  font-size: 25px;
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.9px;
   color: var(--afd-t1);
 }
 .afd-page-meta {
@@ -797,6 +818,32 @@
   padding: 4px 2px;
 }
 .afd-payout-note a { color: var(--afd-purple); }
+
+.afd-payout-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.afd-payout-form {
+  background: var(--afd-surface);
+  border: 1px solid var(--afd-border);
+  border-radius: 10px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.afd-textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+
+.afd-inline-submit {
+  width: auto;
+  min-width: 220px;
+}
 
 /* ── Responsive ── */
 @media (max-width: 900px) {

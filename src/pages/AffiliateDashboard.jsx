@@ -41,6 +41,17 @@ async function provisionAffiliateCode(payload) {
   return json;
 }
 
+async function saveAffiliatePayout(payload) {
+  const res = await fetch('/api/update-affiliate-payout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || 'Could not save payout details.');
+  return json;
+}
+
 async function ensureAffiliateProfile(user) {
   if (!user?.id || !user?.email) {
     throw new Error('Missing user details for affiliate setup.');
@@ -264,16 +275,34 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
   const [copied,    setCopied]      = useState(false);
   const [codeDraft, setCodeDraft]   = useState(profile?.paddle_discount_code || profile?.referral_code || '');
   const [savingCode, setSavingCode] = useState(false);
+  const [savingPayout, setSavingPayout] = useState(false);
+  const [paddleSyncing, setPaddleSyncing] = useState(false);
+  const [payoutForm, setPayoutForm] = useState({
+    payout_method: profile?.payout_method || 'PayPal',
+    payout_email: profile?.payout_email || user?.email || '',
+    notes: profile?.notes || '',
+  });
   const [tab,       setTab]         = useState('overview'); // overview | ledger | payouts
-
+  const publicBaseUrl =
+    process.env.REACT_APP_PUBLIC_SITE_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : 'https://fire-ledger-web.vercel.app');
   const refLink = profile?.referral_code
-    ? `https://fireledger.app/?ref=${profile.referral_code}`
+    ? `${publicBaseUrl.replace(/\/$/, '')}/?ref=${profile.referral_code}`
     : null;
   const activeCode = profile?.paddle_discount_code || profile?.referral_code || '';
+  const paddleReady = Boolean(profile?.paddle_discount_code && profile?.paddle_discount_id);
 
   useEffect(() => {
     setCodeDraft(profile?.paddle_discount_code || profile?.referral_code || '');
   }, [profile?.paddle_discount_code, profile?.referral_code]);
+
+  useEffect(() => {
+    setPayoutForm({
+      payout_method: profile?.payout_method || 'PayPal',
+      payout_email: profile?.payout_email || user?.email || '',
+      notes: profile?.notes || '',
+    });
+  }, [profile?.payout_method, profile?.payout_email, profile?.notes, user?.email]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -329,10 +358,13 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
       });
       onProfileUpdate({
         ...profile,
-        referral_code: result.profile?.referral_code || profile.referral_code,
-        paddle_discount_code: result.profile?.paddle_discount_code || nextCode,
+        referral_code: result.profile?.referral_code || nextCode,
+        paddle_discount_code: result.profile?.paddle_discount_code || profile?.paddle_discount_code || null,
         paddle_discount_id: result.profile?.paddle_discount_id || profile?.paddle_discount_id,
       });
+      if (result.paddleError) {
+        alert(`Code saved in FIRE Ledger, but Paddle has not activated it yet: ${result.paddleError}`);
+      }
     } catch (error) {
       alert(error.message);
       return;
@@ -340,6 +372,60 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
       setSavingCode(false);
     }
   };
+
+  const syncPaddleCode = useCallback(async (preferredCode = codeDraft || activeCode, { silent = false } = {}) => {
+    const nextCode = sanitizeCode(preferredCode);
+    if (!nextCode) return;
+    setPaddleSyncing(true);
+    try {
+      const result = await provisionAffiliateCode({
+        userId: user.id,
+        email: user.email,
+        fullName: profile?.full_name || user.email,
+        preferredCode: nextCode,
+      });
+      onProfileUpdate({
+        ...profile,
+        referral_code: result.profile?.referral_code || nextCode,
+        paddle_discount_code: result.profile?.paddle_discount_code || profile?.paddle_discount_code || null,
+        paddle_discount_id: result.profile?.paddle_discount_id || profile?.paddle_discount_id || null,
+      });
+      if (result.paddleError && !silent) {
+        alert(`Paddle has not activated this discount yet: ${result.paddleError}`);
+      }
+    } catch (error) {
+      if (!silent) alert(error.message);
+    } finally {
+      setPaddleSyncing(false);
+    }
+  }, [activeCode, codeDraft, onProfileUpdate, profile, user.id, user.email]);
+
+  const savePayoutDetails = async () => {
+    setSavingPayout(true);
+    try {
+      const result = await saveAffiliatePayout({
+        userId: user.id,
+        payoutMethod: payoutForm.payout_method,
+        payoutEmail: payoutForm.payout_email,
+        notes: payoutForm.notes,
+      });
+      onProfileUpdate(result.profile || {
+        ...profile,
+        payout_method: payoutForm.payout_method,
+        payout_email: payoutForm.payout_email,
+        notes: payoutForm.notes,
+      });
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setSavingPayout(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!profile?.referral_code || paddleReady || paddleSyncing) return;
+    syncPaddleCode(profile.referral_code, { silent: true });
+  }, [profile?.referral_code, paddleReady, paddleSyncing, syncPaddleCode]);
 
   return (
     <div className="afd-page">
@@ -401,6 +487,14 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
             <div className="afd-sidebar-link-pending">
               Active code: {activeCode || 'Use your referral code or create a custom Paddle code here.'}
             </div>
+            <div className={`afd-provision-state ${paddleReady ? 'ready' : 'pending'}`}>
+              {paddleReady ? 'Paddle discount active' : 'Paddle discount not live yet'}
+            </div>
+            {!paddleReady && (
+              <button className="afd-copy-btn" onClick={() => syncPaddleCode(activeCode)} disabled={paddleSyncing || !activeCode}>
+                {paddleSyncing ? 'SYNCING…' : 'SYNC WITH PADDLE'}
+              </button>
+            )}
           </div>
           <div className="afd-sidebar-footer">
             <a href="mailto:thimbleforgeapps@gmail.com" className="afd-support-link">Support</a>
@@ -569,6 +663,10 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                     <span className="afd-payout-method-val">{profile?.payout_method || 'PayPal / Bank Transfer'}</span>
                   </div>
                   <div className="afd-payout-method-row">
+                    <span className="afd-payout-method-label">PAYOUT DESTINATION</span>
+                    <span className="afd-payout-method-val">{profile?.payout_email || 'Add your payout destination below'}</span>
+                  </div>
+                  <div className="afd-payout-method-row">
                     <span className="afd-payout-method-label">PAYOUT SCHEDULE</span>
                     <span className="afd-payout-method-val">Monthly — 1st of each month</span>
                   </div>
@@ -577,8 +675,50 @@ function Dashboard({ user, profile, onSignOut, onProfileUpdate }) {
                     <span className="afd-payout-method-val">{activeCode || 'Set a custom code in the sidebar'}</span>
                   </div>
                 </div>
+                <div className="afd-payout-settings">
+                  <div className="afd-section-head">
+                    <span className="afd-section-title">UPDATE PAYOUT DETAILS</span>
+                  </div>
+                  <div className="afd-payout-form">
+                    <div className="afd-field">
+                      <label className="afd-label">Payout method</label>
+                      <select
+                        className="afd-input"
+                        value={payoutForm.payout_method}
+                        onChange={e => setPayoutForm(prev => ({ ...prev, payout_method: e.target.value }))}
+                      >
+                        <option value="PayPal">PayPal</option>
+                        <option value="Wise">Wise</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                      </select>
+                    </div>
+                    <div className="afd-field">
+                      <label className="afd-label">Payout email or account</label>
+                      <input
+                        className="afd-input"
+                        type="text"
+                        value={payoutForm.payout_email}
+                        onChange={e => setPayoutForm(prev => ({ ...prev, payout_email: e.target.value }))}
+                        placeholder="PayPal email or bank reference"
+                      />
+                    </div>
+                    <div className="afd-field">
+                      <label className="afd-label">Payout notes</label>
+                      <textarea
+                        className="afd-input afd-textarea"
+                        rows={3}
+                        value={payoutForm.notes || ''}
+                        onChange={e => setPayoutForm(prev => ({ ...prev, notes: e.target.value }))}
+                        placeholder="Bank name, routing reference, Wise handle, or payout notes"
+                      />
+                    </div>
+                    <button className="afd-submit afd-inline-submit" type="button" onClick={savePayoutDetails} disabled={savingPayout}>
+                      {savingPayout ? 'Saving…' : 'Save payout details →'}
+                    </button>
+                  </div>
+                </div>
                 <p className="afd-payout-note">
-                  To update your payout method or details, contact <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a> with your registered email.
+                  Save your payout method here so your affiliate account is ready when payouts are processed. Contact <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a> only if you need payout support.
                 </p>
                 <p className="afd-payout-note">
                   Your code is provisioned automatically in Paddle and attached to your affiliate profile for checkout and webhook attribution.
