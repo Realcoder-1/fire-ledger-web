@@ -72,7 +72,7 @@
   display: flex;
   align-items: flex-start;
   gap: 64px;
-  padding: 80px 48px 100px;
+  padding: 56px 48px 88px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -137,6 +137,59 @@
   font-family: 'DM Sans', sans-serif; font-size: 15px; cursor: pointer; transition: all 0.2s;
 }
 .aff-btn-ghost:hover { border-color: #a78bfa; color: #a78bfa; }
+
+.aff-funnel-arrow-wrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: -22px auto 0;
+  width: fit-content;
+}
+.aff-funnel-arrow-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(167,139,250,0.24);
+  background: rgba(255,255,255,0.03);
+  color: #a78bfa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 18px rgba(167,139,250,0.08);
+}
+.aff-funnel-arrow-btn:hover {
+  transform: translateY(2px);
+  border-color: rgba(167,139,250,0.5);
+  background: rgba(167,139,250,0.08);
+  box-shadow: 0 0 30px rgba(167,139,250,0.16);
+}
+.aff-funnel-arrow-line {
+  position: absolute;
+  top: -38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 32px;
+  background: linear-gradient(180deg, rgba(167,139,250,0), rgba(167,139,250,0.4));
+}
+.aff-funnel-arrow-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.aff-funnel-arrow-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #55557a;
+  text-align: center;
+}
 
 /* ── Mock Dashboard ──────────────────────────────────── */
 .aff-hero-dash {
@@ -569,6 +622,8 @@
 .aff-faq-q:hover { color: #a78bfa; }
 .aff-faq-chevron { font-size: 20px; font-weight: 300; color: #55557a; flex-shrink: 0; }
 .aff-faq-a { font-size: 14px; color: #8888aa; line-height: 1.85; padding: 0 0 22px; max-width: 600px; }
+.aff-faq-a a { color: #a78bfa; text-decoration: none; }
+.aff-faq-a a:hover { color: #f472b6; }
 
 .aff-bottom-cta-section {
   border-top: 1px solid rgba(255,255,255,0.05);
@@ -607,7 +662,7 @@
 @media (max-width: 768px) {
   .aff-nav { padding: 16px 24px; }
   .aff-nav-links { display: none; }
-  .aff-hero { padding: 48px 24px 64px; }
+  .aff-hero { padding: 40px 24px 56px; }
   .aff-section { padding: 60px 24px; }
   .aff-steps-grid { grid-template-columns: 1fr 1fr; }
   .aff-commission-grid { grid-template-columns: 1fr; max-width: 340px; margin-left: auto; margin-right: auto; }
@@ -624,6 +679,7 @@
   .aff-stats-strip { grid-template-columns: 1fr 1fr; }
   .aff-steps-grid { grid-template-columns: 1fr; }
   .aff-promo-grid { grid-template-columns: 1fr; }
+  .aff-funnel-arrow-label { max-width: 180px; }
 }/* ═══════════════════════════════════════════════════════
    APPEND TO BOTTOM OF Landing.css
    New sections: scroll arrow, when-section, sixmonth,

@@ -30,6 +30,15 @@ const FAQS = [
   { q: 'Can I use paid ads?', a: 'Yes, but you cannot bid on branded keywords (FIRE Ledger, FIRELedger, fireledger.app). Violating this results in immediate termination.' },
   { q: 'Is there a minimum audience size to join?', a: 'No. We care more about relevance than size. A niche FIRE blog with 500 readers is a better fit than a generic finance account with 50k followers.' },
   { q: 'Do referrals stack if the same person upgrades?', a: 'Yes. If someone buys Lifetime through your link and later upgrades to Annual, you earn commission on both transactions.' },
+  {
+    q: 'How can I contact you about the affiliate program?',
+    a: (
+      <>
+        Reach out any time at <a href="mailto:thimbleforgeapps@gmail.com">thimbleforgeapps@gmail.com</a>.
+        You can also message on <a href="https://www.instagram.com/fire_ledger/" target="_blank" rel="noreferrer">Instagram</a> or <a href="https://x.com/Fireledger01" target="_blank" rel="noreferrer">X / Twitter</a>.
+      </>
+    ),
+  },
 ];
 
 const PLAN_PAYOUTS = [
@@ -107,6 +116,23 @@ function MockDashboard() {
   );
 }
 
+function FunnelArrow({ label, targetId }) {
+  const handleClick = () => {
+    const element = document.getElementById(targetId);
+    element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  return (
+    <div className="aff-funnel-arrow-wrap">
+      <button className="aff-funnel-arrow-btn" type="button" onClick={handleClick} aria-label={label}>
+        <span className="aff-funnel-arrow-line" />
+        <span className="aff-funnel-arrow-icon">↓</span>
+      </button>
+      <span className="aff-funnel-arrow-label">{label}</span>
+    </div>
+  );
+}
+
 export default function Affiliate() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -153,20 +179,6 @@ export default function Affiliate() {
         <div className="aff-grid" />
       </div>
 
-      {/* ── Nav ── */}
-      <nav className="aff-nav">
-        <div className="aff-nav-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          FIRE<span>Ledger</span>
-        </div>
-        <div className="aff-nav-links">
-          <button className="aff-nav-link" onClick={() => navigate('/')}>Home</button>
-          <button className="aff-nav-link" onClick={() => navigate('/pricing')}>Pricing</button>
-        </div>
-        <button className="aff-nav-cta" onClick={scrollToJoin}>
-          Create account →
-        </button>
-      </nav>
-
       {/* ── Hero ── */}
       <section className="aff-hero">
         <div className="aff-hero-inner">
@@ -205,6 +217,8 @@ export default function Affiliate() {
         </div>
       </section>
 
+      <FunnelArrow label="See how the funnel works" targetId="aff-how" />
+
       {/* ── How it works ── */}
       <section className="aff-section" id="aff-how">
         <div className="aff-section-inner">
@@ -222,8 +236,10 @@ export default function Affiliate() {
         </div>
       </section>
 
+      <FunnelArrow label="See what the commissions can become" targetId="aff-earnings" />
+
       {/* ── Commission breakdown ── */}
-      <section className="aff-section aff-section-dark">
+      <section className="aff-section aff-section-dark" id="aff-earnings">
         <div className="aff-section-inner">
           <span className="aff-section-eyebrow">What you earn</span>
           <h2 className="aff-section-title">30% on every plan. Forever.</h2>
@@ -300,8 +316,10 @@ export default function Affiliate() {
         </div>
       </section>
 
+      <FunnelArrow label="See where your audience fits" targetId="aff-promo" />
+
       {/* ── Who it's for ── */}
-      <section className="aff-section">
+      <section className="aff-section" id="aff-promo">
         <div className="aff-section-inner">
           <span className="aff-section-eyebrow">Who promotes us</span>
           <h2 className="aff-section-title">If your audience cares about money,<br />they care about this.</h2>
@@ -316,6 +334,8 @@ export default function Affiliate() {
           </div>
         </div>
       </section>
+
+      <FunnelArrow label="Go to create your affiliate account" targetId="aff-apply" />
 
       {/* ── Join CTA ── */}
       <section className="aff-section aff-section-dark" id="aff-apply">
@@ -368,8 +388,10 @@ export default function Affiliate() {
         </div>
       </section>
 
+      <FunnelArrow label="Check the final questions before joining" targetId="aff-faq" />
+
       {/* ── FAQ ── */}
-      <section className="aff-section">
+      <section className="aff-section" id="aff-faq">
         <div className="aff-section-inner aff-faq-inner">
           <span className="aff-section-eyebrow">Questions</span>
           <h2 className="aff-section-title">Before you join</h2>
