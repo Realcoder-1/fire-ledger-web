@@ -3,6 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './Affiliate.css';
 import { markAffiliateAuthIntent } from '../lib/affiliateReferral';
 
+const formatReferralCount = (value) => new Intl.NumberFormat('en-US').format(value);
+const formatCurrency = (value, suffix = '') => `$${new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format(value)}${suffix}`;
+
 const STATS = [
   { num: '30%', label: 'Commission per sale', color: '#52c98a' },
   { num: '$1.50', label: 'Per lifetime referral', color: '#a78bfa' },
@@ -137,7 +143,7 @@ export default function Affiliate() {
   const navigate = useNavigate();
   const location = useLocation();
   const [openFaq, setOpenFaq] = useState(null);
-  const [monthlyReferrals, setMonthlyReferrals] = useState(12);
+  const [monthlyReferrals, setMonthlyReferrals] = useState(1000);
 
   useEffect(() => {
     const targetId = location.hash.replace('#', '');
@@ -271,39 +277,39 @@ export default function Affiliate() {
               </div>
               <div className="aff-earnings-highlight">
                 <span className="aff-earnings-highlight-label">Blended example</span>
-                <span className="aff-earnings-highlight-value">${blendedMonthly.toFixed(2)}/mo</span>
-                <span className="aff-earnings-highlight-sub">${blendedAnnual.toFixed(0)}/yr at this pace</span>
+                <span className="aff-earnings-highlight-value">{formatCurrency(blendedMonthly, '/mo')}</span>
+                <span className="aff-earnings-highlight-sub">{formatCurrency(blendedAnnual, '/yr')} at this pace</span>
               </div>
             </div>
 
             <div className="aff-earnings-slider-card">
               <div className="aff-earnings-slider-top">
                 <span className="aff-earnings-slider-label">Paying referrals per month</span>
-                <span className="aff-earnings-slider-value">{monthlyReferrals}</span>
+                <span className="aff-earnings-slider-value">{formatReferralCount(monthlyReferrals)}</span>
               </div>
               <input
                 className="aff-earnings-slider"
                 type="range"
-                min="1"
-                max="100"
-                step="1"
+                min="0"
+                max="100000"
+                step="100"
                 value={monthlyReferrals}
                 onChange={e => setMonthlyReferrals(Number(e.target.value))}
               />
               <div className="aff-earnings-slider-scale">
-                <span>1</span>
-                <span>25</span>
-                <span>50</span>
-                <span>75</span>
-                <span>100</span>
+                <span>0</span>
+                <span>25k</span>
+                <span>50k</span>
+                <span>75k</span>
+                <span>100k</span>
               </div>
             </div>
 
             <div className="aff-earnings-grid">
               {[
-                { label: PLAN_PAYOUTS[0].label, value: `$${lifetimeProjection.toFixed(2)}`, sub: PLAN_PAYOUTS[0].suffix, color: PLAN_PAYOUTS[0].color },
-                { label: PLAN_PAYOUTS[1].label, value: `$${monthlyProjection.toFixed(2)}/mo`, sub: PLAN_PAYOUTS[1].suffix, color: PLAN_PAYOUTS[1].color },
-                { label: PLAN_PAYOUTS[2].label, value: `$${annualProjection.toFixed(2)}`, sub: PLAN_PAYOUTS[2].suffix, color: PLAN_PAYOUTS[2].color },
+                { label: PLAN_PAYOUTS[0].label, value: formatCurrency(lifetimeProjection), sub: PLAN_PAYOUTS[0].suffix, color: PLAN_PAYOUTS[0].color },
+                { label: PLAN_PAYOUTS[1].label, value: formatCurrency(monthlyProjection, '/mo'), sub: PLAN_PAYOUTS[1].suffix, color: PLAN_PAYOUTS[1].color },
+                { label: PLAN_PAYOUTS[2].label, value: formatCurrency(annualProjection), sub: PLAN_PAYOUTS[2].suffix, color: PLAN_PAYOUTS[2].color },
               ].map(card => (
                 <div key={card.label} className="aff-earnings-card">
                   <span className="aff-earnings-card-label">{card.label}</span>

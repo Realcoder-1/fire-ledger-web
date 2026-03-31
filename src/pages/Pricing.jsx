@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './Pricing.css';
 import {
@@ -22,16 +22,50 @@ export default function Pricing() {
   const [couponInput, setCouponInput] = useState('');
   const [coupon,      setCoupon]      = useState('');
   const [couponValid, setCouponValid] = useState(false);
+  const [couponChecking, setCouponChecking] = useState(false);
   const [activePlan,  setActivePlan]  = useState(null);
+
+  const validateCouponCode = useCallback(async (rawCode, { showAlert = true } = {}) => {
+    const code = sanitizeAffiliateCode(rawCode);
+    if (!code) return false;
+
+    setCouponChecking(true);
+    try {
+      const response = await fetch('/api/validate-affiliate-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.active) {
+        throw new Error(payload?.error || 'This affiliate code is not live yet.');
+      }
+      persistAffiliateCode(code);
+      setCouponInput(code);
+      setCoupon(code);
+      setCouponValid(true);
+      return true;
+    } catch (error) {
+      clearStoredAffiliateCode();
+      setCoupon('');
+      setCouponInput(code);
+      setCouponValid(false);
+      if (showAlert) {
+        alert(error.message || 'This affiliate code is not live yet.');
+      }
+      return false;
+    } finally {
+      setCouponChecking(false);
+    }
+  }, []);
 
   useEffect(() => {
     const capturedCode = captureAffiliateCodeFromSearch(window.location.search);
     const storedCode = capturedCode || readStoredAffiliateCode();
     if (!storedCode) return;
     setCouponInput(storedCode);
-    setCoupon(storedCode);
-    setCouponValid(true);
-  }, []);
+    validateCouponCode(storedCode, { showAlert: false });
+  }, [validateCouponCode]);
 
   useEffect(() => {
     const init = () => {
@@ -65,13 +99,8 @@ export default function Pricing() {
     }
   }, []);
 
-  const applyCode = () => {
-    const code = sanitizeAffiliateCode(couponInput);
-    if (!code) return;
-    persistAffiliateCode(code);
-    setCoupon(code);
-    setCouponInput(code);
-    setCouponValid(true);
+  const applyCode = async () => {
+    await validateCouponCode(couponInput);
   };
 
   const removeCode = () => {
@@ -249,7 +278,9 @@ export default function Pricing() {
                 onChange={e => setCouponInput(e.target.value.toUpperCase())}
                 onKeyDown={e => e.key === 'Enter' && applyCode()}
               />
-              <button className="p-coupon-btn" onClick={applyCode}>Apply</button>
+              <button className="p-coupon-btn" onClick={applyCode} disabled={couponChecking}>
+                {couponChecking ? 'Checking…' : 'Apply'}
+              </button>
             </div>
           ) : (
             <div className="p-coupon-applied">

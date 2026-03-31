@@ -57,6 +57,12 @@ async function paddleRequest(path, { method = 'GET', body } = {}) {
   return payload.data;
 }
 
+async function findPaddleDiscountByCode(code) {
+  if (!code) return null;
+  const result = await paddleRequest(`/discounts?code=${encodeURIComponent(code)}`);
+  return result?.[0] || null;
+}
+
 async function findExistingProfile(supabase, userId) {
   const { data, error } = await supabase
     .from('affiliate_profiles')
@@ -99,6 +105,50 @@ function buildDiscountPayload({ code, email, fullName, userId }) {
       affiliate_email: email,
     },
   };
+}
+
+async function provisionPaddleDiscount({ existingProfile, code, email, fullName, userId }) {
+  const basePayload = buildDiscountPayload({ code, email, fullName, userId });
+
+  try {
+    if (existingProfile?.paddle_discount_id) {
+      return await paddleRequest(`/discounts/${existingProfile.paddle_discount_id}`, {
+        method: 'PATCH',
+        body: {
+          status: 'active',
+          ...basePayload,
+        },
+      });
+    }
+
+    const existingByCode = await findPaddleDiscountByCode(code);
+    if (existingByCode?.id) {
+      return await paddleRequest(`/discounts/${existingByCode.id}`, {
+        method: 'PATCH',
+        body: {
+          status: 'active',
+          ...basePayload,
+        },
+      });
+    }
+
+    return await paddleRequest('/discounts', {
+      method: 'POST',
+      body: basePayload,
+    });
+  } catch (error) {
+    const fallbackByCode = await findPaddleDiscountByCode(code).catch(() => null);
+    if (fallbackByCode?.id) {
+      return await paddleRequest(`/discounts/${fallbackByCode.id}`, {
+        method: 'PATCH',
+        body: {
+          status: 'active',
+          ...basePayload,
+        },
+      });
+    }
+    throw error;
+  }
 }
 
 async function saveProfile(supabase, profile, { userId, email, fullName, code, paddleDiscount }) {
@@ -153,24 +203,13 @@ module.exports = async function handler(req, res) {
     let paddleError = null;
     if (getPaddleApiKey()) {
       try {
-        const discountPayload = buildDiscountPayload({
+        paddleDiscount = await provisionPaddleDiscount({
+          existingProfile,
           code: requestedCode,
           email,
           fullName,
           userId,
         });
-
-        if (existingProfile?.paddle_discount_id) {
-          paddleDiscount = await paddleRequest(`/discounts/${existingProfile.paddle_discount_id}`, {
-            method: 'PATCH',
-            body: discountPayload,
-          });
-        } else {
-          paddleDiscount = await paddleRequest('/discounts', {
-            method: 'POST',
-            body: discountPayload,
-          });
-        }
       } catch (error) {
         paddleError = error.message || 'Paddle discount provisioning failed.';
       }
